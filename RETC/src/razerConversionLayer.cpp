@@ -234,6 +234,9 @@ void razerConversionLayer::destroy()
 
 		effect = m_Effects.erase(effect);
 	}
+
+	m_logOutputStream.flush();
+	m_logOutputStream.close();
 }
 
 razerConversionLayer::~razerConversionLayer()
