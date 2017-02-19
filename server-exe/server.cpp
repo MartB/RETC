@@ -1,4 +1,3 @@
-// File Example1Server.cpp
 #include <iostream>
 #include "../rpc-midl/rpc_retc.h"
 #include "map"
@@ -203,18 +202,17 @@ void disconnect(CONTEXT_HANDLE* phContext) {
 }
 
 
-// Naive security callback.
 RPC_STATUS CALLBACK SecurityCallback(RPC_IF_HANDLE hInterface, void* pBindingHandle) {
-	if (m_bInitialized) // Todo check for timeouts and stuff
+	if (m_bInitialized)
 		return RPC_S_ACCESS_DENIED;
 
-	return RPC_S_OK; // Always allow anyone.
+	return RPC_S_OK;
 }
 
 int main() {
 #ifndef _DEBUG
-	//auto myConsole = GetConsoleWindow(); //return window handler to myConsole
-	//ShowWindow(myConsole, 0); //use handler to show 0, or close
+	//auto myConsole = GetConsoleWindow();
+	//ShowWindow(myConsole, 0);
 #endif
 
 #ifdef _DEBUG
@@ -224,31 +222,30 @@ int main() {
 	RPC_STATUS status;
 
 	status = RpcServerUseProtseqEp(
-		(RPC_WSTR)L"ncalrpc", // Use TCP/IP protocol.
-		0, // Backlog queue length for TCP/IP.
-		(RPC_WSTR)L"[retc-rpc]", // TCP/IP port to use.
-		NULL); // No security.
+		(RPC_WSTR)L"ncalrpc",
+		0, 
+		(RPC_WSTR)L"[retc-rpc]", 
+		NULL);
 
 	if (status)
 		exit(status);
 
-	// Registers the Example1 interface.
 	status = RpcServerRegisterIf2(
-		rpc_retc_v0_0_s_ifspec, // Interface to register.
-		NULL, // Use the MIDL generated entry-point vector.
-		NULL, // Use the MIDL generated entry-point vector.
-		RPC_IF_ALLOW_CALLBACKS_WITH_NO_AUTH, // Forces use of security callback.
-		RPC_C_LISTEN_MAX_CALLS_DEFAULT, // Use default number of concurrent calls.
-		(unsigned)-1, // Infinite max size of incoming data blocks.
-		SecurityCallback); // Naive security callback.
+		rpc_retc_v0_0_s_ifspec, 
+		NULL, 
+		NULL,
+		RPC_IF_ALLOW_CALLBACKS_WITH_NO_AUTH,
+		RPC_C_LISTEN_MAX_CALLS_DEFAULT,
+		(unsigned)-1, 
+		SecurityCallback);
 
 	if (status)
 		exit(status);
 
 	status = RpcServerListen(
-		1, // Recommended minimum number of threads.
-		RPC_C_LISTEN_MAX_CALLS_DEFAULT, // Recommended maximum number of threads.
-		FALSE); // Start listening now.
+		1, 
+		RPC_C_LISTEN_MAX_CALLS_DEFAULT, 
+		FALSE);
 
 	if (status)
 		exit(status);
@@ -258,7 +255,6 @@ void* __RPC_USER midl_user_allocate(size_t size) {
 	return malloc(size);
 }
 
-// Memory deallocation function for RPC.
 void __RPC_USER midl_user_free(void* p) {
 	free(p);
 }
@@ -266,19 +262,3 @@ void __RPC_USER midl_user_free(void* p) {
 void __RPC_USER CONTEXT_HANDLE_rundown(CONTEXT_HANDLE hContext) {
 	disconnect(&hContext);
 }
-
-
-/*
-RPC_STATUS status;
-status = RpcMgmtStopServerListening(NULL);
-
-if (status)
-exit(status);
-
-status = RpcServerUnregisterIf(NULL, NULL, FALSE);
-
-if (status)
-exit(status);
-
-LOGI("~Disconnected see ya again");
-*/

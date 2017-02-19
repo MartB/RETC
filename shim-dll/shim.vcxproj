@@ -99,7 +99,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)RzChromaSDK$(PlatformArchitecture).dll</OutputFile>
+      <OutputFile>$(OutDir)RzChromaSDK.dll</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)retc-shim-$(PlatformArchitecture)-$(Configuration).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -124,7 +124,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)RzChromaSDK$(PlatformArchitecture).dll</OutputFile>
+      <OutputFile>$(OutDir)RzChromaSDK64.dll</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)retc-shim-$(PlatformArchitecture)-$(Configuration).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -151,7 +151,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)RzChromaSDK$(PlatformArchitecture).dll</OutputFile>
+      <OutputFile>$(OutDir)RzChromaSDK.dll</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -181,7 +181,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)RzChromaSDK$(PlatformArchitecture).dll</OutputFile>
+      <OutputFile>$(OutDir)RzChromaSDK64.dll</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>

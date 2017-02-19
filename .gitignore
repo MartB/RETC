@@ -372,5 +372,5 @@ __pycache__/
 
 
 rpc-midl/*.c
-rpc-midl/*.h
+rpc-midl/rpc_retc.h
 # End of https://www.gitignore.io/api/visualstudio,c++,c,windows

@@ -10,7 +10,7 @@ typedef GUID	RZEFFECTID;
 
 [uuid(4ec1a224-7b6a-4a38-9ca4-fa7e072d191b)]
 
-interface rpc_retc // The interface is named Example1
+interface rpc_retc
 {
 	typedef [context_handle] void* CONTEXT_HANDLE;
 
