@@ -3,6 +3,7 @@
 #include "RzChromaSDKDefines.h"
 #include "RzChromaSDKTypes.h"
 #include "CUESDK.h"
+#include <wingdi.h>
 
 using namespace ChromaSDK::Keyboard;
 const std::map<RZKEY, CorsairLedId> customQWERTZKeymap = {

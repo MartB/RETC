@@ -1,0 +1,25 @@
+#include "common.h"
+import "oaidl.idl";
+import "ocidl.idl";
+[
+   uuid(f3bcd8fb-67fb-4418-9920-c2cabb9d4f52),
+   version(1.2)
+]
+
+typedef GUID	RZEFFECTID;
+
+[uuid(4ec1a224-7b6a-4a38-9ca4-fa7e072d191b)]
+
+interface rpc_retc // The interface is named Example1
+{
+	typedef [context_handle] void* CONTEXT_HANDLE;
+
+	//void logError(long lArraySize, [size_is(lArraySize)] char achArray[*]);
+	CONTEXT_HANDLE initialize([in] handle_t hBinding);
+
+	RZRESULT playKeyboardEffect([in] EFFECT_TYPE_RETC type, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], CONTEXT_HANDLE hContext);
+	RZRESULT createEffect([in] EFFECT_TYPE_RETC type, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], [in] RZEFFECTID test, CONTEXT_HANDLE hContext);
+	RZRESULT setEffect([in] RZEFFECTID test, CONTEXT_HANDLE hContext);
+	RZRESULT deleteEffect([in] RZEFFECTID test, CONTEXT_HANDLE hContext);
+	void disconnect([in, out] CONTEXT_HANDLE* phContext);
+}
