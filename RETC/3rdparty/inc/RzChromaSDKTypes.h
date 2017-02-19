@@ -31,7 +31,7 @@ namespace ChromaSDK
         CHROMA_REACTIVE,            //!< Reactive effect.
         CHROMA_STATIC,              //!< Static effect.
         CHROMA_CUSTOM,              //!< Custom effect. For mice, please see Mouse::CHROMA_CUSTOM2.
-        CHROMA_STARLIGHT,           //!< TODO
+        CHROMA_RESERVED,            //!< TODO
         CHROMA_INVALID              //!< Invalid effect.
     } EFFECT_TYPE;
 
@@ -337,7 +337,7 @@ namespace ChromaSDK
             CHROMA_STATIC,              //!< Static effect.
             CHROMA_SPECTRUMCYCLING,     //!< Spectrum cycling effect.
             CHROMA_WAVE,                //!< Wave effect.
-            CHROMA_STARLIGHT,           //!< Starlight effect.
+            CHROMA_RESERVED,            //!< TODO.
             CHROMA_CUSTOM_KEY,          //!< Custom effects with keys.
             CHROMA_INVALID              //!< Invalid effect.
         } EFFECT_TYPE;

@@ -71,23 +71,27 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IntDir>tmp\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)output\$(Configuration)</OutDir>
+    <IntDir>tmp\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)output\$(Configuration)\$(Platform)\</OutDir>
+    <TargetName>RzChromaSDK</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IntDir>tmp\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)output\$(Configuration)\$(Platform)\</OutDir>
+    <TargetName>RzChromaSDK$(PlatformArchitecture)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IntDir>tmp\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)output\$(Configuration)</OutDir>
+    <IntDir>tmp\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)output\$(Configuration)\$(Platform)\</OutDir>
+    <TargetName>RzChromaSDK</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IntDir>tmp\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)output\$(Configuration)\$(Platform)\</OutDir>
+    <TargetName>RzChromaSDK$(PlatformArchitecture)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -98,6 +102,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;CONSOLEAPPLICATION3_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)3rdparty\inc\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OmitFramePointers />
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -43,6 +43,11 @@ namespace ChromaSDK
     static const GUID BLACKWIDOW_X_TE_CHROMA = 
     { 0x2d84dd51, 0x3290, 0x4aac, { 0x9a, 0x89, 0xd8, 0xaf, 0xde, 0x38, 0xb5, 0x7c } };
 
+    //! Razer Ornata Chroma
+    // {803378C1-CC48-4970-8539-D828CC1D420A}
+    static const GUID ORNATA_CHROMA =
+    { 0x803378c1, 0xcc48, 0x4970,{ 0x85, 0x39, 0xd8, 0x28, 0xcc, 0x1d, 0x42, 0xa } };
+
     //! Razer Blade Stealth.
     // {C83BDFE8-E7FC-40E0-99DB-872E23F19891}
     static const GUID BLADE_STEALTH = 
@@ -104,7 +109,7 @@ namespace ChromaSDK
 
     //! Razer ManO'War device.
     // {DF3164D7-5408-4A0E-8A7F-A7412F26BEBF}
-    static const GUID MANOWAR_HEADSET = 
+    static const GUID MANOWAR_CHROMA = 
     { 0xdf3164d7, 0x5408, 0x4a0e, { 0x8a, 0x7f, 0xa7, 0x41, 0x2f, 0x26, 0xbe, 0xbf } };
 
 

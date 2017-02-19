@@ -2,7 +2,7 @@
 
 #define mkwordhilo(hi,lo) ((hi << 8) | lo); 
 
-const std::string razerConversionLayer::corsairErrorToString(const CorsairError error)
+std::string razerConversionLayer::corsairErrorToString(const CorsairError error)
 {
 	switch (error) {
 	case CE_Success:
@@ -25,24 +25,28 @@ const std::string razerConversionLayer::corsairErrorToString(const CorsairError 
 razerConversionLayer::razerConversionLayer()
 {
 	m_logOutputStream = std::ofstream("RzToCue.log", std::ofstream::out);
+#ifdef _DEBUG
+	out_redir red(std::cerr.rdbuf());
+	std::cout.rdbuf(m_logOutputStream.rdbuf());  // Redirect cout to log
+	std::cerr.rdbuf(m_logOutputStream.rdbuf());  // Redirect cerr to log
+#endif
+
 	m_lastActiveEffect = GUID();
 }
 
 void razerConversionLayer::logError(const std::stringstream &errorMsg)
 {
-	// Fail silently bcs we have no console window open
+	// Fail silently bcs we have no filestream open
 	if (!m_logOutputStream.is_open())
 		return;
 
 	m_logOutputStream << errorMsg.str() << std::endl;
+	m_logOutputStream.flush();
 }
 
-const RZEFFECTID razerConversionLayer::createUniqueEffectID()
+bool razerConversionLayer::createUniqueEffectID(RZEFFECTID *guid)
 {
-	RZEFFECTID newGuiD;
-	UuidCreateSequential(&newGuiD);
-
-	return newGuiD;
+	return CoCreateGuid(guid) == S_OK;
 }
 
 bool razerConversionLayer::connect()
@@ -56,13 +60,17 @@ bool razerConversionLayer::connect()
 		return false;
 	}
 
-	m_referenceLedMap = CorsairGetLedPositions();
+	bool gotExclusiveControl = CorsairRequestControl(CAM_ExclusiveLightingControl);
+	if (!gotExclusiveControl)
+		return false;
+
+	/*m_referenceLedMap = CorsairGetLedPositions();
 
 	if (!m_referenceLedMap)	{
 		errorMsg << "CorsairGetLedPositions failed: " << corsairErrorToString(CorsairGetLastError()).c_str();
 		logError(errorMsg);
 		return false;
-	}
+	}*/
 
 	return true;
 }
@@ -99,6 +107,7 @@ bool razerConversionLayer::createKeyboardEffect(ChromaSDK::Keyboard::EFFECT_TYPE
 	default:
 		errorMsg << "Invalid Keyboard effect Type:" << effectType << " not implemented.";
 		logError(errorMsg);
+		delete pParam2;
 		return false;
 	}
 
@@ -109,7 +118,8 @@ bool razerConversionLayer::createKeyboardEffect(ChromaSDK::Keyboard::EFFECT_TYPE
 	if (!bStoreEffect)
 		return true;
 
-	RZEFFECTID newEffectID = createUniqueEffectID();
+	RZEFFECTID newEffectID;
+	createUniqueEffectID(&newEffectID);
 
 	if (effectData != nullptr)
 		memcpy(pParam2, effectData, iSize);
@@ -127,8 +137,12 @@ bool razerConversionLayer::setActiveEffect(RZEFFECTID razerEffectGuid)
 		return true;
 
 	for (auto &effect : m_Effects) {
-		if (effect.first == razerEffectGuid)
+		if (effect.first == razerEffectGuid) {
+			if (razerEffectGuid != GUID()) {
+				m_lastActiveEffect = razerEffectGuid;
+			}
 			return playKeyboardEffect(ChromaSDK::Keyboard::EFFECT_TYPE::CHROMA_CUSTOM, effect.second);
+		}
 	}
 
 	return false;
@@ -136,18 +150,15 @@ bool razerConversionLayer::setActiveEffect(RZEFFECTID razerEffectGuid)
 
 bool razerConversionLayer::deleteEffect(RZEFFECTID razerEffectGuid)
 {
-	auto effect = m_Effects.begin();
-	while (effect != m_Effects.end()) 
-	{
-		if (effect->first != razerEffectGuid)
-			continue;
-
-		if (effect->second)
-			delete effect->second;
-
-		effect = m_Effects.erase(effect);
-
-		return true;
+	auto itr = m_Effects.begin();
+	while (itr != m_Effects.end()) {
+		if (itr->first != razerEffectGuid) {
+			delete itr->second;
+			itr = m_Effects.erase(itr);
+			return true;
+		}
+		
+		++itr;
 	}
 
 	return false;
@@ -213,7 +224,7 @@ bool razerConversionLayer::playKeyboardEffect(ChromaSDK::Keyboard::EFFECT_TYPE t
 			}
 	}
 
-	CorsairSetLedsColors(vec.size(), vec.data());
+	CorsairSetLedsColorsAsync(vec.size(), vec.data(),nullptr,nullptr);
 
 	if (const auto error = CorsairGetLastError()) {
 		std::stringstream errorMsg;
@@ -227,19 +238,14 @@ bool razerConversionLayer::playKeyboardEffect(ChromaSDK::Keyboard::EFFECT_TYPE t
 
 void razerConversionLayer::destroy()
 {
-	auto effect = m_Effects.begin();
-	while (effect != m_Effects.end()) {
-		if (effect->second)
-			delete effect->second;
-
-		effect = m_Effects.erase(effect);
+	auto itr = m_Effects.begin();
+	while (itr != m_Effects.end()) {
+		delete itr->second;
+		itr = m_Effects.erase(itr);
 	}
 
 	m_logOutputStream.flush();
 	m_logOutputStream.close();
-}
 
-razerConversionLayer::~razerConversionLayer()
-{
-	destroy();
+	CorsairReleaseControl(CAM_ExclusiveLightingControl);
 }
