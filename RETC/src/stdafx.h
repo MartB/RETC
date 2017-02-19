@@ -13,6 +13,4 @@
 #include <future>
 #include <map>
 
-#pragma comment( lib, "rpcrt4")
-#include <rpc.h>
-#include <rpcdce.h>
+#include <Objbase.h>

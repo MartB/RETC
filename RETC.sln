@@ -1,9 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RETC", "RETC\RETC.vcxproj", "{59DCB469-B404-4A4C-8F34-682A86AA9C57}"
+EndProject
+Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "RazerChromaSampleApplication_ür", "..\RETC-rpc\x64\Debug\RazerChromaSampleApplication_ür.exe", "{2985D7C0-9625-4F1E-93E5-750A73A5A9E8}"
+	ProjectSection(DebuggerProjectSystem) = preProject
+		PortSupplier = 00000000-0000-0000-0000-000000000000
+		Executable = D:\Projekte\Privat\RETC-rpc\x64\Debug\RazerChromaSampleApplication_ür.exe
+		RemoteMachine = MARTB-PC
+		StartingDirectory = D:\Projekte\Privat\RETC-rpc\x64\Debug
+		Environment = Standard
+		LaunchingEngine = 00000000-0000-0000-0000-000000000000
+		UseLegacyDebugEngines = No
+		LaunchSQLEngine = No
+		AttachLaunchAction = No
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +34,10 @@ Global
 		{59DCB469-B404-4A4C-8F34-682A86AA9C57}.Release|x64.Build.0 = Release|x64
 		{59DCB469-B404-4A4C-8F34-682A86AA9C57}.Release|x86.ActiveCfg = Release|Win32
 		{59DCB469-B404-4A4C-8F34-682A86AA9C57}.Release|x86.Build.0 = Release|Win32
+		{2985D7C0-9625-4F1E-93E5-750A73A5A9E8}.Debug|x64.ActiveCfg = Release|x64
+		{2985D7C0-9625-4F1E-93E5-750A73A5A9E8}.Debug|x86.ActiveCfg = Release|x64
+		{2985D7C0-9625-4F1E-93E5-750A73A5A9E8}.Release|x64.ActiveCfg = Release|x64
+		{2985D7C0-9625-4F1E-93E5-750A73A5A9E8}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

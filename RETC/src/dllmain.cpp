@@ -7,6 +7,7 @@
 #define RzApi extern "C" __declspec (dllexport)
 
 RzApi RZRESULT Init();
+RzApi RZRESULT UnInit();
 RzApi RZRESULT CreateKeyboardEffect(ChromaSDK::Keyboard::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID *pEffectId);
 RzApi RZRESULT SetEffect(RZEFFECTID EffectId);
 RzApi RZRESULT DeleteEffect(RZEFFECTID EffectId);
@@ -49,15 +50,25 @@ BOOL APIENTRY DllMain( HMODULE hModule, DWORD  callReason, LPVOID lpReserved)
 razerConversionLayer layer;
 
 RZRESULT Init()
-{
+{	
+	LOGD("");
 	if (!layer.connect())
 		return RZRESULT_INVALID;
 
 	return RZRESULT_SUCCESS;
 }
 
+
+RZRESULT UnInit()
+{
+	LOGD("");
+	layer.destroy();
+	return RZRESULT_SUCCESS;
+}
+
 RZRESULT CreateKeyboardEffect(ChromaSDK::Keyboard::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID *pEffectId)
 {
+	LOGD("Effect:"+ ptrStr(Effect)+ "pParam:"+ ptrStr(pParam) + "pEffectID" + ((pEffectId != NULL) ? guidToString(*pEffectId) : "none!"));
 	if (!layer.createKeyboardEffect(Effect, pParam, pEffectId))
 		return RZRESULT_INVALID;
 
@@ -66,6 +77,7 @@ RZRESULT CreateKeyboardEffect(ChromaSDK::Keyboard::EFFECT_TYPE Effect, PRZPARAM 
 
 RZRESULT SetEffect(RZEFFECTID EffectId)
 {
+	LOGD(guidToString(EffectId));
 	if (!layer.setActiveEffect(EffectId))
 		return RZRESULT_INVALID;
 
@@ -74,6 +86,7 @@ RZRESULT SetEffect(RZEFFECTID EffectId)
 
 RZRESULT DeleteEffect(RZEFFECTID EffectId)
 {
+	LOGD(guidToString(EffectId));
 	if (!layer.deleteEffect(EffectId))
 		return RZRESULT_INVALID;
 
