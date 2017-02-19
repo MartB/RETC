@@ -31,5 +31,8 @@ RazerChromaSDKSample
 
 # FAQ:
 ### My effects dont work, what should i do ?
+Did you start the Corsair Utility Engine ?
+Did you enable the SDK in Corsair CUE ?
+![cue-sdk-settings](http://i.imgur.com/c7d7hLR.png)
 Read the `retc-server.log` it should help you with your problems.
 The simple turning it off and on again approach will also work wonders most of the time if something fails.
