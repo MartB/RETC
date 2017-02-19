@@ -11,7 +11,7 @@ RETC is a custom dll shim and a server application designed to be the middleman 
 Only the following types of effects are supported as of now:
 ```
 Keyboards:
-    CHROMA_STATIC, CHROMA_STATIC, CHROMA_CUSTOM, CHROMA_CUSTOM_KEY
+    CHROMA_NONE, CHROMA_STATIC, CHROMA_CUSTOM, CHROMA_CUSTOM_KEY
 Mice:
     none
 Headsets:
@@ -23,7 +23,7 @@ Mousepads
 ### Which games are supported?
 Pretty much every game that uses the Razer Chroma SDK is supported but keep in mind that some effects might not work correctly.
 
-A small list of softwares that i tested with my K70 RGB
+A small list of software that i tested with my K70 RGB
 ```
 Overwatch
 RazerChromaSDKSample
