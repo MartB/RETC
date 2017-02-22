@@ -114,13 +114,12 @@ RZRESULT UnInit() {
 	return RZRESULT_SUCCESS;
 }
 
-
-const size_t sizeLookupArray[5][7] = {
-	{sizeof(ChromaSDK::Keyboard::WAVE_EFFECT_TYPE), 0, sizeof(ChromaSDK::Keyboard::BREATHING_EFFECT_TYPE),0 , sizeof(ChromaSDK::Keyboard::REACTIVE_EFFECT_TYPE), sizeof(ChromaSDK::Keyboard::STATIC_EFFECT_TYPE), sizeof(ChromaSDK::Keyboard::CUSTOM_EFFECT_TYPE)},
-	{sizeof(ChromaSDK::Mouse::WAVE_EFFECT_TYPE), sizeof(ChromaSDK::Mouse::SPECTRUMCYCLING_EFFECT_TYPE), sizeof(ChromaSDK::Mouse::BREATHING_EFFECT_TYPE),sizeof(ChromaSDK::Mouse::BLINKING_EFFECT_TYPE), sizeof(ChromaSDK::Mouse::REACTIVE_EFFECT_TYPE),	sizeof(ChromaSDK::Mouse::STATIC_EFFECT_TYPE), sizeof(ChromaSDK::Mouse::CUSTOM_EFFECT_TYPE)},
-	{0},
-	{0},
-	{0}
+const size_t genericEffectsizeLookupArray[DEVICE_TYPE_RETC::KEYPAD + 1][ChromaSDK::CHROMA_RESERVED - 1] = {
+	{ sizeof(ChromaSDK::Keyboard::WAVE_EFFECT_TYPE), 0, sizeof(ChromaSDK::Keyboard::BREATHING_EFFECT_TYPE),0 , sizeof(ChromaSDK::Keyboard::REACTIVE_EFFECT_TYPE), sizeof(ChromaSDK::Keyboard::STATIC_EFFECT_TYPE), sizeof(ChromaSDK::Keyboard::CUSTOM_EFFECT_TYPE) },
+	{ sizeof(ChromaSDK::Mouse::WAVE_EFFECT_TYPE), sizeof(ChromaSDK::Mouse::SPECTRUMCYCLING_EFFECT_TYPE), sizeof(ChromaSDK::Mouse::BREATHING_EFFECT_TYPE),sizeof(ChromaSDK::Mouse::BLINKING_EFFECT_TYPE), sizeof(ChromaSDK::Mouse::REACTIVE_EFFECT_TYPE),	sizeof(ChromaSDK::Mouse::STATIC_EFFECT_TYPE), sizeof(ChromaSDK::Mouse::CUSTOM_EFFECT_TYPE) },
+	{ 0, sizeof(ChromaSDK::SPECTRUMCYCLING_EFFECT_TYPE), sizeof(ChromaSDK::Headset::BREATHING_EFFECT_TYPE), 0, 0, sizeof(ChromaSDK::Headset::STATIC_EFFECT_TYPE), sizeof(ChromaSDK::Headset::CUSTOM_EFFECT_TYPE) },
+	{ 0 },
+	{ 0 }
 };
 
 RZRESULT CreateEffect(RZDEVICEID DeviceId, ChromaSDK::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID *pEffectId) {
@@ -152,7 +151,7 @@ RZRESULT CreateEffect(RZDEVICEID DeviceId, ChromaSDK::EFFECT_TYPE Effect, PRZPAR
 	}
 
 	if (Effect != ChromaSDK::CHROMA_NONE)
-		iSize = sizeLookupArray[deviceType][Effect-1];
+		iSize = genericEffectsizeLookupArray[deviceType][Effect-1];
 
 	RZEFFECTID newEffectID;
 	createUniqueEffectID(&newEffectID);
@@ -170,8 +169,6 @@ RZRESULT CreateEffect(RZDEVICEID DeviceId, ChromaSDK::EFFECT_TYPE Effect, PRZPAR
 	}
 	RpcEndExcept
 }
-
-
 
 RZRESULT CreateKeyboardEffect(ChromaSDK::Keyboard::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId) {
 	using namespace ChromaSDK::Keyboard;
