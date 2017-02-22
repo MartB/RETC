@@ -54,7 +54,7 @@ bool cueProxy::ReleaseLibrary() {
 	if (!this->hInstance)
 		return true;
 
-	bool result = FreeLibrary(this->hInstance) == TRUE;
+	bool result = FreeLibrary(this->hInstance) != FALSE;
 	this->hInstance = nullptr;
 	return result;
 }
