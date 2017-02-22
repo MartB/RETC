@@ -114,7 +114,7 @@ RZRESULT UnInit() {
 	return RZRESULT_SUCCESS;
 }
 
-const size_t genericEffectsizeLookupArray[DEVICE_TYPE_RETC::KEYPAD + 1][ChromaSDK::CHROMA_RESERVED - 1] = {
+const unsigned long genericEffectsizeLookupArray[DEVICE_TYPE_RETC::KEYPAD + 1][ChromaSDK::CHROMA_RESERVED - 1] = {
 	{ sizeof(ChromaSDK::Keyboard::WAVE_EFFECT_TYPE), 0, sizeof(ChromaSDK::Keyboard::BREATHING_EFFECT_TYPE),0 , sizeof(ChromaSDK::Keyboard::REACTIVE_EFFECT_TYPE), sizeof(ChromaSDK::Keyboard::STATIC_EFFECT_TYPE), sizeof(ChromaSDK::Keyboard::CUSTOM_EFFECT_TYPE) },
 	{ sizeof(ChromaSDK::Mouse::WAVE_EFFECT_TYPE), sizeof(ChromaSDK::Mouse::SPECTRUMCYCLING_EFFECT_TYPE), sizeof(ChromaSDK::Mouse::BREATHING_EFFECT_TYPE),sizeof(ChromaSDK::Mouse::BLINKING_EFFECT_TYPE), sizeof(ChromaSDK::Mouse::REACTIVE_EFFECT_TYPE),	sizeof(ChromaSDK::Mouse::STATIC_EFFECT_TYPE), sizeof(ChromaSDK::Mouse::CUSTOM_EFFECT_TYPE) },
 	{ 0, sizeof(ChromaSDK::SPECTRUMCYCLING_EFFECT_TYPE), sizeof(ChromaSDK::Headset::BREATHING_EFFECT_TYPE), 0, 0, sizeof(ChromaSDK::Headset::STATIC_EFFECT_TYPE), sizeof(ChromaSDK::Headset::CUSTOM_EFFECT_TYPE) },
@@ -125,7 +125,7 @@ const size_t genericEffectsizeLookupArray[DEVICE_TYPE_RETC::KEYPAD + 1][ChromaSD
 RZRESULT CreateEffect(RZDEVICEID DeviceId, ChromaSDK::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID *pEffectId) {
 	bool bStoreEffect = (pEffectId == nullptr) ? false : true;
 
-	size_t iSize = 0;
+	unsigned long iSize = 0;
 	DEVICE_TYPE_RETC deviceType;
 
 	if (DeviceId == ChromaSDK::BLACKWIDOW_CHROMA || DeviceId == ChromaSDK::BLACKWIDOW_CHROMA_TE ||
@@ -175,7 +175,7 @@ RZRESULT CreateKeyboardEffect(ChromaSDK::Keyboard::EFFECT_TYPE Effect, PRZPARAM 
 
 	bool bStoreEffect = (pEffectId == nullptr) ? false : true;
 
-	size_t iSize = 0;
+	unsigned long iSize = 0;
 	switch (Effect) {
 	case CHROMA_STATIC:
 		iSize = sizeof(ChromaSDK::Keyboard::STATIC_EFFECT_TYPE);
@@ -228,7 +228,7 @@ RZRESULT CreateMouseEffect(ChromaSDK::Mouse::EFFECT_TYPE Effect, PRZPARAM pParam
 
 	bool bStoreEffect = (pEffectId == nullptr) ? false : true;
 
-	size_t iSize = 0;
+	unsigned long iSize = 0;
 	switch (Effect) {
 	case CHROMA_STATIC:
 		iSize = sizeof(STATIC_EFFECT_TYPE);
@@ -279,7 +279,7 @@ RZRESULT CreateHeadsetEffect(ChromaSDK::Headset::EFFECT_TYPE Effect, PRZPARAM pP
 
 	bool bStoreEffect = (pEffectId == nullptr) ? false : true;
 
-	size_t iSize = 0;
+	unsigned long iSize = 0;
 	switch (Effect) {
 	case CHROMA_STATIC:
 		iSize = sizeof(STATIC_EFFECT_TYPE);
