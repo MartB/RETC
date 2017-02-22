@@ -130,7 +130,6 @@ inline const bool findKeyboardLed(CorsairLedId ledid, int *row, int *col) {
 			maptoassign(CLK_SlashAndQuestionMark, RZKEY_OEM_11) //Not sure
 			maptoassign(CLK_NonUsTilde, RZKEY_EUR_1)
 			maptoassign(CLK_NonUsBackslash, RZKEY_EUR_2)
-			maptoassign(CLK_Logo, RZLED_LOGO)
 			maptoassign(CLI_Invalid, RZKEY_INVALID)
 	default:
 		return false;

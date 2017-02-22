@@ -1,6 +1,5 @@
 #include <iostream>
 #include "../rpc-midl/rpc_retc.h"
-#include "server.h"
 #include "map"
 #include <vector>
 #include <set>
@@ -10,7 +9,7 @@
 #include "razerKeysToCorsair.h"
 #include <RzErrors.h>
 #include "cueProxy.h"
-
+#include "server.h"
 std::ofstream m_logOutputStream = std::ofstream("retc-server.log", std::ofstream::out);
 #define LOGE(x) m_logOutputStream << "ERRO : " << "[" << __FILE__ << "][" << __FUNCTION__ << "][Line " << __LINE__ << "] " << x << std::endl;
 #define LOGI(x) m_logOutputStream << "INFO : " << "[" << __FILE__ << "][" << __FUNCTION__ << "][Line " << __LINE__ << "] " << x << std::endl;
@@ -57,8 +56,6 @@ CONTEXT_HANDLE initialize(handle_t hBinding) {
 		LOGE("Only one session supported! Disconnected...");
 		return nullptr;
 	}
-
-	m_bInitialized = true;
 
 	if (!m_CueProxy.Load()) {
 		LOGE("Could not load library: " << CORSAIR_DLL_NAME << "code:" << GetLastError());
@@ -118,6 +115,8 @@ CONTEXT_HANDLE initialize(handle_t hBinding) {
 		LOGE("Non of your corsair devices have lighting support, aborting!");
 		return nullptr;
 	}
+
+	m_bInitialized = true;
 
 	LOGI("session connected");
 
@@ -312,14 +311,6 @@ int playKeypadEffect(int type, unsigned long lArraySize, char* achArray, CONTEXT
 int playMousepadEffect(int type, unsigned long lArraySize, char* achArray, CONTEXT_HANDLE hContext) {
 	return RZRESULT_NOT_SUPPORTED;
 }
-
-int effectTypeLookupArray[5][9] = {
-	{ ChromaSDK::Keyboard::CHROMA_NONE ,ChromaSDK::Keyboard::CHROMA_WAVE, ChromaSDK::Keyboard::CHROMA_SPECTRUMCYCLING, ChromaSDK::Keyboard::CHROMA_BREATHING, ChromaSDK::Keyboard::CHROMA_INVALID, ChromaSDK::Keyboard::CHROMA_REACTIVE, ChromaSDK::Keyboard::CHROMA_STATIC, ChromaSDK::Keyboard::CHROMA_CUSTOM },
-	{ ChromaSDK::Mouse::CHROMA_NONE, ChromaSDK::Mouse::CHROMA_WAVE, ChromaSDK::Mouse::CHROMA_SPECTRUMCYCLING, ChromaSDK::Mouse::CHROMA_BREATHING, ChromaSDK::Mouse::CHROMA_BLINKING, ChromaSDK::Mouse::CHROMA_REACTIVE,	ChromaSDK::Mouse::CHROMA_STATIC, ChromaSDK::Mouse::CHROMA_CUSTOM2 },
-	{ ChromaSDK::Headset::CHROMA_NONE, -1, ChromaSDK::Headset::CHROMA_SPECTRUMCYCLING, ChromaSDK::Headset::CHROMA_BREATHING, -1, -1, ChromaSDK::Headset::CHROMA_STATIC, ChromaSDK::Headset::CHROMA_CUSTOM }, // Headset
-	{ -1 }, // Mousepad
-	{ -1 } // Keypad
-};
 
 int CreateEffectGeneric(RZDEVICEID DeviceId, DEVICE_TYPE_RETC deviceType, int Effect, unsigned long lArraySize, char* achArray, RZEFFECTID pEffectId, boolean storeEffect, CONTEXT_HANDLE hContext) {
 
