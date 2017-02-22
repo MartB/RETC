@@ -8,25 +8,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "server-exe\server
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShimDLL", "shim-dll\shim.vcxproj", "{758DB129-9123-4E1B-A6C3-47323714123A}"
 EndProject
-Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "retc-rpc-server-64", "out\x64\Debug\retc-rpc-server-64.exe", "{73B87D4C-EE95-46D4-8DF3-B417FD0F934A}"
+Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "retc-rpc-server-32", "out\Win32\Debug\retc-rpc-server-32.exe", "{D00FA30D-09F6-4480-AC90-B8FC4E9E5759}"
 	ProjectSection(DebuggerProjectSystem) = preProject
 		PortSupplier = 00000000-0000-0000-0000-000000000000
-		Executable = D:\Projekte\Privat\RETC-rpc\out\x64\Debug\retc-rpc-server-64.exe
+		Executable = D:\Projekte\Privat\RETC\out\Win32\Debug\retc-rpc-server-32.exe
 		RemoteMachine = MARTB-PC
-		StartingDirectory = D:\Projekte\Privat\RETC-rpc\out\x64\Debug
-		Environment = Standard
-		LaunchingEngine = 00000000-0000-0000-0000-000000000000
-		UseLegacyDebugEngines = No
-		LaunchSQLEngine = No
-		AttachLaunchAction = No
-	EndProjectSection
-EndProject
-Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "RazerChromaSampleApplication_ür", "out\x64\Debug\RazerChromaSampleApplication_ür.exe", "{B894D213-7D0E-4A9B-BB71-13C7CE77B708}"
-	ProjectSection(DebuggerProjectSystem) = preProject
-		PortSupplier = 00000000-0000-0000-0000-000000000000
-		Executable = D:\Projekte\Privat\RETC-rpc\out\x64\Debug\RazerChromaSampleApplication_ür.exe
-		RemoteMachine = MARTB-PC
-		StartingDirectory = D:\Projekte\Privat\RETC-rpc\out\x64\Debug
+		StartingDirectory = D:\Projekte\Privat\RETC\out\Win32\Debug
 		Environment = Standard
 		LaunchingEngine = 00000000-0000-0000-0000-000000000000
 		UseLegacyDebugEngines = No
@@ -66,14 +53,10 @@ Global
 		{758DB129-9123-4E1B-A6C3-47323714123A}.Release|Win32.Build.0 = Release|Win32
 		{758DB129-9123-4E1B-A6C3-47323714123A}.Release|x64.ActiveCfg = Release|x64
 		{758DB129-9123-4E1B-A6C3-47323714123A}.Release|x64.Build.0 = Release|x64
-		{73B87D4C-EE95-46D4-8DF3-B417FD0F934A}.Debug|Win32.ActiveCfg = Release
-		{73B87D4C-EE95-46D4-8DF3-B417FD0F934A}.Debug|x64.ActiveCfg = Release
-		{73B87D4C-EE95-46D4-8DF3-B417FD0F934A}.Release|Win32.ActiveCfg = Release
-		{73B87D4C-EE95-46D4-8DF3-B417FD0F934A}.Release|x64.ActiveCfg = Release
-		{B894D213-7D0E-4A9B-BB71-13C7CE77B708}.Debug|Win32.ActiveCfg = Release|x64
-		{B894D213-7D0E-4A9B-BB71-13C7CE77B708}.Debug|x64.ActiveCfg = Release|x64
-		{B894D213-7D0E-4A9B-BB71-13C7CE77B708}.Release|Win32.ActiveCfg = Release|x64
-		{B894D213-7D0E-4A9B-BB71-13C7CE77B708}.Release|x64.ActiveCfg = Release|x64
+		{D00FA30D-09F6-4480-AC90-B8FC4E9E5759}.Debug|Win32.ActiveCfg = Release|x86
+		{D00FA30D-09F6-4480-AC90-B8FC4E9E5759}.Debug|x64.ActiveCfg = Release|x86
+		{D00FA30D-09F6-4480-AC90-B8FC4E9E5759}.Release|Win32.ActiveCfg = Release|x86
+		{D00FA30D-09F6-4480-AC90-B8FC4E9E5759}.Release|x64.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -4,6 +4,18 @@
 #include <string>
 
 #include "CUESDK.h"
+#include "helpers.h"
+
+inline std::string deviceTypeToString(CorsairDeviceType type) {
+	switch (type) {
+		mapto(CorsairDeviceType::CDT_Headset, "Headset")
+		mapto(CorsairDeviceType::CDT_Keyboard, "Keyboard")
+		mapto(CorsairDeviceType::CDT_Mouse, "Mouse")
+		mapto(CorsairDeviceType::CDT_Unknown, "Unknown")
+	default:
+		return "reportme";
+	}
+}
 
 typedef bool (*CORSAIRSETLEDSCOLORS)(int, CorsairLedColor*);
 typedef bool (*CORSAIRSETLEDSCOLORSASYNC)(int, CorsairLedColor*, void (*CallbackType)(void*, bool, CorsairError), void*);

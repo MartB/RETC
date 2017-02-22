@@ -2,13 +2,17 @@
 import "oaidl.idl";
 import "ocidl.idl";
 [
-   uuid(f3bcd8fb-67fb-4418-9920-c2cabb9d4f52),
-   version(1.2)
+   uuid(150d1b07-f871-4876-996e-53411408e079),
+   version(2.1)
 ]
 
 typedef GUID	RZEFFECTID;
+typedef GUID	RZDEVICEID;
 
-[uuid(4ec1a224-7b6a-4a38-9ca4-fa7e072d191b)]
+[
+	uuid(996391a2-d79c-49cc-a425-c105f48a9a61),
+	version(2.1)
+]
 
 interface rpc_retc
 {
@@ -17,9 +21,14 @@ interface rpc_retc
 	//void logError(long lArraySize, [size_is(lArraySize)] char achArray[*]);
 	CONTEXT_HANDLE initialize([in] handle_t hBinding);
 
-	RZRESULT playKeyboardEffect([in] EFFECT_TYPE_RETC type, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], CONTEXT_HANDLE hContext);
-	RZRESULT createEffect([in] EFFECT_TYPE_RETC type, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], [in] RZEFFECTID test, CONTEXT_HANDLE hContext);
-	RZRESULT setEffect([in] RZEFFECTID test, CONTEXT_HANDLE hContext);
-	RZRESULT deleteEffect([in] RZEFFECTID test, CONTEXT_HANDLE hContext);
+	int playKeyboardEffect([in] int type, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], CONTEXT_HANDLE hContext);
+	int playMouseEffect([in] int type, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], CONTEXT_HANDLE hContext);
+	int playHeadsetEffect([in] int type, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], CONTEXT_HANDLE hContext);
+
+	int CreateEffectGeneric(RZDEVICEID DeviceId, DEVICE_TYPE_RETC deviceType, int effectType, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], RZEFFECTID pEffectId, boolean storeEffect, CONTEXT_HANDLE hContext);
+
+	int createEffectInternal([in] int type, DEVICE_TYPE_RETC deviceType, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], [in] RZEFFECTID pEffectId, CONTEXT_HANDLE hContext);
+	int setEffect([in] RZEFFECTID pEffectId, CONTEXT_HANDLE hContext);
+	int deleteEffect([in] RZEFFECTID pEffectId, CONTEXT_HANDLE hContext);
 	void disconnect([in, out] CONTEXT_HANDLE* phContext);
 }

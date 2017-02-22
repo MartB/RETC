@@ -1,27 +1,15 @@
 #include <iostream>
 #include "../rpc-midl/rpc_retc.h"
+#include "server.h"
 #include "map"
 #include <vector>
+#include <set>
 #include <fstream>
+#include <functional>
 
 #include "razerKeysToCorsair.h"
 #include <RzErrors.h>
 #include "cueProxy.h"
-
-inline const std::string guidToString(REFGUID guid) {
-	char szGuid[40] = {0};
-	sprintf_s(szGuid, "{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}", guid.Data1, guid.Data2, guid.Data3, guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3], guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
-	return szGuid;
-}
-
-inline std::ostream& operator<<(std::ostream& os, REFGUID guid) {
-
-	os << std::uppercase;
-	os.width(8);
-	os << guidToString(guid).c_str();
-	os << std::nouppercase;
-	return os;
-}
 
 std::ofstream m_logOutputStream = std::ofstream("retc-server.log", std::ofstream::out);
 #define LOGE(x) m_logOutputStream << "ERRO : " << "[" << __FILE__ << "][" << __FUNCTION__ << "][Line " << __LINE__ << "] " << x << std::endl;
@@ -33,23 +21,17 @@ std::ofstream m_logOutputStream = std::ofstream("retc-server.log", std::ofstream
 #define LOGD(x) NULL
 #endif
 
-// Custom compare function for GUIDs
-struct RZEFFECTIDCmp {
-	bool operator()(const GUID& Left, const GUID& Right) const {
-		return memcmp(&Left, &Right, sizeof(Right)) < 0;
-	}
-};
-
-typedef struct effectData {
-	EFFECT_TYPE_RETC id;
-	long size;
-	char* data;
-} effectData;
-
 cueProxy m_CueProxy; // This is required to close the sdk connection again.
 
 std::map<RZEFFECTID, effectData, RZEFFECTIDCmp> m_Effects;
 bool m_bInitialized = false;
+
+std::vector<CorsairLedId> m_availableKeyboardLeds;
+std::vector<CorsairLedId> m_availableMouseLeds;
+std::vector<CorsairLedId> m_availableHeadsetLeds;
+
+typedef int(*playFunctionPointer)(int type, unsigned long lArraySize, char* achArray, CONTEXT_HANDLE hContext);
+playFunctionPointer deviceSpecificPlayFunctions[5];
 
 void reset() {
 	LOGD("application logic reset");
@@ -64,6 +46,9 @@ void reset() {
 
 	LOGD("erased " << effectCount << " effects from map.");
 	m_bInitialized = false;
+	m_availableKeyboardLeds.clear();
+	m_availableMouseLeds.clear();
+	m_availableHeadsetLeds.clear();
 }
 
 CONTEXT_HANDLE initialize(handle_t hBinding) {
@@ -77,64 +62,121 @@ CONTEXT_HANDLE initialize(handle_t hBinding) {
 
 	if (!m_CueProxy.Load()) {
 		LOGE("Could not load library: " << CORSAIR_DLL_NAME << "code:" << GetLastError());
-		return NULL;
+		return nullptr;
 	}
 
-	m_CueProxy.CorsairPerformProtocolHandshake();
+	CorsairProtocolDetails hsDetails = m_CueProxy.CorsairPerformProtocolHandshake();
+	if (hsDetails.breakingChanges == true) {
+		LOGE("Could not perform handshake: Breaking changes between library versions please update!");
+		return nullptr;
+	}
+
+	if (hsDetails.serverProtocolVersion == 0 || hsDetails.serverVersion == NULL) {
+		LOGE("Could not perform handshake: CUE not running on your pc!");
+		return nullptr;
+	}
+
+	int devCount = m_CueProxy.CorsairGetDeviceCount();
+	if (devCount == 0) {
+		LOGE("No supported devices found, aborting!");
+		return nullptr;
+	}
+
+	int devicesWithLightingSupport = 0;
+	for (int i = 0; i < devCount; i++) {
+		CorsairDeviceInfo *devInfo = m_CueProxy.CorsairGetDeviceInfo(i);
+		if (devInfo->capsMask == CDC_Lighting) {
+			devicesWithLightingSupport++;
+			switch (devInfo->type) {
+			case CDT_Mouse: {
+				auto numberOfKeys = devInfo->physicalLayout - CPL_Zones1 + 1;
+				for (auto i = 0; i < numberOfKeys; i++) {
+					auto ledId = static_cast<CorsairLedId>(CLM_1 + i);
+					m_availableMouseLeds.push_back(ledId);
+				}
+			} break;
+			case CDT_Keyboard: {
+				auto ledPositions = m_CueProxy.CorsairGetLedPositions();
+				if (ledPositions) {
+					for (auto i = 0; i < ledPositions->numberOfLed; i++) {
+						auto ledId = ledPositions->pLedPosition[i].ledId;
+						m_availableKeyboardLeds.push_back(ledId);
+					}
+				}
+			} break;
+			case CDT_Headset: {
+				m_availableHeadsetLeds.push_back(CLH_LeftLogo);
+				m_availableHeadsetLeds.push_back(CLH_RightLogo);
+			} break;
+			}
+		}
+
+		LOGI("Found device: " << devInfo->model << " type: "<< deviceTypeToString(devInfo->type) << " hasLighting: " << devInfo->capsMask << " physicalLayout: " << devInfo->physicalLayout);
+	}
+
+	if (devicesWithLightingSupport == 0) {
+		LOGE("Non of your corsair devices have lighting support, aborting!");
+		return nullptr;
+	}
 
 	LOGI("session connected");
 
 	return "sth";
 }
 
-RZRESULT playKeyboardEffect(EFFECT_TYPE_RETC type, unsigned long lArraySize, char* achArray, CONTEXT_HANDLE hContext) {
+
+int playKeyboardEffect(int type, unsigned long lArraySize, char* achArray, CONTEXT_HANDLE hContext) {
+	if (m_availableKeyboardLeds.size() == 0) {
+		return RZRESULT_NOT_SUPPORTED;
+	}
+
+	using namespace ChromaSDK::Keyboard; // Important do not remove!
 	std::vector<CorsairLedColor> vec;
-	vec.reserve(22 * 6);
+	vec.reserve(m_availableKeyboardLeds.size());
 
 	LOGD("type: " << type << " size: " << lArraySize);
-	if (type == KEYBOARD_SOLID) {
-		ChromaSDK::Keyboard::STATIC_EFFECT_TYPE custEffect = (lArraySize > 0) ? *(struct ChromaSDK::Keyboard::STATIC_EFFECT_TYPE*)achArray : ChromaSDK::Keyboard::STATIC_EFFECT_TYPE{0};
 
-		COLORREF origColor = custEffect.Color;
-		if (origColor == NULL)
-			origColor = custEffect.Color;
+	int row;
+	int col;
 
-		CorsairLedColor ledColor = convertLedColor(origColor);
-		for (int row = 0; row < MAX_ROW; row++) {
-			for (int col = 0; col < MAX_COLUMN; col++) {
-				ledColor.ledId = findCorrespondingLed(row, col);
-				if (ledColor.ledId != CLI_Invalid)
-					vec.push_back(ledColor);
-			}
+	if (type == CHROMA_STATIC) {
+		STATIC_EFFECT_TYPE custEffect = (lArraySize > 0) ? *(struct STATIC_EFFECT_TYPE*)achArray : STATIC_EFFECT_TYPE{0};
+		CorsairLedColor ledColor = convertLedColor(custEffect.Color);
+
+		for (const CorsairLedId &ledId : m_availableKeyboardLeds) {
+			if (!findKeyboardLed(ledId, &row, &col))
+				continue;
+
+			ledColor.ledId = ledId;
+			vec.push_back(ledColor);
 		}
 	}
-	else if (type == KEYBOARD_DATA || type == KEYBOARD_NONE) {
-		CUSTOM_EFFECT_TYPE test = (lArraySize > 0) ? *(struct ChromaSDK::Keyboard::CUSTOM_EFFECT_TYPE*)achArray : ChromaSDK::Keyboard::CUSTOM_EFFECT_TYPE{0};
+	else if (type == CHROMA_CUSTOM || type == CHROMA_NONE) {
+		CUSTOM_EFFECT_TYPE custEffect = (lArraySize > 0) ? *(struct CUSTOM_EFFECT_TYPE*)achArray : CUSTOM_EFFECT_TYPE{ 0 };
 
-		for (int row = 0; row < 6; row++) {
-			for (int col = 0; col < 22; col++) {
-				CorsairLedColor ledColor = convertLedColor(test.Color[row][col]);
-				ledColor.ledId = findCorrespondingLed(row, col);
-				if (ledColor.ledId != CLI_Invalid)
-					vec.push_back(ledColor);
-			}
+		for (const CorsairLedId &ledId : m_availableKeyboardLeds) {
+			if (!findKeyboardLed(ledId, &row, &col))
+				continue;
+
+			CorsairLedColor ledColor = convertLedColor(custEffect.Color[row][col]);
+			ledColor.ledId = ledId;
+			vec.push_back(ledColor);
 		}
 	}
-	else if (type == KEYBOARD_DATA_AND_KEY) {
-		CUSTOM_KEY_EFFECT_TYPE test = (lArraySize > 0) ? *(struct ChromaSDK::Keyboard::CUSTOM_KEY_EFFECT_TYPE*)achArray : ChromaSDK::Keyboard::CUSTOM_KEY_EFFECT_TYPE{0};
+	else if (type == CHROMA_CUSTOM_KEY) {
+		CUSTOM_KEY_EFFECT_TYPE custEffect = (lArraySize > 0) ? *(struct CUSTOM_KEY_EFFECT_TYPE*)achArray : CUSTOM_KEY_EFFECT_TYPE{0};
 
-		for (int row = 0; row < 6; row++) {
-			for (int col = 0; col < 22; col++) {
-				COLORREF origColor = test.Key[row][col];
-				if (origColor == NULL)
-					origColor = test.Color[row][col];
+		for (const CorsairLedId &ledId : m_availableKeyboardLeds) {
+			if (!findKeyboardLed(ledId, &row, &col))
+				continue;
 
-				CorsairLedColor ledColor = convertLedColor(origColor);
-				ledColor.ledId = findCorrespondingLed(row, col);
+			COLORREF origColor = custEffect.Key[row][col];
+			if (origColor == NULL)
+				origColor = custEffect.Color[row][col];
 
-				if (ledColor.ledId != CLI_Invalid)
-					vec.push_back(ledColor);
-			}
+			CorsairLedColor ledColor = convertLedColor(origColor);
+			ledColor.ledId = ledId;
+			vec.push_back(ledColor);
 		}
 	}
 	else {
@@ -146,40 +188,203 @@ RZRESULT playKeyboardEffect(EFFECT_TYPE_RETC type, unsigned long lArraySize, cha
 
 	if (const auto error = m_CueProxy.CorsairGetLastError()) {
 		LOGE("CorsairSetLedsColors failed type: " << type << "size: " << lArraySize << "msg: " << m_CueProxy.corsairErrorToString(error).c_str());
-		return RZRESULT_FAILED;
+		return RZRESULT_NOT_SUPPORTED;
 	}
 
 	return RZRESULT_SUCCESS;
 }
 
-RZRESULT createEffect(EFFECT_TYPE_RETC type, unsigned long lArraySize, char* achArray, RZEFFECTID test, CONTEXT_HANDLE hContext) {
+int playMouseEffect(int type, unsigned long lArraySize, char* achArray, CONTEXT_HANDLE hContext) {
+	if (m_availableMouseLeds.size() == 0) {
+		return RZRESULT_NOT_SUPPORTED;
+	}
 
-	auto a = effectData();
-	a.id = type;
-	a.size = lArraySize;
-	a.data = new char[lArraySize];
-	memcpy(a.data, achArray, lArraySize);
+	using namespace ChromaSDK::Mouse; // Important do not remove!
+	std::vector<CorsairLedColor> vec;
+	vec.reserve(m_availableMouseLeds.size());
+
+	int row;
+	int col;
+
+	if (type == CHROMA_STATIC) {
+		STATIC_EFFECT_TYPE custEffect = (lArraySize > 0) ? *(struct STATIC_EFFECT_TYPE*)achArray : STATIC_EFFECT_TYPE{};
+		CorsairLedColor ledColor = convertLedColor(custEffect.Color);
+
+		if (custEffect.LEDId == RZLED_ALL) {
+			for (const CorsairLedId &ledId : m_availableMouseLeds) {
+				if (!findMouseLed(ledId, &row, &col))
+					continue;
+
+				ledColor.ledId = ledId;
+				vec.push_back(ledColor);
+			}
+		}
+		else {
+			ledColor.ledId = findMouseLed(custEffect.LEDId);
+
+			if (ledColor.ledId != CLI_Invalid)
+				vec.push_back(ledColor);
+		}
+	}
+	else if (type == CHROMA_CUSTOM || type == CHROMA_NONE) {
+		CUSTOM_EFFECT_TYPE custEffect = (lArraySize > 0) ? *(struct CUSTOM_EFFECT_TYPE*)achArray : CUSTOM_EFFECT_TYPE{ 0 };
+
+		for (const CorsairLedId &ledId : m_availableMouseLeds) {
+			int val = findMouseLed(ledId);
+			if (val == -1)
+				continue;
+			
+			CorsairLedColor ledColor = convertLedColor(custEffect.Color[val]);
+			ledColor.ledId = ledId;
+			vec.push_back(ledColor);
+		}
+	}
+	else if (type == CHROMA_CUSTOM2) {
+		CUSTOM_EFFECT_TYPE2 custEffect = (lArraySize > 0) ? *(struct CUSTOM_EFFECT_TYPE2*)achArray : CUSTOM_EFFECT_TYPE2{ 0 };
+
+		for (const CorsairLedId &ledId : m_availableMouseLeds) {
+			if (!findMouseLed(ledId, &row, &col))
+				continue;
+
+			CorsairLedColor ledColor = convertLedColor(custEffect.Color[row][col]);
+			ledColor.ledId = ledId;
+
+			vec.push_back(ledColor);
+		}
+	}
+	else {
+		LOGE("unimplemented effect: " << type << "size: " << lArraySize);
+		return RZRESULT_NOT_SUPPORTED;
+	}
+
+	m_CueProxy.CorsairSetLedsColors(vec.size(), vec.data());
+
+	if (const auto error = m_CueProxy.CorsairGetLastError()) {
+		LOGE("CorsairSetLedsColors failed type: " << type << "size: " << lArraySize << "msg: " << m_CueProxy.corsairErrorToString(error).c_str());
+		return RZRESULT_NOT_SUPPORTED;
+	}
+
+	return RZRESULT_SUCCESS;
+}
+
+int playHeadsetEffect(int type, unsigned long lArraySize, char* achArray, CONTEXT_HANDLE hContext) {
+	if (m_availableHeadsetLeds.size() == 0) {
+		return RZRESULT_NOT_SUPPORTED;
+	}
+
+	using namespace ChromaSDK::Headset; // Important do not remove!
+	std::vector<CorsairLedColor> vec;
+	vec.reserve(m_availableHeadsetLeds.size());
+
+	if (type == CHROMA_STATIC) {
+		STATIC_EFFECT_TYPE custEffect = (lArraySize > 0) ? *(struct STATIC_EFFECT_TYPE*)achArray : STATIC_EFFECT_TYPE{};
+		CorsairLedColor ledColor = convertLedColor(custEffect.Color);
+
+		for (int i = CLH_LeftLogo; i <= CLH_RightLogo; i++) {
+			ledColor.ledId = (CorsairLedId)i;
+
+			vec.push_back(ledColor);
+		}
+	}
+	else if (type == CHROMA_CUSTOM || type == CHROMA_NONE) {
+		CUSTOM_EFFECT_TYPE custEffect = (lArraySize > 0) ? *(struct CUSTOM_EFFECT_TYPE*)achArray : CUSTOM_EFFECT_TYPE{ 0 };
+		for (int i = CLH_LeftLogo; i <= CLH_RightLogo; i++) {
+			CorsairLedColor ledColor = convertLedColor(custEffect.Color[i]);
+			ledColor.ledId = (CorsairLedId)i;
+			vec.push_back(ledColor);
+		}
+	}
+
+	m_CueProxy.CorsairSetLedsColors(vec.size(), vec.data());
+
+	if (const auto error = m_CueProxy.CorsairGetLastError()) {
+		LOGE("CorsairSetLedsColors failed type: " << type << "size: " << lArraySize << "msg: " << m_CueProxy.corsairErrorToString(error).c_str());
+		return RZRESULT_NOT_SUPPORTED;
+	}
+
+	return RZRESULT_SUCCESS;
+}
+
+int playKeypadEffect(int type, unsigned long lArraySize, char* achArray, CONTEXT_HANDLE hContext) {
+	return RZRESULT_NOT_SUPPORTED;
+}
+
+int playMousepadEffect(int type, unsigned long lArraySize, char* achArray, CONTEXT_HANDLE hContext) {
+	return RZRESULT_NOT_SUPPORTED;
+}
+
+int effectTypeLookupArray[5][9] = {
+	{ ChromaSDK::Keyboard::CHROMA_NONE ,ChromaSDK::Keyboard::CHROMA_WAVE, ChromaSDK::Keyboard::CHROMA_SPECTRUMCYCLING, ChromaSDK::Keyboard::CHROMA_BREATHING, ChromaSDK::Keyboard::CHROMA_INVALID, ChromaSDK::Keyboard::CHROMA_REACTIVE, ChromaSDK::Keyboard::CHROMA_STATIC, ChromaSDK::Keyboard::CHROMA_CUSTOM },
+	{ ChromaSDK::Mouse::CHROMA_NONE, ChromaSDK::Mouse::CHROMA_WAVE, ChromaSDK::Mouse::CHROMA_SPECTRUMCYCLING, ChromaSDK::Mouse::CHROMA_BREATHING, ChromaSDK::Mouse::CHROMA_BLINKING, ChromaSDK::Mouse::CHROMA_REACTIVE,	ChromaSDK::Mouse::CHROMA_STATIC, ChromaSDK::Mouse::CHROMA_CUSTOM2 },
+	{ ChromaSDK::Headset::CHROMA_NONE, -1, ChromaSDK::Headset::CHROMA_SPECTRUMCYCLING, ChromaSDK::Headset::CHROMA_BREATHING, -1, -1, ChromaSDK::Headset::CHROMA_STATIC, ChromaSDK::Headset::CHROMA_CUSTOM }, // Headset
+	{ -1 }, // Mousepad
+	{ -1 } // Keypad
+};
+
+int CreateEffectGeneric(RZDEVICEID DeviceId, DEVICE_TYPE_RETC deviceType, int Effect, unsigned long lArraySize, char* achArray, RZEFFECTID pEffectId, boolean storeEffect, CONTEXT_HANDLE hContext) {
+
+	//#todo config parameter we simply cant support more than 1 device per group with corsairs sdk
+	if (deviceType == KEYBOARD && DeviceId != ChromaSDK::BLACKWIDOW_CHROMA) {
+		return RZRESULT_DEVICE_NOT_AVAILABLE;
+	} 
+
+	if (deviceType == MOUSE && DeviceId != ChromaSDK::DEATHADDER_CHROMA) { // the mamba has side leds we cant use
+		return RZRESULT_DEVICE_NOT_AVAILABLE;
+	}
+
+	if (deviceType == HEADSET && DeviceId != ChromaSDK::KRAKEN71_CHROMA) { // take the one with the most leds
+		return RZRESULT_DEVICE_NOT_AVAILABLE;
+	}
+
+	if (Effect > 8) {
+		LOGE("Invalid effect index: " << Effect);
+		return RZRESULT_NOT_SUPPORTED;
+	}
+
+	int effectType = effectTypeLookupArray[deviceType][Effect];
+
+	if (effectType == -1)
+		return RZRESULT_NOT_SUPPORTED;
+	
+	if (!storeEffect) {
+		return deviceSpecificPlayFunctions[deviceType](effectType, lArraySize, achArray, hContext);
+	}
+
+	return createEffectInternal(effectType, deviceType, lArraySize, achArray, pEffectId, hContext);
+}
+
+int createEffectInternal(int type, DEVICE_TYPE_RETC deviceType,  unsigned long lArraySize, char* achArray, RZEFFECTID test, CONTEXT_HANDLE hContext) {
+
+	auto effData = effectData();
+	effData.id = type;
+	effData.deviceType = deviceType;
+	effData.size = lArraySize;
+	effData.data=  new char[lArraySize];
+	memcpy(effData.data, achArray, lArraySize);
 
 	LOGD("type: " << type << "size: " << lArraySize << test);
 
-	m_Effects.insert(std::make_pair(test, a));
+	m_Effects.insert(std::make_pair(test, effData));
 
 	return RZRESULT_SUCCESS;
 }
 
-RZRESULT setEffect(RZEFFECTID test, CONTEXT_HANDLE hContext) {
+int setEffect(RZEFFECTID test, CONTEXT_HANDLE hContext) {
 	auto it = m_Effects.find(test);
 	if (it == m_Effects.end()) {
 		LOGE("effect not found guid: " << test);
-		return RZRESULT_INVALID_PARAMETER;
+		return RZRESULT_NOT_FOUND;
 	}
 
 	LOGD("effect found guid: " << test);
-	return playKeyboardEffect(it->second.id, (unsigned long)it->second.size, it->second.data, hContext);
+	
+	const effectData &tmp = it->second;
+
+	return deviceSpecificPlayFunctions[tmp.deviceType](tmp.id, tmp.size, tmp.data, hContext);
 }
 
 
-RZRESULT deleteEffect(RZEFFECTID test, CONTEXT_HANDLE hContext) {
+int deleteEffect(RZEFFECTID test, CONTEXT_HANDLE hContext) {
 	auto it = m_Effects.find(test);
 	if (it == m_Effects.end()) {
 		LOGE("effect not found guid: " << test);
@@ -203,49 +408,34 @@ void disconnect(CONTEXT_HANDLE* phContext) {
 
 
 RPC_STATUS CALLBACK SecurityCallback(RPC_IF_HANDLE hInterface, void* pBindingHandle) {
-	if (m_bInitialized)
-		return RPC_S_ACCESS_DENIED;
-
 	return RPC_S_OK;
 }
 
 int main() {
-#ifndef _DEBUG
-	//auto myConsole = GetConsoleWindow();
-	//ShowWindow(myConsole, 0);
-#endif
-
-#ifdef _DEBUG
+	// redirect console output
 	m_logOutputStream.basic_ios<char>::rdbuf(std::cout.rdbuf());
-#endif
+
+	m_bInitialized = false;
+
+	deviceSpecificPlayFunctions[KEYBOARD] = (playFunctionPointer)playKeyboardEffect;
+	deviceSpecificPlayFunctions[MOUSE] = (playFunctionPointer)playMouseEffect;
+	deviceSpecificPlayFunctions[HEADSET] = (playFunctionPointer)playHeadsetEffect;
+	deviceSpecificPlayFunctions[MOUSEPAD] = (playFunctionPointer)playMousepadEffect;
+	deviceSpecificPlayFunctions[KEYPAD] = (playFunctionPointer)playKeypadEffect;
 
 	RPC_STATUS status;
 
-	status = RpcServerUseProtseqEp(
-		(RPC_WSTR)L"ncalrpc",
-		0, 
-		(RPC_WSTR)L"[retc-rpc]", 
-		NULL);
+	status = RpcServerUseProtseqEp((RPC_WSTR)L"ncalrpc", 0, (RPC_WSTR)L"[retc-rpc]", NULL);
 
 	if (status)
 		exit(status);
 
-	status = RpcServerRegisterIf2(
-		rpc_retc_v0_0_s_ifspec, 
-		NULL, 
-		NULL,
-		RPC_IF_ALLOW_CALLBACKS_WITH_NO_AUTH,
-		RPC_C_LISTEN_MAX_CALLS_DEFAULT,
-		(unsigned)-1, 
-		SecurityCallback);
+	status = RpcServerRegisterIf2(rpc_retc_v2_1_s_ifspec, NULL, NULL, RPC_IF_ALLOW_CALLBACKS_WITH_NO_AUTH, RPC_C_LISTEN_MAX_CALLS_DEFAULT, (unsigned)-1, SecurityCallback);
 
 	if (status)
 		exit(status);
 
-	status = RpcServerListen(
-		1, 
-		RPC_C_LISTEN_MAX_CALLS_DEFAULT, 
-		FALSE);
+	status = RpcServerListen(1, RPC_C_LISTEN_MAX_CALLS_DEFAULT, FALSE);
 
 	if (status)
 		exit(status);

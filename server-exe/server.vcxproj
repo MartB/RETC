@@ -209,7 +209,9 @@
   <ItemGroup>
     <ClInclude Include="..\rpc-midl\rpc_retc.h" />
     <ClInclude Include="cueProxy.h" />
+    <ClInclude Include="helpers.h" />
     <ClInclude Include="razerKeysToCorsair.h" />
+    <ClInclude Include="server.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\rpc-midl\midl.vcxproj">
