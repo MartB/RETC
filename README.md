@@ -13,11 +13,11 @@ Only the following types of effects are supported as of now:
 Keyboards:
     CHROMA_NONE, CHROMA_STATIC, CHROMA_CUSTOM, CHROMA_CUSTOM_KEY
 Mice:
-    none
+    CHROMA_NONE, CHROMA_STATIC, CHROMA_CUSTOM, CHROMA_CUSTOM2
 Headsets:
-    none
+    CHROMA_NONE, CHROMA_STATIC, CHROMA_CUSTOM
 Mousepads
-    none
+    none (no support in current CUE SDK)
 ```
 
 ### Which games are supported?
@@ -27,6 +27,7 @@ A small list of software that i tested with my K70 RGB
 ```
 Overwatch
 RazerChromaSDKSample
+KeyboardVisualizer (in razer only mode)
 ```
 
 # FAQ:
