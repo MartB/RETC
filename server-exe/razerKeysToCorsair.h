@@ -191,3 +191,15 @@ inline const CorsairLedId findMouseLed(ChromaSDK::Mouse::RZLED led)
 		return CLI_Invalid;
 	}
 }
+
+inline const int findHeadsetLed(const CorsairLedId ledid)
+{
+	using namespace ChromaSDK::Mouse;
+
+	switch (ledid) {
+			mapto(CLH_LeftLogo, 0)
+			mapto(CLH_RightLogo, 1)
+	default:
+		return -1;
+	}
+}

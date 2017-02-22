@@ -1,8 +1,8 @@
 #pragma once
 
 #define mapto(x,y) case x: return y;
-
 #define maptoassign(x,y) case x: { val = y;  break;}
+#define clearandshrink(x) x.clear(); x.shrink_to_fit();
 
 #define mkwordhilo(hi,lo) ((hi << 8) | lo); 
 #define LOBYTE(w)           ((BYTE)(((DWORD_PTR)(w)) & 0xff))

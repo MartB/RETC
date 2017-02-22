@@ -25,10 +25,10 @@ interface rpc_retc
 	int playMouseEffect([in] int type, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], CONTEXT_HANDLE hContext);
 	int playHeadsetEffect([in] int type, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], CONTEXT_HANDLE hContext);
 
-	int CreateEffectGeneric(RZDEVICEID DeviceId, DEVICE_TYPE_RETC deviceType, int effectType, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], RZEFFECTID pEffectId, boolean storeEffect, CONTEXT_HANDLE hContext);
+	int CreateEffectGeneric(const RZDEVICEID DeviceId, DEVICE_TYPE_RETC deviceType, int effectType, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], const RZEFFECTID pEffectId, boolean storeEffect, CONTEXT_HANDLE hContext);
 
 	int createEffectInternal([in] int type, DEVICE_TYPE_RETC deviceType, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], [in] RZEFFECTID pEffectId, CONTEXT_HANDLE hContext);
-	int setEffect([in] RZEFFECTID pEffectId, CONTEXT_HANDLE hContext);
-	int deleteEffect([in] RZEFFECTID pEffectId, CONTEXT_HANDLE hContext);
+	int setEffect([in] const RZEFFECTID effID, CONTEXT_HANDLE hContext);
+	int deleteEffect([in] const RZEFFECTID effID, CONTEXT_HANDLE hContext);
 	void disconnect([in, out] CONTEXT_HANDLE* phContext);
 }
