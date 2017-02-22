@@ -4,7 +4,7 @@
 
 #include "RzErrors.h"
 #include "RzChromaSDKTypes.h"
-
+#include "RzChromaSDKDefines.h"
 
 bool createUniqueEffectID(RZEFFECTID* guid) {
 	return CoCreateGuid(guid) == S_OK;
@@ -16,9 +16,26 @@ bool m_Initialized = false;
 
 RzApi RZRESULT Init();
 RzApi RZRESULT UnInit();
+
+RzApi RZRESULT CreateEffect(RZDEVICEID DeviceId, ChromaSDK::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID *pEffectId);
 RzApi RZRESULT CreateKeyboardEffect(ChromaSDK::Keyboard::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
+RzApi RZRESULT CreateMouseEffect(ChromaSDK::Mouse::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID *pEffectId);
+RzApi RZRESULT CreateHeadsetEffect(ChromaSDK::Headset::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID *pEffectId);
 RzApi RZRESULT SetEffect(RZEFFECTID EffectId);
 RzApi RZRESULT DeleteEffect(RZEFFECTID EffectId);
+RzApi RZRESULT DeleteEffect(RZEFFECTID EffectId);
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// All functions below this line are not implemented.
+RzApi RZRESULT CreateMousepadEffect(ChromaSDK::Mousepad::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID *pEffectId);
+RzApi RZRESULT CreateKeypadEffect(ChromaSDK::Keypad::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID *pEffectId);
+RzApi RZRESULT QueryDevice(RZDEVICEID DeviceId, ChromaSDK::DEVICE_INFO_TYPE &DeviceInfo);
+
+RzApi RZRESULT RegisterEventNotification(HWND hWnd);
+RzApi RZRESULT UnregisterEventNotification();
+//////////////////////////////////////////////////////////////////////////
 
 //#define LOGE(x) m_logOutputStream << "ERRO : " << "[" << __FILE__ << "][" << __FUNCTION__ << "][Line " << __LINE__ << "] " << x << std::endl; #todo rpc call to server for logging
 #define LOGE(x) NULL
@@ -53,7 +70,7 @@ RZRESULT Init() {
 	if (status)
 		return RZRESULT_SERVICE_NOT_ACTIVE;
 
-	status = RpcEpResolveBinding(hRetcBinding, rpc_retc_v0_0_c_ifspec);
+	status = RpcEpResolveBinding(hRetcBinding, rpc_retc_v2_1_c_ifspec);
 	if (status) {
 		LOGE("Server not running please start it!");
 		return RZRESULT_SERVICE_NOT_ACTIVE;
@@ -76,14 +93,14 @@ RZRESULT Init() {
 
 RZRESULT UnInit() {
 	if (!m_Initialized)
-		return RZRESULT_SERVICE_NOT_ACTIVE;
+		return RZRESULT_NOT_VALID_STATE;
 
 		RpcTryExcept {
 			disconnect(&hContext);
 		}
 		RpcExcept(1) {
 			LOGE("Disconnect call failed code: " << RpcExceptionCode());
-			return RZRESULT_SERVICE_NOT_ACTIVE;
+			return RZRESULT_NOT_VALID_STATE;
 		}
 		RpcEndExcept
 
@@ -92,34 +109,88 @@ RZRESULT UnInit() {
 	m_Initialized = false;
 
 	if (status)
-		return RZRESULT_SERVICE_NOT_ACTIVE;
+		return RZRESULT_NOT_VALID_STATE;
 
 	return RZRESULT_SUCCESS;
 }
 
 
+const size_t sizeLookupArray[5][7] = {
+	{sizeof(ChromaSDK::Keyboard::WAVE_EFFECT_TYPE), 0, sizeof(ChromaSDK::Keyboard::BREATHING_EFFECT_TYPE),0 , sizeof(ChromaSDK::Keyboard::REACTIVE_EFFECT_TYPE), sizeof(ChromaSDK::Keyboard::STATIC_EFFECT_TYPE), sizeof(ChromaSDK::Keyboard::CUSTOM_EFFECT_TYPE)},
+	{sizeof(ChromaSDK::Mouse::WAVE_EFFECT_TYPE), sizeof(ChromaSDK::Mouse::SPECTRUMCYCLING_EFFECT_TYPE), sizeof(ChromaSDK::Mouse::BREATHING_EFFECT_TYPE),sizeof(ChromaSDK::Mouse::BLINKING_EFFECT_TYPE), sizeof(ChromaSDK::Mouse::REACTIVE_EFFECT_TYPE),	sizeof(ChromaSDK::Mouse::STATIC_EFFECT_TYPE), sizeof(ChromaSDK::Mouse::CUSTOM_EFFECT_TYPE)},
+	{0},
+	{0},
+	{0}
+};
+
+RZRESULT CreateEffect(RZDEVICEID DeviceId, ChromaSDK::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID *pEffectId) {
+	bool bStoreEffect = (pEffectId == nullptr) ? false : true;
+
+	size_t iSize = 0;
+	DEVICE_TYPE_RETC deviceType;
+
+	if (DeviceId == ChromaSDK::BLACKWIDOW_CHROMA || DeviceId == ChromaSDK::BLACKWIDOW_CHROMA_TE ||
+		DeviceId == ChromaSDK::BLACKWIDOW_X_CHROMA || DeviceId == ChromaSDK::DEATHSTALKER_CHROMA ||
+		DeviceId == ChromaSDK::OVERWATCH_KEYBOARD || DeviceId == ChromaSDK::BLACKWIDOW_X_TE_CHROMA ||
+		DeviceId == ChromaSDK::ORNATA_CHROMA || DeviceId == ChromaSDK::BLADE_STEALTH || DeviceId == ChromaSDK::BLADE)
+	{
+		deviceType = KEYBOARD;
+	}
+	else if (DeviceId == ChromaSDK::DEATHADDER_CHROMA || DeviceId == ChromaSDK::MAMBA_CHROMA_TE ||
+		DeviceId == ChromaSDK::DIAMONDBACK_CHROMA || DeviceId == ChromaSDK::MAMBA_CHROMA ||
+		DeviceId == ChromaSDK::NAGA_EPIC_CHROMA || DeviceId == ChromaSDK::NAGA_CHROMA ||
+		DeviceId == ChromaSDK::OROCHI_CHROMA || DeviceId == ChromaSDK::NAGA_HEX_CHROMA) 
+	{
+		deviceType = MOUSE;
+	}
+	else if (DeviceId == ChromaSDK::KRAKEN71_CHROMA || DeviceId == ChromaSDK::MANOWAR_CHROMA ||	DeviceId == ChromaSDK::FIREFLY_CHROMA)
+	{
+		deviceType = HEADSET;
+	}
+	else {
+		return RZRESULT_DEVICE_NOT_AVAILABLE;
+	}
+
+	if (Effect != ChromaSDK::CHROMA_NONE)
+		iSize = sizeLookupArray[deviceType][Effect-1];
+
+	RZEFFECTID newEffectID;
+	createUniqueEffectID(&newEffectID);
+
+	RpcTryExcept{
+		RZRESULT res = CreateEffectGeneric(DeviceId, deviceType, Effect, iSize, reinterpret_cast<char*>(pParam), newEffectID, bStoreEffect, hContext);
+		if (res == RZRESULT_SUCCESS && bStoreEffect)
+			*pEffectId = newEffectID;
+
+		return res;
+	}
+	RpcExcept(1) {
+		LOGE("CreateEffect call failed code: " << RpcExceptionCode());
+		return RZRESULT_NOT_VALID_STATE;
+	}
+	RpcEndExcept
+}
+
+
+
 RZRESULT CreateKeyboardEffect(ChromaSDK::Keyboard::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId) {
+	using namespace ChromaSDK::Keyboard;
 
 	bool bStoreEffect = (pEffectId == nullptr) ? false : true;
 
-	EFFECT_TYPE_RETC internalType = EFFECT_TYPE_RETC::KEYBOARD_NONE;
-
 	size_t iSize = 0;
 	switch (Effect) {
-	case ChromaSDK::Keyboard::CHROMA_STATIC:
+	case CHROMA_STATIC:
 		iSize = sizeof(ChromaSDK::Keyboard::STATIC_EFFECT_TYPE);
-		internalType = EFFECT_TYPE_RETC::KEYBOARD_SOLID;
 		break;
-	case ChromaSDK::Keyboard::CHROMA_NONE:
+	case CHROMA_NONE:
 		break;
 
-	case ChromaSDK::Keyboard::CHROMA_CUSTOM:
-		internalType = EFFECT_TYPE_RETC::KEYBOARD_DATA;
+	case CHROMA_CUSTOM:
 		iSize = sizeof(ChromaSDK::Keyboard::CUSTOM_EFFECT_TYPE);
 		break;
 
-	case ChromaSDK::Keyboard::CHROMA_CUSTOM_KEY:
-		internalType = EFFECT_TYPE_RETC::KEYBOARD_DATA_AND_KEY;
+	case CHROMA_CUSTOM_KEY:
 		iSize = sizeof(ChromaSDK::Keyboard::CUSTOM_KEY_EFFECT_TYPE);
 		break;
 
@@ -127,24 +198,22 @@ RZRESULT CreateKeyboardEffect(ChromaSDK::Keyboard::EFFECT_TYPE Effect, PRZPARAM 
 		return RZRESULT_NOT_SUPPORTED;
 	}
 
-
 	if (!bStoreEffect) {
 		RpcTryExcept {
-				playKeyboardEffect(internalType, iSize, reinterpret_cast<char*>(pParam), hContext);
+				return playKeyboardEffect(Effect, iSize, reinterpret_cast<char*>(pParam), hContext);
 			}
 			RpcExcept(1) {
 				LOGE("call failed code: " << RpcExceptionCode());
-				return RZRESULT_SERVICE_NOT_ACTIVE;
+				return RZRESULT_NOT_VALID_STATE;
 			}
 			RpcEndExcept
-		return RZRESULT_SUCCESS;
 	}
 
 	RZEFFECTID newEffectID;
 	createUniqueEffectID(&newEffectID);
 
 	RpcTryExcept {
-			RZRESULT res = createEffect(internalType, iSize, reinterpret_cast<char*>(pParam), newEffectID, hContext);
+			RZRESULT res = createEffectInternal(Effect, KEYBOARD, iSize, reinterpret_cast<char*>(pParam), newEffectID, hContext);
 			if (res == RZRESULT_SUCCESS)
 				*pEffectId = newEffectID;
 
@@ -152,9 +221,115 @@ RZRESULT CreateKeyboardEffect(ChromaSDK::Keyboard::EFFECT_TYPE Effect, PRZPARAM 
 		}
 		RpcExcept(1) {
 			LOGE("call failed code: " << RpcExceptionCode());
-			return RZRESULT_SERVICE_NOT_ACTIVE;
+			return RZRESULT_NOT_VALID_STATE;
 		}
 		RpcEndExcept
+}
+
+RZRESULT CreateMouseEffect(ChromaSDK::Mouse::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID *pEffectId) {
+	using namespace ChromaSDK::Mouse;
+
+	bool bStoreEffect = (pEffectId == nullptr) ? false : true;
+
+	size_t iSize = 0;
+	switch (Effect) {
+	case CHROMA_STATIC:
+		iSize = sizeof(STATIC_EFFECT_TYPE);
+		break;
+	case CHROMA_NONE:
+		break;
+	case CHROMA_CUSTOM:
+		iSize = sizeof(CUSTOM_EFFECT_TYPE);
+		break;
+	case CHROMA_CUSTOM2:
+		iSize = sizeof(CUSTOM_EFFECT_TYPE2);
+		break;
+	default:
+		return RZRESULT_NOT_SUPPORTED;
+	}
+
+	if (!bStoreEffect) {
+		RpcTryExcept{
+			return playMouseEffect(Effect, iSize, reinterpret_cast<char*>(pParam), hContext);
+		}
+			RpcExcept(1) {
+			LOGE("call failed code: " << RpcExceptionCode());
+			return RZRESULT_NOT_VALID_STATE;
+		}
+		RpcEndExcept
+	}
+
+	RZEFFECTID newEffectID;
+	createUniqueEffectID(&newEffectID);
+
+	RpcTryExcept{
+		RZRESULT res = createEffectInternal(Effect, MOUSE, iSize, reinterpret_cast<char*>(pParam), newEffectID, hContext);
+	if (res == RZRESULT_SUCCESS)
+		*pEffectId = newEffectID;
+
+	return res;
+	}
+		RpcExcept(1) {
+		LOGE("call failed code: " << RpcExceptionCode());
+		return RZRESULT_NOT_VALID_STATE;
+	}
+	RpcEndExcept
+}
+
+
+RZRESULT CreateHeadsetEffect(ChromaSDK::Headset::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID *pEffectId) {
+	using namespace ChromaSDK::Headset;
+
+	bool bStoreEffect = (pEffectId == nullptr) ? false : true;
+
+	size_t iSize = 0;
+	switch (Effect) {
+	case CHROMA_STATIC:
+		iSize = sizeof(STATIC_EFFECT_TYPE);
+		break;
+	case CHROMA_NONE:
+		break;
+	case CHROMA_CUSTOM:
+		iSize = sizeof(CUSTOM_EFFECT_TYPE);
+		break;
+	default:
+		return RZRESULT_NOT_SUPPORTED;
+	}
+
+	if (!bStoreEffect) {
+		RpcTryExcept{
+			return playHeadsetEffect(Effect, iSize, reinterpret_cast<char*>(pParam), hContext);
+		}
+			RpcExcept(1) {
+			LOGE("call failed code: " << RpcExceptionCode());
+			return RZRESULT_NOT_VALID_STATE;
+		}
+		RpcEndExcept
+	}
+
+	RZEFFECTID newEffectID;
+	createUniqueEffectID(&newEffectID);
+
+	RpcTryExcept{
+		RZRESULT res = createEffectInternal(Effect, HEADSET, iSize, reinterpret_cast<char*>(pParam), newEffectID, hContext);
+	if (res == RZRESULT_SUCCESS)
+		*pEffectId = newEffectID;
+
+	return res;
+	}
+	RpcExcept(1) {
+		LOGE("call failed code: " << RpcExceptionCode());
+		return RZRESULT_NOT_VALID_STATE;
+	}
+	RpcEndExcept
+}
+
+RZRESULT CreateMousepadEffect(ChromaSDK::Mousepad::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID *pEffectId) {
+	return RZRESULT_SUCCESS;
+}
+
+RZRESULT CreateKeypadEffect(ChromaSDK::Keypad::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID *pEffectId) {
+	return RZRESULT_SUCCESS;
 }
 
 RZRESULT SetEffect(RZEFFECTID EffectId) {
@@ -163,7 +338,7 @@ RZRESULT SetEffect(RZEFFECTID EffectId) {
 		}
 		RpcExcept(1) {
 			LOGE("call failed code: " << RpcExceptionCode());
-			return RZRESULT_SERVICE_NOT_ACTIVE;
+			return RZRESULT_NOT_VALID_STATE;
 		}
 		RpcEndExcept
 }
@@ -174,9 +349,21 @@ RZRESULT DeleteEffect(RZEFFECTID EffectId) {
 		}
 		RpcExcept(1) {
 			LOGE("Runtime reported exception");
-			return RZRESULT_SERVICE_NOT_ACTIVE;
+			return RZRESULT_NOT_VALID_STATE;
 		}
 		RpcEndExcept
+}
+
+RZRESULT QueryDevice(RZDEVICEID DeviceId, ChromaSDK::DEVICE_INFO_TYPE &DeviceInfo) {
+	return RZRESULT_SUCCESS; //#todo add method
+}
+
+RZRESULT RegisterEventNotification(HWND hWnd) {
+	return RZRESULT_SUCCESS; //#todo add method
+}
+
+RZRESULT UnregisterEventNotification() {
+	return RZRESULT_SUCCESS; //#todo add method
 }
 
 
