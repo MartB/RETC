@@ -200,7 +200,6 @@ int playMouseEffect(int type, unsigned long lArraySize, char* achArray, CONTEXT_
 
 	using namespace ChromaSDK::Mouse; // Important do not remove!
 	std::vector<CorsairLedColor> vec;
-	vec.reserve(m_availableMouseLeds.size());
 
 	int row;
 	int col;
@@ -273,7 +272,6 @@ int playHeadsetEffect(int type, unsigned long lArraySize, char* achArray, CONTEX
 
 	using namespace ChromaSDK::Headset; // Important do not remove!
 	std::vector<CorsairLedColor> vec;
-	vec.reserve(m_availableHeadsetLeds.size());
 
 	if (type == CHROMA_STATIC) {
 		STATIC_EFFECT_TYPE custEffect = (lArraySize > 0) ? *(struct STATIC_EFFECT_TYPE*)achArray : STATIC_EFFECT_TYPE{};
@@ -350,8 +348,8 @@ int createEffectInternal(int type, DEVICE_TYPE_RETC deviceType,  unsigned long l
 	effData.id = type;
 	effData.deviceType = deviceType;
 	effData.size = lArraySize;
-	effData.data=  new char[lArraySize];
-	memcpy(effData.data, achArray, lArraySize);
+	effData.data = new char[lArraySize];
+	std::copy(achArray, achArray + lArraySize, effData.data);
 
 	LOGD("type: " << type << "size: " << lArraySize << test);
 
