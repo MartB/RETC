@@ -1,17 +1,19 @@
-#include "common.h"
 import "oaidl.idl";
 import "ocidl.idl";
+import "wtypes.idl";
+#include "common.h"
+
 [
-   uuid(150d1b07-f871-4876-996e-53411408e079),
-   version(2.1)
+   uuid(49d2ac09-04ee-467c-ab9c-83a9ae267409),
+   version(2.2)
 ]
 
 typedef GUID	RZEFFECTID;
 typedef GUID	RZDEVICEID;
 
 [
-	uuid(996391a2-d79c-49cc-a425-c105f48a9a61),
-	version(2.1)
+	uuid(68cd4fdb-4e8f-4f44-a502-4a0087ea27eb),
+	version(2.2)
 ]
 
 interface rpc_retc
@@ -19,15 +21,16 @@ interface rpc_retc
 	typedef [context_handle] void* CONTEXT_HANDLE;
 
 	//void logError(long lArraySize, [size_is(lArraySize)] char achArray[*]);
-	CONTEXT_HANDLE initialize([in] handle_t hBinding);
+	CONTEXT_HANDLE initialize([in] handle_t hBinding, [out] struct tagSupportArray* test);
 
 	int playKeyboardEffect([in] int type, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], CONTEXT_HANDLE hContext);
 	int playMouseEffect([in] int type, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], CONTEXT_HANDLE hContext);
 	int playHeadsetEffect([in] int type, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], CONTEXT_HANDLE hContext);
+	int playMousepadEffect([in] int type, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], CONTEXT_HANDLE hContext);
 
-	int CreateEffectGeneric(const RZDEVICEID DeviceId, DEVICE_TYPE_RETC deviceType, int effectType, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], const RZEFFECTID pEffectId, boolean storeEffect, CONTEXT_HANDLE hContext);
+	int CreateEffectGeneric(const RZDEVICEID DeviceId, RETCDeviceType deviceType, int effectType, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], const RZEFFECTID pEffectId, boolean storeEffect, CONTEXT_HANDLE hContext);
 
-	int createEffectInternal([in] int type, DEVICE_TYPE_RETC deviceType, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], [in] RZEFFECTID pEffectId, CONTEXT_HANDLE hContext);
+	int createEffectInternal([in] int type, RETCDeviceType deviceType, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], [in] RZEFFECTID pEffectId, CONTEXT_HANDLE hContext);
 	int setEffect([in] const RZEFFECTID effID, CONTEXT_HANDLE hContext);
 	int deleteEffect([in] const RZEFFECTID effID, CONTEXT_HANDLE hContext);
 	void disconnect([in, out] CONTEXT_HANDLE* phContext);
