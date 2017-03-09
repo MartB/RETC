@@ -3,6 +3,9 @@
 #include "RzChromaSDKTypes.h"
 #include "CUESDK.h"
 #include "helpers.h"
+#include <algorithm>
+
+//#todo refactor to class in order to get access to crucial data like keyboard models!
 
 inline const CorsairLedColor convertLedColor(const COLORREF & color)
 {
@@ -17,7 +20,6 @@ inline const CorsairLedColor convertLedColor(const COLORREF & color)
 
 inline const bool findKeyboardLed(CorsairLedId ledid, int *row, int *col) {
 	using namespace ChromaSDK::Keyboard;
-	int val;
 	switch (ledid) {
 			maptoassign(CLK_Escape, RZKEY_ESC)
 			maptoassign(CLK_F1, RZKEY_F1)
@@ -112,11 +114,6 @@ inline const bool findKeyboardLed(CorsairLedId ledid, int *row, int *col) {
 			maptoassign(CLK_RightCtrl, RZKEY_RCTRL)
 			maptoassign(CLK_LeftShift, RZKEY_LSHIFT)
 			maptoassign(CLK_RightShift, RZKEY_RSHIFT)
-			maptoassign(CLK_G1, RZKEY_MACRO1)
-			maptoassign(CLK_G2, RZKEY_MACRO2)
-			maptoassign(CLK_G3, RZKEY_MACRO3)
-			maptoassign(CLK_G4, RZKEY_MACRO4)
-			maptoassign(CLK_G5, RZKEY_MACRO5)
 			maptoassign(CLK_GraveAccentAndTilde, RZKEY_OEM_1)
 			maptoassign(CLK_EqualsAndPlus, RZKEY_OEM_2)
 			maptoassign(CLK_MinusAndUnderscore, RZKEY_OEM_3)
@@ -127,18 +124,38 @@ inline const bool findKeyboardLed(CorsairLedId ledid, int *row, int *col) {
 			maptoassign(CLK_ApostropheAndDoubleQuote, RZKEY_OEM_8)
 			maptoassign(CLK_CommaAndLessThan, RZKEY_OEM_9)
 			maptoassign(CLK_PeriodAndBiggerThan, RZKEY_OEM_10)
-			maptoassign(CLK_SlashAndQuestionMark, RZKEY_OEM_11) //Not sure
+			maptoassign(CLK_SlashAndQuestionMark, RZKEY_OEM_11)
 			maptoassign(CLK_NonUsTilde, RZKEY_EUR_1)
 			maptoassign(CLK_NonUsBackslash, RZKEY_EUR_2)
-			maptoassign(CLI_Invalid, RZKEY_INVALID)
+			maptoassign(CLK_Logo, RZLED_LOGO) // This actually works!
+			maptoassign(CLI_Invalid, RZKEY_INVALID);
+		default: { // For now we return false #todo add custom keyboard leds for extra functionality
+					return false;
+		}
+	}
+
+	/*
+	// We pretend the keyboard model is K70RGB here for testings sake
+	switch (ledid) {
+			// Only for modern keyboards with media control! aka k70 or k95 etc
+			customkeyassign(CLK_Stop, 1,18)
+			customkeyassign(CLK_ScanPreviousTrack, 1,19)
+			customkeyassign(CLK_PlayPause, 1,20)
+			customkeyassign(CLK_ScanNextTrack, 1, 21) 
+
+			//Only for K95 RGB
+			//we cant support more than 1 macro key in each row because razer does not assign their effects like that.
+			// we could however assign each row to 1 color #todo
+			maptoassign(CLK_G3, RZKEY_MACRO1)
+			maptoassign(CLK_G6, RZKEY_MACRO2)
+			maptoassign(CLK_G9, RZKEY_MACRO3)
+			maptoassign(CLK_G12, RZKEY_MACRO4)
+			maptoassign(CLK_G15, RZKEY_MACRO5)
+			customkeyassign(CLK_G18, 6, 0)
 	default:
 		return false;
 	}
-
-	*row = HIBYTE(val);
-	*col = LOBYTE(val);
-
-	return true;
+	*/
 }
 
 inline const bool findMouseLed(const CorsairLedId ledid, int *row, int *col) 
@@ -155,11 +172,12 @@ inline const bool findMouseLed(const CorsairLedId ledid, int *row, int *col)
 	default:
 		return false;
 	}
+}
 
-	*row = HIBYTE(val);
-	*col = LOBYTE(val);
-
-	return true;
+inline const int findMousepadLed(const CorsairLedId ledid)
+{
+	using namespace ChromaSDK::Mousepad;
+	return (ledid - CLMM_Zone1);
 }
 
 inline const int findMouseLed(const CorsairLedId ledid)
@@ -182,7 +200,7 @@ inline const CorsairLedId findMouseLed(ChromaSDK::Mouse::RZLED led)
 	using namespace ChromaSDK::Mouse;
 
 	switch (led) {
-		mapto(RZLED_NONE, CLI_Invalid)
+			mapto(RZLED_NONE, CLI_Invalid)
 			mapto(RZLED_LOGO, CLM_1)
 			mapto(RZLED_SIDE_STRIP1, CLM_2) // Sloppy
 			mapto(RZLED_SCROLLWHEEL, CLM_3)
@@ -192,14 +210,3 @@ inline const CorsairLedId findMouseLed(ChromaSDK::Mouse::RZLED led)
 	}
 }
 
-inline const int findHeadsetLed(const CorsairLedId ledid)
-{
-	using namespace ChromaSDK::Mouse;
-
-	switch (ledid) {
-			mapto(CLH_LeftLogo, 0)
-			mapto(CLH_RightLogo, 1)
-	default:
-		return -1;
-	}
-}

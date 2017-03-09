@@ -4,8 +4,10 @@ RETC is a custom dll shim and a server application designed to be the middleman 
 
 # Usage:
 
-- Copy RzChromaSDK[64].dll into either C:\Windows\System32 or the game client directory.
-- Before you start any games start retc-rpc-server[-64].exe and leave the console window open.
+- Copy `RzChromaSDK[64].dll` into either `C:\Windows\System32` or the game client directory.
+- Download the corsair cue sdk from the [official corsair download page](http://downloads.corsair.com/download?item=Files/Gaming-Keyboards/CUESDK_2.4.67.zip) 
+- Put the `CUESDK[.x64]_2015.dll` files from the extracted archive folder `CUESDK\bin\[i386,amd64]` into the same folder as retc-rpc-server[-64].exe
+- Before you start any games run `retc-rpc-server[-64].exe` and leave the console window open.
 
 # Supported features:
 Only the following types of effects are supported as of now:
@@ -16,8 +18,8 @@ Mice:
     CHROMA_NONE, CHROMA_STATIC, CHROMA_CUSTOM, CHROMA_CUSTOM2
 Headsets:
     CHROMA_NONE, CHROMA_STATIC, CHROMA_CUSTOM
-Mousepads
-    none (no support in current CUE SDK)
+Mousepads:
+    CHROMA_NONE, CHROMA_STATIC, CHROMA_CUSTOM (since sdk version 2015)
 ```
 
 ### Which games are supported?

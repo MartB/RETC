@@ -18,6 +18,7 @@ bool cueProxy::Load() {
 	this->CorsairRequestControl = (CORSAIRREQUESTCONTROL)GetProcAddress(this->hInstance, CORSAIR_DLL_REQUESTCONTROL);
 	this->CorsairPerformProtocolHandshake = (CORSAIRPERFORMPROTOCOLHANDSHAKE)GetProcAddress(this->hInstance, CORSAIR_DLL_PERFORMPROTOCOLHANDSHAKE);
 	this->CorsairGetLastError = (CORSAIRGETLASTERROR)GetProcAddress(this->hInstance, CORSAIR_DLL_GETLASTERROR);
+	this->CorsairGetLedPositionsByDeviceIndex = (CORSAIRGETPOSBYDEVINDEX)GetProcAddress(this->hInstance, CORSAIR_DLL_GETPOSBYDEVINDEX);
 
 	return true;
 }
