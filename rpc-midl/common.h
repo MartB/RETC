@@ -1,10 +1,20 @@
 #pragma once
 
-typedef enum DEVICE_TYPE_RETC
+typedef enum RETCDeviceType
 {
 	KEYBOARD,
 	MOUSE,
 	HEADSET,
 	MOUSEPAD,
-	KEYPAD
-} DEVICE_TYPE_RETC;
+	KEYPAD,
+	MAX
+} RETCDeviceType;
+
+
+typedef struct tagSupportArray {
+	BOOL m_keyboard;
+	BOOL m_mouse;
+	BOOL m_headset;
+	BOOL m_mousepad;
+	BOOL m_keypad;
+} supportArray_t;

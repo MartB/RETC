@@ -157,6 +157,21 @@ enum CorsairLedId
 	CLH_LeftLogo = 152,
 	CLH_RightLogo = 153,
 	CLK_Logo = 154,
+	CLMM_Zone1 = 155,
+	CLMM_Zone2 = 156,
+	CLMM_Zone3 = 157,
+	CLMM_Zone4 = 158,
+	CLMM_Zone5 = 159,
+	CLMM_Zone6 = 160,
+	CLMM_Zone7 = 161,
+	CLMM_Zone8 = 162,
+	CLMM_Zone9 = 163,
+	CLMM_Zone10 = 164,
+	CLMM_Zone11 = 165,
+	CLMM_Zone12 = 166,
+	CLMM_Zone13 = 167,
+	CLMM_Zone14 = 168,
+	CLMM_Zone15 = 169,
 
-	CLI_Last = CLK_Logo
+	CLI_Last = CLMM_Zone15
 };

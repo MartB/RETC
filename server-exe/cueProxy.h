@@ -11,6 +11,7 @@ inline std::string deviceTypeToString(CorsairDeviceType type) {
 		mapto(CorsairDeviceType::CDT_Headset, "Headset")
 		mapto(CorsairDeviceType::CDT_Keyboard, "Keyboard")
 		mapto(CorsairDeviceType::CDT_Mouse, "Mouse")
+		mapto(CorsairDeviceType::CDT_MouseMat, "Mousepad")
 		mapto(CorsairDeviceType::CDT_Unknown, "Unknown")
 	default:
 		return "reportme";
@@ -26,11 +27,12 @@ typedef CorsairLedId (*CORSAIRGETLEDIDFORKEYNAME)(char);
 typedef bool (*CORSAIRREQUESTCONTROL)(CorsairAccessMode);
 typedef CorsairProtocolDetails (*CORSAIRPERFORMPROTOCOLHANDSHAKE)();
 typedef CorsairError (*CORSAIRGETLASTERROR)();
+typedef CorsairLedPositions*(*CORSAIRGETPOSBYDEVINDEX)(int);
 
 #ifdef _WIN64
-#define CORSAIR_DLL_NAME "CUESDK.x64_2013.dll"
+#define CORSAIR_DLL_NAME "CUESDK.x64_2015.dll"
 #else
-#define CORSAIR_DLL_NAME "CUESDK_2013.dll"
+#define CORSAIR_DLL_NAME "CUESDK_2015.dll"
 #endif
 
 #define CORSAIR_DLL_SETLEDSCOLORS "CorsairSetLedsColors"
@@ -42,6 +44,7 @@ typedef CorsairError (*CORSAIRGETLASTERROR)();
 #define CORSAIR_DLL_REQUESTCONTROL "CorsairRequestControl"
 #define CORSAIR_DLL_PERFORMPROTOCOLHANDSHAKE "CorsairPerformProtocolHandshake"
 #define CORSAIR_DLL_GETLASTERROR "CorsairGetLastError"
+#define CORSAIR_DLL_GETPOSBYDEVINDEX "CorsairGetLedPositionsByDeviceIndex"
 
 
 class cueProxy {
@@ -63,6 +66,7 @@ public:
 	CORSAIRGETLASTERROR CorsairGetLastError;
 	CORSAIRGETDEVICECOUNT CorsairGetDeviceCount;
 	CORSAIRGETDEVICEINFO CorsairGetDeviceInfo;
+	CORSAIRGETPOSBYDEVINDEX CorsairGetLedPositionsByDeviceIndex;
 
 protected:
 	bool ReleaseLibrary();

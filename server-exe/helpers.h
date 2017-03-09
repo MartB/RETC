@@ -1,7 +1,9 @@
 #pragma once
 
 #define mapto(x,y) case x: return y;
-#define maptoassign(x,y) case x: { val = y;  break;}
+#define maptoassign(x,y) case x: { *row = HIBYTE(y); *col = LOBYTE(y); return true;}
+#define customkeyassign(x,y,z) case x: { *row = y; *col = z;  break;}
+
 #define clearandshrink(x) x.clear(); x.shrink_to_fit();
 
 #define mkwordhilo(hi,lo) ((hi << 8) | lo); 

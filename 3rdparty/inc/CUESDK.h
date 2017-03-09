@@ -14,7 +14,8 @@ extern "C"
 		CDT_Unknown = 0,
 		CDT_Mouse = 1,
 		CDT_Keyboard = 2,
-		CDT_Headset = 3
+		CDT_Headset = 3,
+		CDT_MouseMat = 4
 	};
 
 	enum CorsairPhysicalLayout	// contains list of available physical layouts for keyboards
@@ -84,6 +85,7 @@ extern "C"
 		CorsairPhysicalLayout physicalLayout; // enum describing physical layout of the keyboard or mouse
 		CorsairLogicalLayout logicalLayout;  // enum describing logical layout of the keyboard as set in CUE settings
 		int capsMask;					// mask that describes device capabilities, formed as logical “or” of CorsairDeviceCaps enum values
+		int ledsCount;					// number of controllable LEDs on the device
 	};
 
 	struct CorsairLedPosition	// contains led id and position of led rectangle.Most of the keys are rectangular.In case if key is not rectangular(like Enter in ISO / UK layout) it returns the smallest rectangle that fully contains the key
@@ -133,6 +135,9 @@ extern "C"
 
 	// provides list of keyboard LEDs with their physical positions.
 	CORSAIR_LIGHTING_SDK_EXPORT CorsairLedPositions *CorsairGetLedPositions();
+
+	// provides list of keyboard or mousemat LEDs with their physical positions.
+	CORSAIR_LIGHTING_SDK_EXPORT CorsairLedPositions *CorsairGetLedPositionsByDeviceIndex(int deviceIndex);
 
 	// retrieves led id for key name taking logical layout into account.
 	CORSAIR_LIGHTING_SDK_EXPORT CorsairLedId CorsairGetLedIdForKeyName(char keyName);
