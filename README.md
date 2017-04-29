@@ -10,7 +10,7 @@ RETC is a custom dll shim and a server application designed to be the middleman 
 - Before you start any games run `retc-rpc-server[-64].exe` and leave the console window open.
 
 # Supported features:
-Only the following types of effects are supported as of now:
+Only the following types of effects are supported in the Corsair output SDK as of now:
 ```
 Keyboards:
     CHROMA_NONE, CHROMA_STATIC, CHROMA_CUSTOM, CHROMA_CUSTOM_KEY
@@ -37,5 +37,5 @@ KeyboardVisualizer (in razer only mode)
 Did you start the Corsair Utility Engine ?
 Did you enable the SDK in Corsair CUE ?
 ![cue-sdk-settings](http://i.imgur.com/c7d7hLR.png)
-Read the `retc-server.log` it should help you with your problems.
+Read the `server.log` it should help you with your problems.
 The simple turning it off and on again approach will also work wonders most of the time if something fails.
