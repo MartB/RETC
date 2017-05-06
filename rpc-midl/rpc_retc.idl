@@ -1,37 +1,48 @@
+#if (__midl >= 501)
+midl_pragma warning(disable: 2111)
+#endif
+
 import "oaidl.idl";
-import "ocidl.idl";
-import "wtypes.idl";
-#include "common.h"
 
 [
-   uuid(49d2ac09-04ee-467c-ab9c-83a9ae267409),
-   version(2.2)
-]
-
-typedef GUID	RZEFFECTID;
-typedef GUID	RZDEVICEID;
-
-[
-	uuid(68cd4fdb-4e8f-4f44-a502-4a0087ea27eb),
-	version(2.2)
+	uuid(f14b48fb-efd2-471e-917c-ae24f26a3ec7),
+	version(2.3)
 ]
 
 interface rpc_retc
 {
+	typedef GUID	RZEFFECTID;
+	typedef GUID	RZDEVICEID;
+	typedef LONG	RZRESULT;
+
+	typedef enum RETCDeviceType
+	{
+		ALL = 0,
+		KEYBOARD,
+		MOUSE,
+		HEADSET,
+		MOUSEPAD,
+		KEYPAD,
+		MAX
+	} RETCDeviceType;
+
+	typedef BOOL supportArray_t[MAX];
+	typedef RZDEVICEID supportedDevices_t[MAX];
+
+	typedef struct RETCClientConfig
+	{
+		supportArray_t supportedDeviceTypes;
+		supportedDevices_t emulatedDeviceIDS;
+	} RETCClientConfig;
+
 	typedef [context_handle] void* CONTEXT_HANDLE;
+	
+	CONTEXT_HANDLE initialize([in] handle_t hBinding, [out] RETCClientConfig* config);
 
-	//void logError(long lArraySize, [size_is(lArraySize)] char achArray[*]);
-	CONTEXT_HANDLE initialize([in] handle_t hBinding, [out] struct tagSupportArray* test);
+	RZRESULT playEffect(RETCDeviceType deviceType, [in] int type, [in, out, unique]RZEFFECTID *pEffectID, unsigned long effectSize, [size_is(effectSize)] char effectData[*], CONTEXT_HANDLE hContext);
 
-	int playKeyboardEffect([in] int type, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], CONTEXT_HANDLE hContext);
-	int playMouseEffect([in] int type, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], CONTEXT_HANDLE hContext);
-	int playHeadsetEffect([in] int type, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], CONTEXT_HANDLE hContext);
-	int playMousepadEffect([in] int type, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], CONTEXT_HANDLE hContext);
+	RZRESULT setEffect([in] RZEFFECTID effID, CONTEXT_HANDLE hContext);
+	RZRESULT deleteEffect([in] RZEFFECTID effID, CONTEXT_HANDLE hContext);
 
-	int CreateEffectGeneric(const RZDEVICEID DeviceId, RETCDeviceType deviceType, int effectType, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], const RZEFFECTID pEffectId, boolean storeEffect, CONTEXT_HANDLE hContext);
-
-	int createEffectInternal([in] int type, RETCDeviceType deviceType, unsigned long lArraySize, [size_is(lArraySize)] char achArray[*], [in] RZEFFECTID pEffectId, CONTEXT_HANDLE hContext);
-	int setEffect([in] const RZEFFECTID effID, CONTEXT_HANDLE hContext);
-	int deleteEffect([in] const RZEFFECTID effID, CONTEXT_HANDLE hContext);
 	void disconnect([in, out] CONTEXT_HANDLE* phContext);
 }

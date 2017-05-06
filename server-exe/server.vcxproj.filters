@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="CorsairSDK.cpp">
+      <Filter>src\SDKS\Corsair</Filter>
+    </ClCompile>
+    <ClCompile Include="LightingSDK.h">
+      <Filter>src\SDKS</Filter>
+    </ClCompile>
+    <ClCompile Include="RPCReceiver.cpp">
+      <Filter>src\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="SDKManager.cpp">
+      <Filter>src\SDKS</Filter>
+    </ClCompile>
+    <ClCompile Include="SDKLoader.cpp">
+      <Filter>src\SDKS\Loader</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectManager.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\rpc-midl\rpc_retc_s.c">
+      <Filter>src\Network\midl</Filter>
+    </ClCompile>
+    <ClCompile Include="server.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="utils.h">
+      <Filter>src\common</Filter>
+    </ClInclude>
+    <ClInclude Include="CorsairSDK.h">
+      <Filter>src\SDKS\Corsair</Filter>
+    </ClInclude>
+    <ClInclude Include="RPCReceiver.h">
+      <Filter>src\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="SDKManager.h">
+      <Filter>src\SDKS</Filter>
+    </ClInclude>
+    <ClInclude Include="SDKLoader.h">
+      <Filter>src\SDKS\Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectManager.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\rpc-midl\rpc_retc.h">
+      <Filter>src\Network\midl</Filter>
+    </ClInclude>
+    <ClInclude Include="commonData.h">
+      <Filter>src\common</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{a85d222a-a239-4d86-a7e0-a6e4f6bbd66f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Network">
+      <UniqueIdentifier>{904c91bc-2233-4c06-b898-db2d9b25ded8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Network\midl">
+      <UniqueIdentifier>{ed4616c2-395e-4b91-ac55-933f237b5c0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\SDKS">
+      <UniqueIdentifier>{11dff16a-e72a-410b-b782-daab078f6142}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\SDKS\Corsair">
+      <UniqueIdentifier>{08a5cc24-9699-4266-81d7-376e688f74d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\SDKS\Loader">
+      <UniqueIdentifier>{668ad942-dd8e-4bae-89f0-519231b81b2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\common">
+      <UniqueIdentifier>{561a4838-9ff0-4712-a77c-3d8bb40299bc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
