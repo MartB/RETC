@@ -19,13 +19,13 @@ RzApi RZRESULT CreateKeyboardEffect(Keyboard::EFFECT_TYPE Effect, PRZPARAM pPara
 RzApi RZRESULT CreateMouseEffect(Mouse::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
 RzApi RZRESULT CreateHeadsetEffect(Headset::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
 RzApi RZRESULT CreateMousepadEffect(Mousepad::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
+RzApi RZRESULT CreateKeypadEffect(Keypad::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
+
 RzApi RZRESULT SetEffect(RZEFFECTID EffectId);
-RzApi RZRESULT DeleteEffect(RZEFFECTID EffectId);
 RzApi RZRESULT DeleteEffect(RZEFFECTID EffectId);
 
 //////////////////////////////////////////////////////////////////////////
 // All functions below this line are not implemented.
-RzApi RZRESULT CreateKeypadEffect(Keypad::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
 RzApi RZRESULT QueryDevice(RZDEVICEID DeviceId, DEVICE_INFO_TYPE& DeviceInfo);
 
 RzApi RZRESULT RegisterEventNotification(HWND hWnd);

@@ -6,8 +6,8 @@
 
 #include <set>
 
-#define CORSAIR_SDK
 #include "CorsairSDK.h"
+#include "RazerSDK.h"
 
 class SDKManager {
 public:

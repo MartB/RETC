@@ -208,6 +208,7 @@
     <ClCompile Include="..\rpc-midl\rpc_retc_s.c" />
     <ClCompile Include="CorsairSDK.cpp" />
     <ClCompile Include="EffectManager.cpp" />
+    <ClCompile Include="RazerSDK.cpp" />
     <ClCompile Include="RPCReceiver.cpp" />
     <ClCompile Include="LightingSDK.h" />
     <ClCompile Include="SDKLoader.cpp" />
@@ -219,6 +220,7 @@
     <ClInclude Include="commonData.h" />
     <ClInclude Include="CorsairSDK.h" />
     <ClInclude Include="EffectManager.h" />
+    <ClInclude Include="RazerSDK.h" />
     <ClInclude Include="RPCReceiver.h" />
     <ClInclude Include="SDKLoader.h" />
     <ClInclude Include="SDKManager.h" />
