@@ -39,7 +39,7 @@ private:
 
 	RETCClientConfig* m_clientConfig;
 
-	LightingSDK* m_selectedSDKs[MAX];
+	LightingSDK* m_selectedSDKs[ALL];
 
 	bool m_bIsInitialized;
 };

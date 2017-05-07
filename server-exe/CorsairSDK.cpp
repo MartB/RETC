@@ -61,8 +61,8 @@ bool CorsairSDK::initialize() {
 			continue;
 		}
 
-		RETCDeviceType devType = corsairToRETCDeviceTYPE(devInfo->type);
-		if (devType == MAX) {
+		auto devType = corsairToRETCDeviceTYPE(devInfo->type);
+		if (devType == ESIZE) {
 			continue;
 		}
 
@@ -115,7 +115,7 @@ bool CorsairSDK::initialize() {
 }
 
 void CorsairSDK::reset() {
-	for (int devID = KEYBOARD; devID < MAX; devID++) {
+	for (int devID = KEYBOARD; devID < ALL; devID++) {
 		m_availableLeds[devID].clear();
 	}
 
@@ -153,6 +153,7 @@ RZRESULT CorsairSDK::playEffect(RETCDeviceType deviceType, int effectType, const
 	m_outputColorVector.resize(0);
 
 	if (const auto error = CorsairGetLastError()) {
+		LOG_D("{0}", errToString(error));
 		return RZRESULT_NOT_SUPPORTED;
 	}
 
@@ -179,8 +180,9 @@ RZRESULT CorsairSDK::prepareKeyboardEffect(int type, const char effectData[]) {
 		auto ledColor = convertLedColor(custEffect->Color);
 
 		for (const auto ledId : ledVector) {
-			if (!findKeyboardLed(ledId, &row, &col))
+			if (!findKeyboardLed(ledId, &row, &col)) {
 				continue;
+			}
 
 			ledColor.ledId = ledId;
 			m_outputColorVector.push_back(ledColor);
@@ -189,8 +191,9 @@ RZRESULT CorsairSDK::prepareKeyboardEffect(int type, const char effectData[]) {
 	else if (type == CHROMA_CUSTOM) {
 		const auto& custEffect = reinterpret_cast<const CUSTOM_EFFECT_TYPE*>(effectData);
 		for (const auto ledId : ledVector) {
-			if (!findKeyboardLed(ledId, &row, &col))
+			if (!findKeyboardLed(ledId, &row, &col)) {
 				continue;
+			}
 
 			auto ledColor = convertLedColor(custEffect->Color[row][col]);
 			ledColor.ledId = ledId;
@@ -200,12 +203,14 @@ RZRESULT CorsairSDK::prepareKeyboardEffect(int type, const char effectData[]) {
 	else if (type == CHROMA_CUSTOM_KEY) {
 		const auto& custEffect = reinterpret_cast<const CUSTOM_KEY_EFFECT_TYPE*>(effectData);
 		for (const auto ledId : ledVector) {
-			if (!findKeyboardLed(ledId, &row, &col))
+			if (!findKeyboardLed(ledId, &row, &col)) {
 				continue;
+			}
 
 			auto origColor = custEffect->Key[row][col];
-			if (origColor == NULL)
+			if (origColor == NULL) {
 				origColor = custEffect->Color[row][col];
+			}
 
 			auto ledColor = convertLedColor(origColor);
 			ledColor.ledId = ledId;
@@ -242,8 +247,9 @@ RZRESULT CorsairSDK::prepareMouseEffect(int type, const char effectData[]) {
 
 		if (custEffect->LEDId == RZLED_ALL) {
 			for (const auto ledId : ledVector) {
-				if (!findMouseLed(ledId, &row, &col))
+				if (!findMouseLed(ledId, &row, &col)) {
 					continue;
+				}
 
 				ledColor.ledId = ledId;
 				m_outputColorVector.push_back(ledColor);
@@ -380,13 +386,13 @@ CorsairLedColor CorsairSDK::convertLedColor(const COLORREF& color) {
 
 RETCDeviceType CorsairSDK::corsairToRETCDeviceTYPE(CorsairDeviceType type) {
 	switch (type) {
-		mapto(CDT_Unknown, RETCDeviceType::MAX);
+		mapto(CDT_Unknown, RETCDeviceType::ESIZE);
 		mapto(CDT_Mouse, RETCDeviceType::MOUSE);
 		mapto(CDT_Keyboard, RETCDeviceType::KEYBOARD);
 		mapto(CDT_Headset, RETCDeviceType::HEADSET);
 		mapto(CDT_MouseMat, RETCDeviceType::MOUSEPAD);
 	default:
-		return MAX;
+		return ESIZE;
 	}
 }
 
@@ -553,4 +559,24 @@ CorsairLedId CorsairSDK::findMouseLed(ChromaSDK::Mouse::RZLED led) {
 int CorsairSDK::findMousepadLed(const CorsairLedId ledid) {
 	using namespace ChromaSDK::Mousepad;
 	return (ledid - CLMM_Zone1);
+}
+
+
+std::string CorsairSDK::errToString(const CorsairError& error) {
+	switch (error) {
+	case CE_Success:
+		return "CE_Success";
+	case CE_ServerNotFound:
+		return "CE_ServerNotFound";
+	case CE_NoControl:
+		return "CE_NoControl";
+	case CE_ProtocolHandshakeMissing:
+		return "CE_ProtocolHandshakeMissing";
+	case CE_IncompatibleProtocol:
+		return "CE_IncompatibleProtocol";
+	case CE_InvalidArguments:
+		return "CE_InvalidArguments";
+	default:
+		return "unknown error";
+	}
 }

@@ -16,10 +16,10 @@ SDKManager::SDKManager() {
 }
 
 void SDKManager::reset() {
-	std::fill(m_selectedSDKs, m_selectedSDKs + MAX, nullptr);
+	std::fill(m_selectedSDKs, m_selectedSDKs + ALL, nullptr);
 
-	std::fill(m_clientConfig->supportedDeviceTypes, m_clientConfig->supportedDeviceTypes + MAX, FALSE);
-	std::fill(m_clientConfig->emulatedDeviceIDS, m_clientConfig->emulatedDeviceIDS + MAX, GUID_NULL);
+	std::fill(m_clientConfig->supportedDeviceTypes, m_clientConfig->supportedDeviceTypes + ESIZE, FALSE);
+	std::fill(m_clientConfig->emulatedDeviceIDS, m_clientConfig->emulatedDeviceIDS + ALL, GUID_NULL);
 
 	m_bIsInitialized = false;
 }
@@ -46,7 +46,6 @@ bool SDKManager::initialize() {
 	}
 
 	// TODO: Fill m_clientConfig->emulatedDeviceIDS with data from a config file.
-	m_clientConfig->emulatedDeviceIDS[ALL] = GUID_NULL;
 	m_clientConfig->emulatedDeviceIDS[KEYBOARD] = ChromaSDK::BLACKWIDOW_CHROMA;
 	m_clientConfig->emulatedDeviceIDS[MOUSE] = ChromaSDK::MAMBA_CHROMA;
 	m_clientConfig->emulatedDeviceIDS[HEADSET] = ChromaSDK::KRAKEN71_CHROMA;
@@ -59,7 +58,7 @@ bool SDKManager::initialize() {
 }
 
 LightingSDK* SDKManager::getSDKForDeviceType(RETCDeviceType type) {
-	if (type >= MAX || type < KEYBOARD) {
+	if (type >= ALL || type < KEYBOARD) {
 		return nullptr;
 	}
 
@@ -75,7 +74,7 @@ void SDKManager::checkAvailability() {
 		}
 
 		auto& supportedDevices = sdk->getSupportedModes();
-		for (int devID = KEYBOARD; devID < MAX; devID++) {
+		for (int devID = KEYBOARD; devID < ALL; devID++) {
 			if (supportedDevices[devID] == FALSE) {
 				continue;
 			}
@@ -93,7 +92,7 @@ void SDKManager::checkAvailability() {
 
 RZRESULT SDKManager::playEffectOnAllSDKs(int effectType, const char effectData[]) const {
 	RZRESULT res = RZRESULT_NOT_SUPPORTED;
-	for (int devID = KEYBOARD; devID < MAX; devID++) {
+	for (int devID = KEYBOARD; devID < ALL; devID++) {
 		const auto& sdk = m_selectedSDKs[devID];
 		if (!sdk) {
 			continue;

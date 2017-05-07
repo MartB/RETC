@@ -45,11 +45,11 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD /*callReason*/, LPVOID /*lpRese
 }
 
 BOOL hasSupportFor(RETCDeviceType type) {
-	if (!isInitialized() || type >= MAX || type < ALL) {
+	if (!isInitialized() || type >= ESIZE || type < KEYBOARD) {
 		return false;
 	}
 
-	return (type == ALL) ? true : CONFIG.supportedDeviceTypes[type];
+	return CONFIG.supportedDeviceTypes[type];
 }
 
 RZRESULT Init() {
@@ -59,7 +59,7 @@ RZRESULT Init() {
 
 	RPC_WSTR szStringBinding = nullptr;
 
-	RPC_STATUS status = RpcStringBindingCompose(nullptr, RPC_WSTR(L"ncalrpc"), nullptr, RPC_WSTR(L"[retc-rpc]"), nullptr, &szStringBinding);
+	auto status = RpcStringBindingCompose(nullptr, RPC_WSTR(L"ncalrpc"), nullptr, RPC_WSTR(L"[retc-rpc]"), nullptr, &szStringBinding);
 
 	if (status) {
 		return RZRESULT_SERVICE_NOT_ACTIVE;
@@ -107,7 +107,7 @@ RZRESULT UnInit() {
 		return RZRESULT_NOT_VALID_STATE;
 	RpcEndExcept
 
-	RPC_STATUS status = RpcBindingFree(&hRetcBinding);
+	auto status = RpcBindingFree(&hRetcBinding);
 
 	m_Initialized = false;
 	return (!status) ? RZRESULT_SUCCESS : RZRESULT_NOT_VALID_STATE;
@@ -134,20 +134,25 @@ RZRESULT sendEffect(RETCDeviceType deviceType, int effectID, PRZPARAM effectData
 }
 
 RZRESULT CreateEffect(RZDEVICEID DeviceId, EFFECT_TYPE effectID, PRZPARAM pParam, RZEFFECTID* pEffectId) {
-	auto deviceType = MAX;
+	auto deviceType = ESIZE;
 
-	for (int i = ALL; i < static_cast<int>(MAX); i++) {
-		if (DeviceId == CONFIG.emulatedDeviceIDS[i]) {
-			deviceType = static_cast<RETCDeviceType>(i);
-			break;
+	if (DeviceId == GUID_NULL) {
+		deviceType = ALL;
+	}
+	else {
+		for (int devID = KEYBOARD; devID < ALL; devID++) {
+			if (DeviceId == CONFIG.emulatedDeviceIDS[devID]) {
+				deviceType = static_cast<RETCDeviceType>(devID);
+				break;
+			}
 		}
 	}
 
-	if (deviceType == MAX) {
+	if (deviceType == ESIZE) {
 		return RZRESULT_DEVICE_NOT_AVAILABLE;
 	}
 
-	auto realEffectID = (deviceType == ALL) ? effectID : LookupArrays::genericEffectType[deviceType - 1][effectID];
+	auto realEffectID = (deviceType == ALL) ? effectID : LookupArrays::genericEffectType[deviceType][effectID];
 	return sendEffect(deviceType, realEffectID, pParam, pEffectId);
 }
 
