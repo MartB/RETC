@@ -20,4 +20,5 @@ extern std::shared_ptr<spdlog::logger> LOG;
 #define LOG_E(...) LOG->error("[" __FUNCTION__ "] " __VA_ARGS__)
 #define LOG_W(...) LOG->warn("[" __FUNCTION__"] " __VA_ARGS__)
 #define LOG_I(...) LOG->info("[" __FUNCTION__"] " __VA_ARGS__)
+#define LOG_D(...) LOG->debug("[" __FUNCTION__"] " __VA_ARGS__)
 #define LOG_T(...) SPDLOG_TRACE(LOG, __VA_ARGS__);

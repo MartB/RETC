@@ -15,19 +15,20 @@ interface rpc_retc
 	typedef GUID	RZDEVICEID;
 	typedef LONG	RZRESULT;
 
+	// If you change the order in the below enum adjust commonData.h
 	typedef enum RETCDeviceType
 	{
-		ALL = 0,
 		KEYBOARD,
 		MOUSE,
 		HEADSET,
 		MOUSEPAD,
 		KEYPAD,
-		MAX
+		ALL,
+		ESIZE, // If you get that as type its invalid, goes always last!
 	} RETCDeviceType;
 
-	typedef BOOL supportArray_t[MAX];
-	typedef RZDEVICEID supportedDevices_t[MAX];
+	typedef BOOL supportArray_t[ESIZE];
+	typedef RZDEVICEID supportedDevices_t[ALL];
 
 	typedef struct RETCClientConfig
 	{

@@ -26,11 +26,12 @@ private:
 	static ChromaSDK::Mouse::RZLED findMouseLed(const CorsairLedId ledid);
 	static CorsairLedId findMouseLed(ChromaSDK::Mouse::RZLED led);
 	static int findMousepadLed(const CorsairLedId ledid);
+	static std::string errToString(const CorsairError& error);
 
 	typedef std::vector<CorsairLedId> ledIDVector;
 	typedef std::vector<CorsairLedColor> ledColorVector;
 
-	ledIDVector m_availableLeds[MAX];
+	ledIDVector m_availableLeds[ALL];
 	ledColorVector m_outputColorVector;
 
 	// DLL functions

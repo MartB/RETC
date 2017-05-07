@@ -17,7 +17,7 @@ public:
 	LightingSDK::LightingSDK() {
 		m_sdkLoader = nullptr;
 		m_dllInstance = nullptr;
-		std::fill(m_supportedDevices, m_supportedDevices + MAX, FALSE);
+		std::fill(m_supportedDevices, m_supportedDevices + ALL, FALSE);
 	}
 
 	virtual ~LightingSDK() {
