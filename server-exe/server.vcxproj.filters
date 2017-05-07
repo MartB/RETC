@@ -23,6 +23,9 @@
       <Filter>src\Network\midl</Filter>
     </ClCompile>
     <ClCompile Include="server.cpp" />
+    <ClCompile Include="RazerSDK.cpp">
+      <Filter>src\SDKS\Corsair</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utils.h">
@@ -48,6 +51,9 @@
     </ClInclude>
     <ClInclude Include="commonData.h">
       <Filter>src\common</Filter>
+    </ClInclude>
+    <ClInclude Include="RazerSDK.h">
+      <Filter>src\SDKS\Corsair</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -10,6 +10,7 @@ SDKManager::SDKManager() {
 
 	// Register your custom sdks here!
 	m_availableSDKs.insert(std::make_unique<CorsairSDK>());
+	m_availableSDKs.insert(std::make_unique<RazerSDK>());
 
 	m_clientConfig = new RETCClientConfig;
 	reset();
