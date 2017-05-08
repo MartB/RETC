@@ -8,9 +8,11 @@ SDKManager::SDKManager() {
 	m_sdkLoader = std::make_shared<SDKLoader>();
 	m_effectManager = std::make_unique<EffectManager>();
 
-	// Register your custom sdks here!
-	m_availableSDKs.insert(std::make_unique<CorsairSDK>());
+	/**
+	 * Register your sdk here, make sure the RazerSDK is always at the beginning.
+	 */
 	m_availableSDKs.insert(std::make_unique<RazerSDK>());
+	m_availableSDKs.insert(std::make_unique<CorsairSDK>());
 
 	m_clientConfig = new RETCClientConfig;
 	reset();
