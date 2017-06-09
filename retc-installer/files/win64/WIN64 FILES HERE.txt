@@ -1,0 +1,1 @@
+Place 64bit files here, including RETC binary, NSSM binary, RzChromaSDK DLL, and CorsairSDK DLL
