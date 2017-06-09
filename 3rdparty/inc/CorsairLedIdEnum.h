@@ -150,13 +150,17 @@ enum CorsairLedId
 	CLK_International5 = 145,
 	CLK_International4 = 146,
 	CLK_Fn = 147,
+
 	CLM_1 = 148,
 	CLM_2 = 149,
 	CLM_3 = 150,
 	CLM_4 = 151,
+
 	CLH_LeftLogo = 152,
 	CLH_RightLogo = 153,
+
 	CLK_Logo = 154,
+
 	CLMM_Zone1 = 155,
 	CLMM_Zone2 = 156,
 	CLMM_Zone3 = 157,
@@ -173,5 +177,28 @@ enum CorsairLedId
 	CLMM_Zone14 = 168,
 	CLMM_Zone15 = 169,
 
-	CLI_Last = CLMM_Zone15
+	CLKLP_Zone1 = 170,
+	CLKLP_Zone2 = 171,
+	CLKLP_Zone3 = 172,
+	CLKLP_Zone4 = 173,
+	CLKLP_Zone5 = 174,
+	CLKLP_Zone6 = 175,
+	CLKLP_Zone7 = 176,
+	CLKLP_Zone8 = 177,
+	CLKLP_Zone9 = 178,
+	CLKLP_Zone10 = 179,
+	CLKLP_Zone11 = 180,
+	CLKLP_Zone12 = 181,
+	CLKLP_Zone13 = 182,
+	CLKLP_Zone14 = 183,
+	CLKLP_Zone15 = 184,
+	CLKLP_Zone16 = 185,
+	CLKLP_Zone17 = 186,
+	CLKLP_Zone18 = 187,
+	CLKLP_Zone19 = 188,
+
+	CLM_5 = 189,
+	CLM_6 = 190,
+
+	CLI_Last = CLM_6
 };

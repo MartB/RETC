@@ -31,7 +31,7 @@ extern "C"
 		CPL_Zones1 = 6,
 		CPL_Zones2 = 7,
 		CPL_Zones3 = 8,
-		CPL_Zones4 = 9,			// valid values for mouse 
+		CPL_Zones4 = 9			// valid values for mouse
 	};
 
 	enum CorsairLogicalLayout	// contains list of available logical layouts for keyboards
@@ -60,7 +60,7 @@ extern "C"
 	enum CorsairDeviceCaps		// contains list of device capabilities
 	{
 		CDC_None = 0,				// for devices that do not support any SDK functions
-		CDC_Lighting = 1				// for devices that has controlled lighting
+		CDC_Lighting = 1			// for devices that has controlled lighting
 	};
 
 	enum CorsairAccessMode		// contains list of available SDK access modes
