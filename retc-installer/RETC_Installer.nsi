@@ -45,14 +45,17 @@ Var OWT32Path
 ;--------------------------------
 ;Interface Settings
 !define MUI_ABORTWARNING
-!define MUI_WELCOMEPAGE_TEXT "RETC is a piece of software that allows Corsair RGB devices to take advantage of software that supports Razr Chroma RGB devices."
-!define MUI_FINISHPAGE_TEXT "Installation is complete.  Remember, RETC will only work with supported software when the RazrChroma DLL files have been placed in the software directory.  If you wish to use it with any other software, you will need to copy RzChromaSDK.dll and RzChromaSDK64.dll to that software directory as well."
+!define MUI_WELCOMEPAGE_TEXT "RETC is a piece of software that allows Corsair RGB devices to take advantage of software that supports Razer Chroma RGB devices."
+!define MUI_FINISHPAGE_TEXT "Installation is complete.  Remember, RETC will only work with supported software when the RazerChroma DLL files have been placed in the software directory.  If you wish to use it with any other software, you will need to copy RzChromaSDK.dll and RzChromaSDK64.dll to that software directory as well."
+!define MUI_FINISHPAGE_LINK "Visit the RETC Github Repo"
+!define MUI_FINISHPAGE_LINK_LOCATION "https://github.com/MartB/RETC"
 
 ;--------------------------------
 
 ; Pages
 
 !insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_LICENSE "${FILES}\LICENSE"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -86,7 +89,7 @@ Section "RETC (required)" Sec_RETC
 	Goto nodelete_rzchroma
 
 	rzchroma_ask:
-		MessageBox MB_YESNO "Found RazrChroma DLL's in the Windows system directory.$\r$\nThese should never be put here!$\r$\n$\r$\nWould you like to remove these?" IDYES delete_rzchroma IDNO nodelete_rzchroma
+		MessageBox MB_YESNO "Found RazerChroma DLL's in the Windows system directory.$\r$\nThese should never be put here!$\r$\n$\r$\nWould you like to remove these?" IDYES delete_rzchroma IDNO nodelete_rzchroma
 	delete_rzchroma:
 		Delete "$SYSDIR\RzChromaSDK.dll"
 		Delete "$SYSDIR\RzChromaSDK64.dll"
@@ -113,6 +116,10 @@ Section "RETC (required)" Sec_RETC
 	File "${FILES}\win64\nssm.exe"
 	File "${FILES}\win32\RzChromaSDK.dll"
 	File "${FILES}\win64\RzChromaSDK64.dll"
+	File "${FILES}\LICENSE"
+	File "${FILES}\README.md"
+	
+	WriteINIStr "$INSTDIR\RETC Github Repo.URL" "InternetShortcut" "URL" "https://github.com/MartB/RETC"
 
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" install RETC "$INSTDIR\retc-rpc-server-64.exe"'
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC AppDirectory "$INSTDIR"'
@@ -122,7 +129,7 @@ Section "RETC (required)" Sec_RETC
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC AppStdoutCreationDisposition 2'
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC AppStderr "$INSTDIR\retc-server-nssm.log"'
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC AppStderrCreationDisposition 2'
-	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC Description "Allows programs that support the Razr Chroma SDK to use Corsair RGB devices."'
+	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC Description "Allows programs that support the Razer Chroma SDK to use Corsair RGB devices."'
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC DisplayName "RETC Service"'
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC ObjectName LocalSystem'
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC Start SERVICE_AUTO_START'
@@ -151,34 +158,42 @@ Section "Overwatch Support" Sec_OW
 
 	; Set output path to the installation directory.
 	${If} $OW64Path != ""
-		SetOutPath $OW64Path
-		File "${FILES}\win32\RzChromaSDK.dll"
-		File "${FILES}\win64\RzChromaSDK64.dll"
+		${If} ${FileExists} "$OW64Path"
+			SetOutPath $OW64Path
+			File "${FILES}\win32\RzChromaSDK.dll"
+			File "${FILES}\win64\RzChromaSDK64.dll"
+		${EndIf}
 	${EndIf}
 	${If} $OWT64Path != ""
-		SetOutPath $OWT64Path
-		File "${FILES}\win32\RzChromaSDK.dll"
-		File "${FILES}\win64\RzChromaSDK64.dll"
+		${If} ${FileExists} "$OWT64Path"
+			SetOutPath $OWT64Path
+			File "${FILES}\win32\RzChromaSDK.dll"
+			File "${FILES}\win64\RzChromaSDK64.dll"
+		${EndIf}
 	${EndIf}
 	${If} $OW32Path != ""
-		SetOutPath $OW32Path
-		File "${FILES}\win32\RzChromaSDK.dll"
-		File "${FILES}\win64\RzChromaSDK64.dll"
+		${If} ${FileExists} "$OW32Path"
+			SetOutPath $OW32Path
+			File "${FILES}\win32\RzChromaSDK.dll"
+			File "${FILES}\win64\RzChromaSDK64.dll"
+		${EndIf}
 	${EndIf}
 	${If} $OWT32Path != ""
-		SetOutPath $OWT32Path
-		File "${FILES}\win32\RzChromaSDK.dll"
-		File "${FILES}\win64\RzChromaSDK64.dll"
+		${If} ${FileExists} "$OWT32Path"
+			SetOutPath $OWT32Path
+			File "${FILES}\win32\RzChromaSDK.dll"
+			File "${FILES}\win64\RzChromaSDK64.dll"
+		${EndIf}
 	${EndIf}
 
 SectionEnd
 
 ; Optional section (can be disabled by the user)
 Section "Start Menu Shortcuts" Sec_SM
-
 	CreateDirectory "$SMPROGRAMS\RETC"
-	CreateShortcut "$SMPROGRAMS\RETC\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
-
+	CreateShortCut "$SMPROGRAMS\RETC\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
+	CreateShortCut "$SMPROGRAMS\RETC\RETC Github Repo.lnk" "$INSTDIR\RETC Github Repo.URL" "" \
+		"$SYSDIR\SHELL32.DLL" 13
 SectionEnd
 
 ;--------------------------------
@@ -215,29 +230,37 @@ Section "un.Remove Overwatch Support Files" unSec_OW
 
 	; Set output path to the installation directory.
 	${If} $OW64Path != ""
-		Delete "$OW64Path\RzChromaSDK.dll"
-		Delete "$OW64Path\RzChromaSDK64.dll"
+		${If} ${FileExists} "$OW64Path"
+			Delete "$OW64Path\RzChromaSDK.dll"
+			Delete "$OW64Path\RzChromaSDK64.dll"
+		${EndIf}
 	${EndIf}
 	${If} $OWT64Path != ""
-		Delete "$OWT64Path\RzChromaSDK.dll"
-		Delete "$OWT64Path\RzChromaSDK64.dll"
+		${If} ${FileExists} "$OWT64Path"
+			Delete "$OWT64Path\RzChromaSDK.dll"
+			Delete "$OWT64Path\RzChromaSDK64.dll"
+		${EndIf}
 	${EndIf}
 	${If} $OW32Path != ""
-		Delete "$OW32Path\RzChromaSDK.dll"
-		Delete "$OW32Path\RzChromaSDK64.dll"
+		${If} ${FileExists} "$OW32Path"
+			Delete "$OW32Path\RzChromaSDK.dll"
+			Delete "$OW32Path\RzChromaSDK64.dll"
+		${EndIf}
 	${EndIf}
 	${If} $OWT32Path != ""
-		Delete "$OWT32Path\RzChromaSDK.dll"
-		Delete "$OWT32Path\RzChromaSDK64.dll"
+		${If} ${FileExists} "$OWT32Path"
+			Delete "$OWT32Path\RzChromaSDK.dll"
+			Delete "$OWT32Path\RzChromaSDK64.dll"
+		${EndIf}
 	${EndIf}
 
 SectionEnd
 
 
 LangString DESC_Sec_RETC ${LANG_ENGLISH} "The main RETC service files, as well as the RETC service."
-LangString DESC_Sec_OW ${LANG_ENGLISH} "This will copy the Razr Chroma DLL files to any Overwatch installations that are found."
+LangString DESC_Sec_OW ${LANG_ENGLISH} "This will copy the Razer Chroma DLL files to any Overwatch installations that are found."
 LangString DESC_Sec_SM ${LANG_ENGLISH} "Install start menu shortcuts"
-LangString DESC_Un_Sec_OW ${LANG_ENGLISH} "Remove Razr Chroma DLL files from any Overwatch installations that are found."
+LangString DESC_Un_Sec_OW ${LANG_ENGLISH} "Remove Razer Chroma DLL files from any Overwatch installations that are found."
 
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
