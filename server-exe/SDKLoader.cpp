@@ -22,18 +22,22 @@ void SDKLoader::destroy() {
 bool SDKLoader::load(HINSTANCE& inst, const std::string& dllName, functionList& fList) {
 	// Force user to call reload.
 	if (isLoaded(dllName)) {
+		LOG_D("DLL already loaded you should call reload!");
 		return false;
 	}
 
 	inst = LoadLibraryA(dllName.c_str());
 
 	if (!inst) {
+		LOG_E("LoadLibraryA({0}) failed with code {1}", dllName, GetLastError());
 		return false;
 	}
 
 	for (auto& func : fList) {
-		void* fptr = GetProcAddress(inst, func.first.c_str());
+		const char * funcPtrName = func.first.c_str();
+		void* fptr = GetProcAddress(inst, funcPtrName);
 		if (!fptr) {
+			LOG_E("FunctionPtr {0} {1}", dllName, funcPtrName);
 			FreeLibrary(inst);
 			return false;
 		}

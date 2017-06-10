@@ -56,12 +56,15 @@ public:
 	const std::string& getSDKName() const { return SDK_NAME; }
 
 	void disconnect() {
-		reset();
+		// Dont call reset because we cant guarantee that the sdk checks for a valid dll.
+		if (m_dllInstance != nullptr) {
+			reset();
+		}
 		unloadDLL();
 	}
 
 	void unloadDLL() const {
-		if (!m_sdkLoader) {
+		if (!m_sdkLoader || m_dllInstance == nullptr) {
 			return;
 		}
 
