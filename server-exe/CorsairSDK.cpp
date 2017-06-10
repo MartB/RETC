@@ -487,7 +487,8 @@ bool CorsairSDK::findKeyboardLed(CorsairLedId ledid, int* row, int* col) {
 		maptoassign(CLK_LeftAlt, RZKEY_LALT);
 		maptoassign(CLK_Space, RZKEY_SPACE);
 		maptoassign(CLK_RightAlt, RZKEY_RALT);
-		maptoassign(CLK_RightGui, RZKEY_FN);
+		maptoassign(CLK_RightGui, RZKEY_FN); 
+		maptoassign(CLK_Fn, RZKEY_FN); // This is actually the same key as RightGui on some keyboard variants
 		maptoassign(CLK_Application, RZKEY_RMENU);
 		maptoassign(CLK_RightCtrl, RZKEY_RCTRL);
 		maptoassign(CLK_LeftShift, RZKEY_LSHIFT);
