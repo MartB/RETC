@@ -26,6 +26,23 @@ Function .onInit
 	   ; change install dir 
 	   StrCpy $INSTDIR "$PROGRAMFILES64\RETC"
 	${EndIf}
+	
+	ReadRegStr $0 HKLM "Software\RETC" "Install_Dir"
+	${If} $0 != ""
+		MessageBox MB_YESNO "RETC is already installed, would you like to re-install?" IDYES reinstall_yes IDNO reinstall_no
+		reinstall_no:
+		Abort
+		reinstall_yes:
+	${EndIf}
+FunctionEnd
+
+Function un.onInit
+	${If} ${RunningX64} 
+	   ; disable registry redirection (enable access to 64-bit portion of registry)
+	   SetRegView 64
+	   ; change install dir 
+	   StrCpy $INSTDIR "$PROGRAMFILES64\RETC"
+	${EndIf}
 FunctionEnd
 	
 ; Registry key to check for directory (so if you install again, it will 
@@ -41,6 +58,7 @@ Var OW64Path
 Var OWT64Path
 Var OW32Path
 Var OWT32Path
+Var "DLLName"
 
 ;--------------------------------
 ;Interface Settings
@@ -51,7 +69,6 @@ Var OWT32Path
 !define MUI_FINISHPAGE_LINK_LOCATION "https://github.com/MartB/RETC"
 
 ;--------------------------------
-
 ; Pages
 
 !insertmacro MUI_PAGE_WELCOME
@@ -72,30 +89,80 @@ Var OWT32Path
 
 ;--------------------------------
 
+
+;--------------------------------
+;ReadStringFromDLL macro
+;Gets DLL detail strings from DLLs
+!define FORMAT_MESSAGE_ALLOCATE_BUFFER	0x00000100
+!define FORMAT_MESSAGE_IGNORE_INSERTS	0x00000200
+!define FORMAT_MESSAGE_FROM_HMODULE	0x00000800
+!define FORMAT_MESSAGE_MAX_WIDTH_MASK	0x000000FF
+ 
+!macro ReadPNFromDLL LIBRARY VAR
+	MoreInfo::GetProductName "${LIBRARY}"
+	Pop $1
+	StrCpy ${VAR} $1
+!macroend
+;--------------------------------
+
 ; The stuff to install
 Section "RETC (required)" Sec_RETC
 	SectionIn RO
 
 	; Set output path to the installation directory.
 	SetOutPath $INSTDIR
-
-	IfFileExists "$SYSDIR\RzChromaSDK.dll" rzchroma_ask
-	IfFileExists "$SYSDIR\RzChromaSDK64.dll" rzchroma_ask
+	
+	
+	${If} ${FileExists} "$SYSDIR\RzChromaSDK.dll"
+		!insertmacro ReadPNFromDLL "$SYSDIR\RzChromaSDK.dll" $DLLName
+		StrCmp $DLLName "" rzchroma_ask
+	${EndIf}
+	${If} ${FileExists} "$SYSDIR\RzChromaSDK64.dll"
+		!insertmacro ReadPNFromDLL "$SYSDIR\RzChromaSDK64.dll" $DLLName
+		StrCmp $DLLName "" rzchroma_ask
+	${EndIf}
 	${DisableX64FSRedirection}
-	IfFileExists "$SYSDIR\RzChromaSDK.dll" rzchroma_ask
-	IfFileExists "$SYSDIR\RzChromaSDK64.dll" rzchroma_ask
+	${If} ${FileExists} "$SYSDIR\RzChromaSDK.dll"
+		!insertmacro ReadPNFromDLL "$SYSDIR\RzChromaSDK.dll" $DLLName
+		StrCmp $DLLName "" rzchroma_ask
+	${EndIf}
+	${If} ${FileExists} "$SYSDIR\RzChromaSDK64.dll"
+		!insertmacro ReadPNFromDLL "$SYSDIR\RzChromaSDK64.dll" $DLLName
+		StrCmp $DLLName "" rzchroma_ask
+	${EndIf}
 	${EnableX64FSRedirection}
 
 	Goto nodelete_rzchroma
 
 	rzchroma_ask:
-		MessageBox MB_YESNO "Found RazerChroma DLL's in the Windows system directory.$\r$\nThese should never be put here!$\r$\n$\r$\nWould you like to remove these?" IDYES delete_rzchroma IDNO nodelete_rzchroma
+		${EnableX64FSRedirection}
+		MessageBox MB_YESNO "Found RETC RazerChroma DLL's in the Windows system directory.$\r$\nThese should never be put here!$\r$\n$\r$\nWould you like to remove these?" IDYES delete_rzchroma IDNO nodelete_rzchroma
 	delete_rzchroma:
-		Delete "$SYSDIR\RzChromaSDK.dll"
-		Delete "$SYSDIR\RzChromaSDK64.dll"
+		${If} ${FileExists} "$SYSDIR\RzChromaSDK.dll"
+			!insertmacro ReadPNFromDLL "$SYSDIR\RzChromaSDK.dll" $DLLName
+			${If} $DLLName == ""
+				Delete "$SYSDIR\RzChromaSDK.dll"
+			${EndIf}
+		${EndIf}
+		${If} ${FileExists} "$SYSDIR\RzChromaSDK64.dll"
+			!insertmacro ReadPNFromDLL "$SYSDIR\RzChromaSDK64.dll" $DLLName
+			${If} $DLLName == ""
+				Delete "$SYSDIR\RzChromaSDK64.dll"
+			${EndIf}
+		${EndIf}
 		${DisableX64FSRedirection}
-		Delete "$SYSDIR\RzChromaSDK.dll"
-		Delete "$SYSDIR\RzChromaSDK64.dll"
+		${If} ${FileExists} "$SYSDIR\RzChromaSDK.dll"
+			!insertmacro ReadPNFromDLL "$SYSDIR\RzChromaSDK.dll" $DLLName
+			${If} $DLLName == ""
+				Delete "$SYSDIR\RzChromaSDK.dll"
+			${EndIf}
+		${EndIf}
+		${If} ${FileExists} "$SYSDIR\RzChromaSDK64.dll"
+			!insertmacro ReadPNFromDLL "$SYSDIR\RzChromaSDK64.dll" $DLLName
+			${If} $DLLName == ""
+				Delete "$SYSDIR\RzChromaSDK64.dll"
+			${EndIf}
+		${EndIf}
 		${EnableX64FSRedirection}
 	nodelete_rzchroma:
 
@@ -129,7 +196,7 @@ Section "RETC (required)" Sec_RETC
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC AppStdoutCreationDisposition 2'
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC AppStderr "$INSTDIR\retc-server-nssm.log"'
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC AppStderrCreationDisposition 2'
-	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC Description "Allows programs that support the Razer Chroma SDK to use Corsair RGB devices."'
+	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC Description "Allows programs that support the Razer Chroma SDK to use Corsair RGB devices.  Visit https://github.com/MartB/RETC for more info."'
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC DisplayName "RETC Service"'
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC ObjectName LocalSystem'
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC Start SERVICE_AUTO_START'
@@ -142,6 +209,7 @@ Section "RETC (required)" Sec_RETC
 
 	; Write the uninstall keys for Windows
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "DisplayName" "RETC"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "HelpLink" "https://github.com/MartB/RETC"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "UninstallString" '"$INSTDIR\uninstall.exe"'
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "NoModify" 1
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "NoRepair" 1
@@ -204,7 +272,7 @@ Section "Uninstall"
 
 	; Remove registry keys
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC"
-	DeleteRegKey HKLM SOFTWARE\RETC
+	DeleteRegKey HKLM "SOFTWARE\RETC"
 	
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" stop RETC'
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" remove RETC confirm'
