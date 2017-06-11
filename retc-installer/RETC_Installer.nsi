@@ -147,7 +147,7 @@ Section "RETC (required)" Sec_RETC
 
 	;If nssm is already installed, attempt to stop before installing
 	${If} ${FileExists} "$INSTDIR\nssm.exe"
-		nsExec::ExecToLog '"$INSTDIR\nssm.exe" stop RETC'
+		nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" stop RETC'
 	${EndIf}
 	
 	${If} ${FileExists} "$SYSDIR\RzChromaSDK.dll"
@@ -238,24 +238,24 @@ Section "RETC (required)" Sec_RETC
 	WriteINIStr "$INSTDIR\RETC Github Repo.URL" "InternetShortcut" "URL" "https://github.com/MartB/RETC"
 
 	${If} ${RunningX64} 
-		nsExec::ExecToLog '"$INSTDIR\nssm.exe" install RETC "$INSTDIR\retc-rpc-server-64.exe"'
+		nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" install RETC "$INSTDIR\retc-rpc-server-64.exe"'
 	${Else}
-		nsExec::ExecToLog '"$INSTDIR\nssm.exe" install RETC "$INSTDIR\retc-rpc-server-32.exe"'
+		nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" install RETC "$INSTDIR\retc-rpc-server-32.exe"'
 	${EndIf}
-	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC AppDirectory "$INSTDIR"'
-	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC AppExit Default Restart'
-	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC AppNoConsole 1'
-	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC AppStdout "$INSTDIR\retc-server-nssm.log"'
-	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC AppStdoutCreationDisposition 2'
-	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC AppStderr "$INSTDIR\retc-server-nssm.log"'
-	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC AppStderrCreationDisposition 2'
-	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC Description "Allows programs that support the Razer Chroma SDK to use Corsair RGB devices.  Visit https://github.com/MartB/RETC for more info."'
-	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC DisplayName "RETC Service"'
-	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC ObjectName LocalSystem'
-	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC Start SERVICE_AUTO_START'
-	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC Type SERVICE_WIN32_OWN_PROCESS'
+	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" set RETC AppDirectory "$INSTDIR"'
+	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" set RETC AppExit Default Restart'
+	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" set RETC AppNoConsole 1'
+	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" set RETC AppStdout "$INSTDIR\retc-server-nssm.log"'
+	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" set RETC AppStdoutCreationDisposition 2'
+	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" set RETC AppStderr "$INSTDIR\retc-server-nssm.log"'
+	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" set RETC AppStderrCreationDisposition 2'
+	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" set RETC Description "Allows programs that support the Razer Chroma SDK to use Corsair RGB devices.  Visit https://github.com/MartB/RETC for more info."'
+	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" set RETC DisplayName "RETC Service"'
+	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" set RETC ObjectName LocalSystem'
+	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" set RETC Start SERVICE_AUTO_START'
+	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" set RETC Type SERVICE_WIN32_OWN_PROCESS'
 
-	nsExec::ExecToLog '"$INSTDIR\nssm.exe" start RETC'
+	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" start RETC'
 
 	; Write the installation path into the registry
 	WriteRegStr HKLM SOFTWARE\RETC "Install_Dir" "$INSTDIR"
@@ -336,8 +336,8 @@ Section "Uninstall"
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC"
 	DeleteRegKey HKLM "SOFTWARE\RETC"
 	
-	nsExec::ExecToLog '"$INSTDIR\nssm.exe" stop RETC'
-	nsExec::ExecToLog '"$INSTDIR\nssm.exe" remove RETC confirm'
+	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" stop RETC'
+	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" remove RETC confirm'
 
 	; Remove files and uninstaller
 	Delete "$INSTDIR\*.*"
