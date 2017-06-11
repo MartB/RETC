@@ -6,7 +6,7 @@
 ;with no version number in the EXE, compile will fail
 ;testing this now
 !ifndef VERSION
-	!insertmacro !getdllversion "${FILES}\win64\retc-rpc-server-64.exe" vers_
+	!getdllversion "${FILES}\win64\retc-rpc-server-64.exe" vers_
 	!define VERSION ${vers_1}.${vers_2}.${vers_3}.${vers_4}
 !endif
 
@@ -52,6 +52,7 @@ RequestExecutionLevel admin
 !define MUI_FINISHPAGE_TEXT "Installation is complete.  Remember, RETC will only work with supported software when the RazerChroma DLL files have been placed in the software directory.  If you wish to use it with any other software, you will need to copy RzChromaSDK.dll and RzChromaSDK64.dll from the wrappers folder to that software directory as well."
 !define MUI_FINISHPAGE_LINK "Visit the RETC Github Repo"
 !define MUI_FINISHPAGE_LINK_LOCATION "https://github.com/MartB/RETC"
+!define MUI_FINISHPAGE_NOAUTOCLOSE
 
 ;--------------------------------
 ; Pages
@@ -143,24 +144,32 @@ Section "RETC (required)" Sec_RETC
 
 	; Set output path to the installation directory.
 	SetOutPath $INSTDIR
-	
+
+	;If nssm is already installed, attempt to stop before installing
+	${If} ${FileExists} "$INSTDIR\nssm.exe"
+		nsExec::ExecToLog '"$INSTDIR\nssm.exe" stop RETC'
+	${EndIf}
 	
 	${If} ${FileExists} "$SYSDIR\RzChromaSDK.dll"
 		!insertmacro ReadPNFromDLL "$SYSDIR\RzChromaSDK.dll" $DLLName
 		StrCmp $DLLName "" rzchroma_ask
+		StrCmp $DLLName "RETC" rzchroma_ask
 	${EndIf}
 	${If} ${FileExists} "$SYSDIR\RzChromaSDK64.dll"
 		!insertmacro ReadPNFromDLL "$SYSDIR\RzChromaSDK64.dll" $DLLName
 		StrCmp $DLLName "" rzchroma_ask
+		StrCmp $DLLName "RETC" rzchroma_ask
 	${EndIf}
 	${DisableX64FSRedirection}
 	${If} ${FileExists} "$SYSDIR\RzChromaSDK.dll"
 		!insertmacro ReadPNFromDLL "$SYSDIR\RzChromaSDK.dll" $DLLName
 		StrCmp $DLLName "" rzchroma_ask
+		StrCmp $DLLName "RETC" rzchroma_ask
 	${EndIf}
 	${If} ${FileExists} "$SYSDIR\RzChromaSDK64.dll"
 		!insertmacro ReadPNFromDLL "$SYSDIR\RzChromaSDK64.dll" $DLLName
 		StrCmp $DLLName "" rzchroma_ask
+		StrCmp $DLLName "RETC" rzchroma_ask
 	${EndIf}
 	${EnableX64FSRedirection}
 
@@ -173,12 +182,14 @@ Section "RETC (required)" Sec_RETC
 		${If} ${FileExists} "$SYSDIR\RzChromaSDK.dll"
 			!insertmacro ReadPNFromDLL "$SYSDIR\RzChromaSDK.dll" $DLLName
 			${If} $DLLName == ""
+			${OrIf} $DLLName == "RETC"
 				Delete "$SYSDIR\RzChromaSDK.dll"
 			${EndIf}
 		${EndIf}
 		${If} ${FileExists} "$SYSDIR\RzChromaSDK64.dll"
 			!insertmacro ReadPNFromDLL "$SYSDIR\RzChromaSDK64.dll" $DLLName
 			${If} $DLLName == ""
+			${OrIf} $DLLName == "RETC"
 				Delete "$SYSDIR\RzChromaSDK64.dll"
 			${EndIf}
 		${EndIf}
@@ -186,22 +197,19 @@ Section "RETC (required)" Sec_RETC
 		${If} ${FileExists} "$SYSDIR\RzChromaSDK.dll"
 			!insertmacro ReadPNFromDLL "$SYSDIR\RzChromaSDK.dll" $DLLName
 			${If} $DLLName == ""
+			${OrIf} $DLLName == "RETC"
 				Delete "$SYSDIR\RzChromaSDK.dll"
 			${EndIf}
 		${EndIf}
 		${If} ${FileExists} "$SYSDIR\RzChromaSDK64.dll"
 			!insertmacro ReadPNFromDLL "$SYSDIR\RzChromaSDK64.dll" $DLLName
 			${If} $DLLName == ""
+			${OrIf} $DLLName == "RETC"
 				Delete "$SYSDIR\RzChromaSDK64.dll"
 			${EndIf}
 		${EndIf}
 		${EnableX64FSRedirection}
 	nodelete_rzchroma:
-
-	;If nssm is already installed, attempt to stop before installing
-	${If} ${FileExists} "$INSTDIR\nssm.exe"
-		nsExec::ExecToLog '"$INSTDIR\nssm.exe" stop RETC'
-	${EndIf}
 	
 	${If} ${RunningX64}
 		File "${FILES}\win64\retc-rpc-server-64.exe"
