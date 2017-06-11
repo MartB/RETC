@@ -370,6 +370,7 @@ __pycache__/
 # tools/**
 # !tools/packages.config
 
+*.i-*
 
 rpc-midl/*.c
 rpc-midl/rpc_retc.h

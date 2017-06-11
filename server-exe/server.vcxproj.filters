@@ -55,6 +55,7 @@
     <ClInclude Include="RazerSDK.h">
       <Filter>src\SDKS\Corsair</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -78,5 +79,8 @@
     <Filter Include="src\common">
       <UniqueIdentifier>{561a4838-9ff0-4712-a77c-3d8bb40299bc}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Server.rc" />
   </ItemGroup>
 </Project>

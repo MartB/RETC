@@ -113,6 +113,9 @@
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PreBuildEvent>
+      <Command>powershell.exe -ExecutionPolicy RemoteSigned -File "$(SolutionDir)scripts\build-version.ps1" "$(ProjectDir)\" "$(SolutionDir)\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -137,6 +140,9 @@
       <ProgramDatabaseFile>$(OutDir)retc-shim-$(PlatformArchitecture)-$(Configuration).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
+    <PreBuildEvent>
+      <Command>powershell.exe -ExecutionPolicy RemoteSigned -File "$(SolutionDir)scripts\build-version.ps1" "$(ProjectDir)\" "$(SolutionDir)\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -167,6 +173,9 @@
       <TargetMachine>MachineX86</TargetMachine>
       <ProgramDatabaseFile>$(OutDir)retc-shim-$(PlatformArchitecture)-$(Configuration).pdb</ProgramDatabaseFile>
     </Link>
+    <PreBuildEvent>
+      <Command>powershell.exe -ExecutionPolicy RemoteSigned -File "$(SolutionDir)scripts\build-version.ps1" "$(ProjectDir)\" "$(SolutionDir)\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -196,6 +205,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <ProgramDatabaseFile>$(OutDir)retc-shim-$(PlatformArchitecture)-$(Configuration).pdb</ProgramDatabaseFile>
     </Link>
+    <PreBuildEvent>
+      <Command>powershell.exe -ExecutionPolicy RemoteSigned -File "$(SolutionDir)scripts\build-version.ps1" "$(ProjectDir)\" "$(SolutionDir)\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\rpc-midl\rpc_retc_c.c" />
@@ -209,6 +221,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\rpc-midl\rpc_retc.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ShimDLL.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

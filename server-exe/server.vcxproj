@@ -204,6 +204,15 @@
       <ProgramDatabaseFile>$(OutDir)retc-server-$(PlatformArchitecture)-$(Configuration).pdb</ProgramDatabaseFile>
     </Link>
   </ItemDefinitionGroup>
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup>
+    <PreBuildEvent>
+      <Command>powershell.exe -ExecutionPolicy RemoteSigned -File "$(SolutionDir)scripts\build-version.ps1" "$(ProjectDir)\" "$(SolutionDir)\"</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup />
   <ItemGroup>
     <ClCompile Include="..\rpc-midl\rpc_retc_s.c" />
     <ClCompile Include="CorsairSDK.cpp" />
@@ -221,6 +230,7 @@
     <ClInclude Include="CorsairSDK.h" />
     <ClInclude Include="EffectManager.h" />
     <ClInclude Include="RazerSDK.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="RPCReceiver.h" />
     <ClInclude Include="SDKLoader.h" />
     <ClInclude Include="SDKManager.h" />
@@ -231,6 +241,9 @@
       <Project>{6536ebec-014e-4d6b-97be-223137694ca8}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Server.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
