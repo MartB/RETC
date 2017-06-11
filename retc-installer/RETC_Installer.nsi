@@ -4,10 +4,11 @@
 
 ;This would get the version number from the EXE, but the exe doesn't have a version number
 ;with no version number in the EXE, compile will fail
-;!ifndef VERSION
-;	!insertmacro GetPEVersionLocal "${FILES}\win64\retc-rpc-server-64.exe" vers_
-;	!define VERSION ${vers_1}.${vers_2}.${vers_3}.${vers_4}
-;!endif
+;testing this now
+!ifndef VERSION
+	!insertmacro !getdllversion "${FILES}\win64\retc-rpc-server-64.exe" vers_
+	!define VERSION ${vers_1}.${vers_2}.${vers_3}.${vers_4}
+!endif
 
 ;--------------------------------
 ;Includes
@@ -245,7 +246,7 @@ Section "RETC (required)" Sec_RETC
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC ObjectName LocalSystem'
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC Start SERVICE_AUTO_START'
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC Type SERVICE_WIN32_OWN_PROCESS'
-	
+
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" start RETC'
 
 	; Write the installation path into the registry
@@ -253,8 +254,7 @@ Section "RETC (required)" Sec_RETC
 
 	; Write the uninstall keys for Windows
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "DisplayName" "RETC"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "HelpLink" "https://github.com/MartB/RETC"
-	
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "Publisher" "RETC Project"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "URLUpdateInfo" "https://github.com/MartB/RETC/releases"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "URLInfoAbout" "https://martb.github.io/RETC/"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "HelpLink" "https://github.com/MartB/RETC/issues"
