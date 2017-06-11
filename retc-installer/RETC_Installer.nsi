@@ -1,12 +1,30 @@
-
+;--------------------------------
+;Constants
 !define FILES ".\files"
 
+;This would get the version number from the EXE, but the exe doesn't have a version number
+;with no version number in the EXE, compile will fail
+;!ifndef VERSION
+;	!insertmacro GetPEVersionLocal "${FILES}\win64\retc-rpc-server-64.exe" vers_
+;	!define VERSION ${vers_1}.${vers_2}.${vers_3}.${vers_4}
+;!endif
+
+;--------------------------------
+;Includes
 !include "MUI2.nsh"
 !include LogicLib.nsh
 !include x64.nsh
 
 ;--------------------------------
-;General
+;Variables
+Var OW64Path
+Var OWT64Path
+Var OW32Path
+Var OWT32Path
+Var "DLLName"
+
+;--------------------------------
+;General Options
 
 ; The name of the installer
 Name "RETC"
@@ -19,46 +37,12 @@ OutFile "RETC_Setup.exe"
 ; The default installation directory
 InstallDir $PROGRAMFILES\RETC
 
-Function .onInit
-	${If} ${RunningX64} 
-	   ; disable registry redirection (enable access to 64-bit portion of registry)
-	   SetRegView 64
-	   ; change install dir 
-	   StrCpy $INSTDIR "$PROGRAMFILES64\RETC"
-	${EndIf}
-	
-	ReadRegStr $0 HKLM "Software\RETC" "Install_Dir"
-	${If} $0 != ""
-		MessageBox MB_YESNO "RETC is already installed, would you like to re-install?" IDYES reinstall_yes IDNO reinstall_no
-		reinstall_no:
-		Abort
-		reinstall_yes:
-	${EndIf}
-FunctionEnd
-
-Function un.onInit
-	${If} ${RunningX64} 
-	   ; disable registry redirection (enable access to 64-bit portion of registry)
-	   SetRegView 64
-	   ; change install dir 
-	   StrCpy $INSTDIR "$PROGRAMFILES64\RETC"
-	${EndIf}
-FunctionEnd
-	
 ; Registry key to check for directory (so if you install again, it will 
 ; overwrite the old one automatically)
 InstallDirRegKey HKLM "Software\RETC" "Install_Dir"
 
 ; Request application privileges for Windows Vista
 RequestExecutionLevel admin
-
-;--------------------------------
-;Variables
-Var OW64Path
-Var OWT64Path
-Var OW32Path
-Var OWT32Path
-Var "DLLName"
 
 ;--------------------------------
 ;Interface Settings
@@ -88,7 +72,6 @@ Var "DLLName"
 !insertmacro MUI_LANGUAGE "English"
 
 ;--------------------------------
-
 
 ;--------------------------------
 ;Macros
@@ -122,7 +105,36 @@ Var GetInstalledSize.total
 	Pop $0
 	IntFmt $GetInstalledSize.total "0x%08X" $GetInstalledSize.total
 !macroend
+
 ;--------------------------------
+
+;--------------------------------
+;Functions
+Function .onInit
+	${If} ${RunningX64} 
+	   ; disable registry redirection (enable access to 64-bit portion of registry)
+	   SetRegView 64
+	   ; change install dir 
+	   StrCpy $INSTDIR "$PROGRAMFILES64\RETC"
+	${EndIf}
+	
+	ReadRegStr $0 HKLM "Software\RETC" "Install_Dir"
+	${If} $0 != ""
+		MessageBox MB_YESNO "RETC is already installed, would you like to re-install?" IDYES reinstall_yes IDNO reinstall_no
+		reinstall_no:
+		Abort
+		reinstall_yes:
+	${EndIf}
+FunctionEnd
+
+Function un.onInit
+	${If} ${RunningX64} 
+	   ; disable registry redirection (enable access to 64-bit portion of registry)
+	   SetRegView 64
+	   ; change install dir 
+	   StrCpy $INSTDIR "$PROGRAMFILES64\RETC"
+	${EndIf}
+FunctionEnd
 
 ; The stuff to install
 Section "RETC (required)" Sec_RETC
@@ -246,6 +258,9 @@ Section "RETC (required)" Sec_RETC
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "URLUpdateInfo" "https://github.com/MartB/RETC/releases"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "URLInfoAbout" "https://martb.github.io/RETC/"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "HelpLink" "https://github.com/MartB/RETC/issues"
+	!ifdef VERSION
+		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "DisplayVersion" "${VERSION}"
+	!endif
 	!insertmacro GetInstalledSize
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "EstimatedSize" $GetInstalledSize.total
 
