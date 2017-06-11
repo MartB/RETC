@@ -91,17 +91,36 @@ Var "DLLName"
 
 
 ;--------------------------------
-;ReadStringFromDLL macro
-;Gets DLL detail strings from DLLs
-!define FORMAT_MESSAGE_ALLOCATE_BUFFER	0x00000100
-!define FORMAT_MESSAGE_IGNORE_INSERTS	0x00000200
-!define FORMAT_MESSAGE_FROM_HMODULE	0x00000800
-!define FORMAT_MESSAGE_MAX_WIDTH_MASK	0x000000FF
- 
+;Macros
 !macro ReadPNFromDLL LIBRARY VAR
 	MoreInfo::GetProductName "${LIBRARY}"
 	Pop $1
 	StrCpy ${VAR} $1
+!macroend
+
+; Return on top of stack the total size of the selected (installed) sections, formated as DWORD
+; Assumes no more than 256 sections are defined
+Var GetInstalledSize.total
+!macro GetInstalledSize
+	Push $0
+	Push $1
+	StrCpy $GetInstalledSize.total 0
+	${ForEach} $1 0 256 + 1
+		${if} ${SectionIsSelected} $1
+			SectionGetSize $1 $0
+			IntOp $GetInstalledSize.total $GetInstalledSize.total + $0
+		${Endif}
+ 
+		; Error flag is set when an out-of-bound section is referenced
+		${if} ${errors}
+			${break}
+		${Endif}
+	${Next}
+ 
+	ClearErrors
+	Pop $1
+	Pop $0
+	IntFmt $GetInstalledSize.total "0x%08X" $GetInstalledSize.total
 !macroend
 ;--------------------------------
 
@@ -223,6 +242,13 @@ Section "RETC (required)" Sec_RETC
 	; Write the uninstall keys for Windows
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "DisplayName" "RETC"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "HelpLink" "https://github.com/MartB/RETC"
+	
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "URLUpdateInfo" "https://github.com/MartB/RETC/releases"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "URLInfoAbout" "https://martb.github.io/RETC/"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "HelpLink" "https://github.com/MartB/RETC/issues"
+	!insertmacro GetInstalledSize
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "EstimatedSize" $GetInstalledSize.total
+
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "UninstallString" '"$INSTDIR\uninstall.exe"'
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "NoModify" 1
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RETC" "NoRepair" 1
