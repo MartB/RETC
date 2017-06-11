@@ -52,7 +52,7 @@ RequestExecutionLevel admin
 !define MUI_FINISHPAGE_TEXT "Installation is complete.  Remember, RETC will only work with supported software when the RazerChroma DLL files have been placed in the software directory.  If you wish to use it with any other software, you will need to copy RzChromaSDK.dll and RzChromaSDK64.dll from the wrappers folder to that software directory as well."
 !define MUI_FINISHPAGE_LINK "Visit the RETC Github Repo"
 !define MUI_FINISHPAGE_LINK_LOCATION "https://github.com/MartB/RETC"
-!define MUI_FINISHPAGE_NOAUTOCLOSE
+;!define MUI_FINISHPAGE_NOAUTOCLOSE
 
 ;--------------------------------
 ; Pages
