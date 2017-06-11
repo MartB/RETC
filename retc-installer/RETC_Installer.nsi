@@ -64,7 +64,7 @@ Var "DLLName"
 ;Interface Settings
 !define MUI_ABORTWARNING
 !define MUI_WELCOMEPAGE_TEXT "RETC is a piece of software that allows Corsair RGB devices to take advantage of software that supports Razer Chroma RGB devices."
-!define MUI_FINISHPAGE_TEXT "Installation is complete.  Remember, RETC will only work with supported software when the RazerChroma DLL files have been placed in the software directory.  If you wish to use it with any other software, you will need to copy RzChromaSDK.dll and RzChromaSDK64.dll to that software directory as well."
+!define MUI_FINISHPAGE_TEXT "Installation is complete.  Remember, RETC will only work with supported software when the RazerChroma DLL files have been placed in the software directory.  If you wish to use it with any other software, you will need to copy RzChromaSDK.dll and RzChromaSDK64.dll from the wrappers folder to that software directory as well."
 !define MUI_FINISHPAGE_LINK "Visit the RETC Github Repo"
 !define MUI_FINISHPAGE_LINK_LOCATION "https://github.com/MartB/RETC"
 
@@ -181,14 +181,27 @@ Section "RETC (required)" Sec_RETC
 	
 	File "${FILES}\win32\nssm.exe"
 	File "${FILES}\win64\nssm.exe"
-	File "${FILES}\win32\RzChromaSDK.dll"
-	File "${FILES}\win64\RzChromaSDK64.dll"
 	File "${FILES}\LICENSE"
 	File "${FILES}\README.md"
 	
+	SetOutPath $INSTDIR\wrappers
+	File "${FILES}\win32\RzChromaSDK.dll"
+	File "${FILES}\win64\RzChromaSDK64.dll"
+	
+	${If} ${FileExists} "$INSTDIR\RzChromaSDK.dll"
+		Delete "$INSTDIR\RzChromaSDK.dll"
+	${EndIf}
+	${If} ${FileExists} "$INSTDIR\RzChromaSDK64.dll"
+		Delete "$INSTDIR\RzChromaSDK64.dll"
+	${EndIf}
+	
 	WriteINIStr "$INSTDIR\RETC Github Repo.URL" "InternetShortcut" "URL" "https://github.com/MartB/RETC"
 
-	nsExec::ExecToLog '"$INSTDIR\nssm.exe" install RETC "$INSTDIR\retc-rpc-server-64.exe"'
+	${If} ${RunningX64} 
+		nsExec::ExecToLog '"$INSTDIR\nssm.exe" install RETC "$INSTDIR\retc-rpc-server-64.exe"'
+	${Else}
+		nsExec::ExecToLog '"$INSTDIR\nssm.exe" install RETC "$INSTDIR\retc-rpc-server-32.exe"'
+	${EndIf}
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC AppDirectory "$INSTDIR"'
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC AppExit Default Restart'
 	nsExec::ExecToLog '"$INSTDIR\nssm.exe" set RETC AppNoConsole 1'
