@@ -211,6 +211,18 @@
     <PreBuildEvent>
       <Command>powershell.exe -ExecutionPolicy RemoteSigned -File "$(SolutionDir)scripts\build-version.ps1" "$(ProjectDir)\" "$(SolutionDir)\"</Command>
     </PreBuildEvent>
+    <ClCompile>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <Link>
+      <LinkTimeCodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+    <Link>
+      <LinkTimeCodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|x64'">UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup />
   <ItemGroup>
