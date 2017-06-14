@@ -27,6 +27,12 @@ Copy the `retc-rpc-server-64.exe` from the github download into the same folder.
 Put the extracted `CUESDK\bin\i386\CUESDK_2015.dll` into the `retc-server` folder you just created.
 Copy the `retc-rpc-server.exe` from the github download into the same folder.
 # Usage
+**Choose one of the following sections depending on how you installed RETC.** 
+### Automatic installation
+The service should start right after the installation is done and should continue doing so on every boot.
+However if thats not the case check your services within windows and make sure you find a **RETC** service thats set to autostart.
+
+### Manual installation
 Before you start any games run **either** `retc-rpc-server.exe` **or** `retc-rpc-server-64.exe`, depending on the system architecture you have, and **leave the console window open**.
 
 # Supported Output SDKs:
