@@ -48,16 +48,32 @@ bool SDKManager::initialize() {
 		return false;
 	}
 
-	// TODO: Fill m_clientConfig->emulatedDeviceIDS with data from a config file.
-	m_clientConfig->emulatedDeviceIDS[KEYBOARD] = ChromaSDK::BLACKWIDOW_CHROMA;
-	m_clientConfig->emulatedDeviceIDS[MOUSE] = ChromaSDK::MAMBA_CHROMA;
-	m_clientConfig->emulatedDeviceIDS[HEADSET] = ChromaSDK::KRAKEN71_CHROMA;
-	m_clientConfig->emulatedDeviceIDS[MOUSEPAD] = ChromaSDK::FIREFLY_CHROMA;
-	m_clientConfig->emulatedDeviceIDS[KEYPAD] = ChromaSDK::ORBWEAVER_CHROMA;
-
 	checkAvailability();
+
+	reloadEmulatedDevices();
 	m_bIsInitialized = true;
 	return true;
+}
+
+void SDKManager::reloadEmulatedDevices() {
+	using namespace LookupMaps;
+	using namespace LookupArrays;
+
+	std::wstring lastConfigValue;
+	for (int idx = KEYBOARD; idx < ALL; idx++) {
+		lastConfigValue = CONFIG->GetWString(SDK_MAIN_CONFIG_SECTION, EM_KEYS[idx], EM_VALS[idx]);
+		auto it = LookupMaps::razerStringToDevID.find(lastConfigValue);
+
+		if (it != LookupMaps::razerStringToDevID.end()) {
+			m_clientConfig->emulatedDeviceIDS[idx] = it->second;
+			LOG->debug(L"{0} set to {1}", EM_KEYS[idx], lastConfigValue);
+		}
+		else {
+			LOG->error(L"Invalid {0} value: {1} using default: {2}", EM_KEYS[idx], lastConfigValue, EM_VALS[idx]);
+			lastConfigValue = EM_VALS[idx];
+			m_clientConfig->emulatedDeviceIDS[idx] = LookupMaps::razerStringToDevID.at(lastConfigValue);
+		}
+	}
 }
 
 LightingSDK* SDKManager::getSDKForDeviceType(RETCDeviceType type) {
@@ -72,7 +88,7 @@ void SDKManager::checkAvailability() {
 	bool hasAnySDK = false;;
 	for (auto&& sdk : m_availableSDKs) {
 		if (!sdk->init(m_sdkLoader.get())) {
-			LOG_T(" an sdk failed to initialize {0}", sdk->getSDKName());
+			LOG_T(L"an sdk failed to initialize {0}", sdk->getSDKName());
 			continue;
 		}
 

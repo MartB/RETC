@@ -194,15 +194,15 @@ RZRESULT DeleteEffect(RZEFFECTID EffectId) {
 }
 
 RZRESULT QueryDevice(RZDEVICEID /*DeviceId*/, DEVICE_INFO_TYPE& /*DeviceInfo*/) {
-	return RZRESULT_SUCCESS; //#todo add method
+	return RZRESULT_SUCCESS;
 }
 
 RZRESULT RegisterEventNotification(HWND /*hWnd*/) {
-	return RZRESULT_SUCCESS; //#todo add method
+	return RZRESULT_SUCCESS;
 }
 
 RZRESULT UnregisterEventNotification() {
-	return RZRESULT_SUCCESS; //#todo add method
+	return RZRESULT_SUCCESS;
 }
 
 

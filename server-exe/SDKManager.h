@@ -19,6 +19,7 @@ public:
 
 public:
 	bool initialize();
+	void reloadEmulatedDevices();
 	LightingSDK* getSDKForDeviceType(RETCDeviceType type);
 	RETCClientConfig* getClientConfig() const { return m_clientConfig; }
 

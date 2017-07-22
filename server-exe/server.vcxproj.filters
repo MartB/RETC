@@ -23,8 +23,11 @@
       <Filter>src\Network\midl</Filter>
     </ClCompile>
     <ClCompile Include="server.cpp" />
+    <ClCompile Include="ConfigManager.cpp">
+      <Filter>src\config</Filter>
+    </ClCompile>
     <ClCompile Include="RazerSDK.cpp">
-      <Filter>src\SDKS\Corsair</Filter>
+      <Filter>src\SDKS\Razer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -52,10 +55,13 @@
     <ClInclude Include="commonData.h">
       <Filter>src\common</Filter>
     </ClInclude>
-    <ClInclude Include="RazerSDK.h">
-      <Filter>src\SDKS\Corsair</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="ConfigManager.h">
+      <Filter>src\config</Filter>
+    </ClInclude>
+    <ClInclude Include="RazerSDK.h">
+      <Filter>src\SDKS\Razer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -78,6 +84,12 @@
     </Filter>
     <Filter Include="src\common">
       <UniqueIdentifier>{561a4838-9ff0-4712-a77c-3d8bb40299bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\config">
+      <UniqueIdentifier>{257a3bb1-57b1-47b6-8b6b-68ecd7f81933}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\SDKS\Razer">
+      <UniqueIdentifier>{ff229edb-146c-4197-b65d-6bbacf6acd32}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

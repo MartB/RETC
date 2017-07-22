@@ -7,18 +7,26 @@
 // Global vars
 std::unique_ptr<RPCReceiver> rpcReceiver(nullptr);
 std::unique_ptr<SDKManager> sdkManager(nullptr);
+std::unique_ptr<ConfigManager> CONFIG(nullptr);
 std::shared_ptr<spdlog::logger> LOG(nullptr);
 
 // Main
 bool userCancelled = false;
 
 void cleanup() {
-	if (rpcReceiver) {
+	if (rpcReceiver) { //-V547
 		rpcReceiver->shutdown();
 		rpcReceiver.reset();
 	}
-	if (sdkManager) {
+
+	if (sdkManager) { //-V547
 		sdkManager.reset();
+	}
+
+	if (CONFIG) { //-V547
+		if (!CONFIG->SaveConfig()) {
+			LOG->error("Failed to save config file.");
+		}
 	}
 }
 
@@ -35,25 +43,32 @@ BOOL WINAPI consoleHandler(DWORD signal) {
 	}
 }
 
+
+#if defined(_DEBUG)
+#define DEF_LOG_LEVEL spdlog::level::trace
+#define DEF_FLUSH_LEVEL spdlog::level::trace
+#else
+#define DEF_LOG_LEVEL spdlog::level::warn
+#define DEF_FLUSH_LEVEL spdlog::level::err
+#endif
+
 int main() {
+	CONFIG.reset(new ConfigManager());
+
 	try {
 		std::vector<spdlog::sink_ptr> sinks;
 		sinks.push_back(std::make_shared<spdlog::sinks::wincolor_stdout_sink_st>());
 		sinks.push_back(std::make_shared<spdlog::sinks::simple_file_sink_st>("server.log"));
 		LOG = std::make_shared<spdlog::logger>("logger", begin(sinks), end(sinks));
-		spdlog::set_pattern("[%d-%m-%Y %H:%M:%S.%e %z][%l] %v");
+
+		LOG->set_pattern(CONFIG->GetAsciiString(L"log", L"format", L"[%d.%m %H:%M:%S.%e][%l] %v"));
 		spdlog::set_async_mode(1024);
 
-#if defined(_DEBUG)
-		LOG->set_level(spdlog::level::trace);
-		LOG->flush_on(spdlog::level::trace);
-#else
-		LOG->set_level(spdlog::level::warn);
-		LOG->flush_on(spdlog::level::err);
-#endif
+		LOG->set_level((spdlog::level::level_enum)CONFIG->GetLong(L"log", L"level", DEF_LOG_LEVEL));
+		LOG->flush_on((spdlog::level::level_enum)CONFIG->GetLong(L"log", L"flush", DEF_FLUSH_LEVEL));
 
 		spdlog::set_error_handler([](const std::string& msg) {
-			std::cerr << "ERR: " << msg << std::endl;
+			LOG->error("ERR: {}", msg);
 		});
 	}
 	catch (const spdlog::spdlog_ex& ex) {
@@ -76,7 +91,7 @@ int main() {
 		std::this_thread::sleep_for(1ms);
 	}
 
+	// Dont put code below this just add all your exit code to cleanup()
 	cleanup();
-
 	return EXIT_SUCCESS;
 }

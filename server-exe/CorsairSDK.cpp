@@ -4,7 +4,7 @@
 #include "CorsairSDK.h"
 
 CorsairSDK::CorsairSDK() {
-	this->SDK_NAME = "CorsairCueSDK";
+	this->SDK_NAME = L"CorsairCueSDK";
 #ifdef _WIN64
 	this->SDK_DLL = "CUESDK.x64_2015.dll";
 #else
@@ -52,6 +52,14 @@ bool CorsairSDK::initialize() {
 	if (devCount == 0) {
 		LOG_I("No devices found");
 		return false;
+	}
+
+	if (CONFIG->GetBool(SDK_CONFIG_SECTION, L"exclusivemode", false)) {
+		LOG_I("Using exclusive mode due to config parameter");
+
+		if (!CorsairRequestControl(CorsairAccessMode::CAM_ExclusiveLightingControl)) {
+			LOG_E("Requesting exclusive mode failed falling back to default.");
+		}	
 	}
 
 	for (auto i = 0; i < devCount; i++) {

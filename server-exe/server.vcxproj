@@ -227,6 +227,7 @@
   <ItemGroup />
   <ItemGroup>
     <ClCompile Include="..\rpc-midl\rpc_retc_s.c" />
+    <ClCompile Include="ConfigManager.cpp" />
     <ClCompile Include="CorsairSDK.cpp" />
     <ClCompile Include="EffectManager.cpp" />
     <ClCompile Include="RazerSDK.cpp" />
@@ -239,6 +240,7 @@
   <ItemGroup>
     <ClInclude Include="..\rpc-midl\rpc_retc.h" />
     <ClInclude Include="commonData.h" />
+    <ClInclude Include="ConfigManager.h" />
     <ClInclude Include="CorsairSDK.h" />
     <ClInclude Include="EffectManager.h" />
     <ClInclude Include="RazerSDK.h" />

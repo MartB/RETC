@@ -1,5 +1,7 @@
 #pragma once
 #include "spdlog/spdlog.h"
+#include "ConfigManager.h"
+#include <memory>
 
 namespace std {
 	template <>
@@ -16,6 +18,7 @@ namespace std {
 #define LOBYTE(w) ((BYTE)(((DWORD_PTR)(w)) & 0xff))
 #define HIBYTE(w) ((BYTE)((((DWORD_PTR)(w)) >> 8) & 0xff))
 
+extern std::unique_ptr<ConfigManager> CONFIG;
 extern std::shared_ptr<spdlog::logger> LOG;
 #define LOG_E(...) LOG->error("[" __FUNCTION__ "] " __VA_ARGS__)
 #define LOG_W(...) LOG->warn("[" __FUNCTION__"] " __VA_ARGS__)

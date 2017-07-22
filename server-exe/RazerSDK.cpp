@@ -1,11 +1,14 @@
-﻿#include "RazerSDK.h"
+﻿// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
+#include "RazerSDK.h"
 /**
  * This sdk is just forwarding to the real dll.
  * WARNING: If the "real" dll is the patched stub we created, this will enter an endless loop!
  * NEVER CREATE GLOBAL DLL OVERWRITES in System32 with this SDK enabled.
  */
 RazerSDK::RazerSDK() {
-	this->SDK_NAME = "RazerPassthrough";
+	this->SDK_NAME = L"RazerPassthrough";
 
 #ifdef _WIN64
 	this->SDK_DLL = "RzChromaSDK64.dll";
@@ -61,8 +64,23 @@ bool RazerSDK::initialize() {
 				continue;
 			}
 
+			if (CONFIG->GetBool(SDK_CONFIG_SECTION, L"overwritedevices", true)) {
+				auto findResult = std::find_if(std::begin(LookupMaps::razerStringToDevID), std::end(LookupMaps::razerStringToDevID), [&](const auto &pair) {
+					return pair.second == razerdevguid;
+				});
+
+				if (findResult == std::end(LookupMaps::razerStringToDevID)) {
+					RPC_WSTR szUuid = NULL;
+					UuidToString(&razerdevguid, &szUuid);
+					LOG->error("Connected device is not fully supported by this application, please report it: {}", *szUuid);
+				}
+				else {
+					LOG->info(L"Found valid razer device altering emulated device id: {}", findResult->first.c_str());
+					CONFIG->SetWString(SDK_MAIN_CONFIG_SECTION, LookupArrays::EM_KEYS[deviceType], findResult->first.c_str());
+				}
+			}
+
 			enableSupportFor(deviceType);
-			//#todo report connected device id to config manager so sdkmanager can use real values.
 		}
 	}
 

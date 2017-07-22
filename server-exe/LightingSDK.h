@@ -30,19 +30,25 @@ public:
 
 	bool init(SDKLoader* sdkLoader) {
 		if (SDK_DLL.empty() || SDK_NAME.empty()) {
-			LOG_W("Skipped an invalid SDK.");
-			LOG_T("Invalid SDK: DLL_NAME missing.");
+			LOG_W("Skipped an invalid SDK due to missing DLL_NAME.");
+			return false;
+		}
+		wcscat_s(SDK_CONFIG_SECTION, SDK_MAIN_SUB_CONFIG_SECTION);
+		wcscat_s(SDK_CONFIG_SECTION, SDK_NAME.c_str());
+
+		if (!CONFIG->GetBool(SDK_CONFIG_SECTION, L"enabled", true)) {
+			LOG_D(L"{0} load aborted disabled by config.", SDK_NAME);
 			return false;
 		}
 
 		if (!sdkLoader->load(m_dllInstance, SDK_DLL, DLL_FUNCTION_LIST)) {
-			LOG_E("{0} failed to load.", SDK_NAME);
+			LOG_E(L"{0} failed to load.", SDK_NAME);
 			return false;
 		}
 
 		m_sdkLoader = sdkLoader;
 
-		LOG_I("{0} loaded {1} initializing SDK.", SDK_NAME, SDK_DLL);
+		LOG_I(L"{0} loaded {1} initializing SDK.", SDK_NAME, SDK_DLL);
 		return initialize();
 	}
 
@@ -53,7 +59,7 @@ public:
 	supportArray_t& getSupportedModes() { return m_supportedDevices; }
 
 	const std::string& getSDKDll() const { return SDK_DLL; }
-	const std::string& getSDKName() const { return SDK_NAME; }
+	const std::wstring& getSDKName() const { return SDK_NAME; }
 
 	void disconnect() {
 		// Dont call reset because we cant guarantee that the sdk checks for a valid dll.
@@ -74,7 +80,8 @@ public:
 protected:
 	functionList DLL_FUNCTION_LIST;
 	std::string SDK_DLL;
-	std::string SDK_NAME;
+	std::wstring SDK_NAME;
+	wchar_t SDK_CONFIG_SECTION[64] = {0};
 
 	supportArray_t m_supportedDevices;
 
