@@ -70,9 +70,7 @@ bool RazerSDK::initialize() {
 				});
 
 				if (findResult == std::end(LookupMaps::razerStringToDevID)) {
-					RPC_WSTR szUuid = NULL;
-					UuidToString(&razerdevguid, &szUuid);
-					LOG->error("Connected device is not fully supported by this application, please report it: {}", *szUuid);
+					LOG->error("Connected device is not fully supported by this application, please report it: {}", guidToString(razerdevguid));
 				}
 				else {
 					LOG->info(L"Found valid razer device altering emulated device id: {}", findResult->first.c_str());
