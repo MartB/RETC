@@ -2,9 +2,6 @@
 ;Constants
 !define FILES ".\files"
 
-;This would get the version number from the EXE, but the exe doesn't have a version number
-;with no version number in the EXE, compile will fail
-;testing this now
 !ifndef VERSION
 	!getdllversion "${FILES}\win64\retc-rpc-server-64.exe" vers_
 	!define VERSION ${vers_1}.${vers_2}.${vers_3}.${vers_4}
@@ -341,12 +338,14 @@ Section "Uninstall"
 
 	; Remove files and uninstaller
 	Delete "$INSTDIR\*.*"
+	Delete "$INSTDIR\wrappers\*.*"
 
 	; Remove shortcuts, if any
 	Delete "$SMPROGRAMS\RETC\*.*"
 
 	; Remove directories used
 	RMDir "$SMPROGRAMS\RETC"
+	RMDir "$INSTDIR\wrappers"
 	RMDir "$INSTDIR"
 
 SectionEnd
