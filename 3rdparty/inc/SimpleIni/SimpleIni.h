@@ -1373,12 +1373,23 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::LoadFile(
     FILE * a_fpFile
     )
 {
+#if _WIN64
+	int retval = _fseeki64(a_fpFile, 0, SEEK_END);
+#else
+	int retval = fseek(a_fpFile, 0, SEEK_END);
+#endif
+
     // load the raw file data
-    int retval = fseek(a_fpFile, 0, SEEK_END);
     if (retval != 0) {
         return SI_FILE;
     }
-    long lSize = ftell(a_fpFile);
+
+#if _WIN64
+	int64_t lSize = _ftelli64(a_fpFile);
+#else
+	long lSize = ftell(a_fpFile);
+#endif
+
     if (lSize < 0) {
         return SI_FILE;
     }
@@ -1394,7 +1405,11 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::LoadFile(
     pData[lSize] = 0;
     
     // load data into buffer
-    fseek(a_fpFile, 0, SEEK_SET);
+#if _WIN64
+	_fseeki64(a_fpFile, 0, SEEK_SET);
+#else
+	fseek(a_fpFile, 0, SEEK_SET);
+#endif
     size_t uRead = fread(pData, sizeof(char), lSize, a_fpFile);
     if (uRead != (size_t) lSize) {
         delete[] pData;
@@ -1995,15 +2010,16 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::GetValue(
     if (iSection == m_data.end()) {
         return a_pDefault;
     }
-    typename TKeyVal::const_iterator iKeyVal = iSection->second.find(a_pKey);
-    if (iKeyVal == iSection->second.end()) {
+    auto sectionValue = iSection->second;
+    typename TKeyVal::const_iterator iKeyVal = sectionValue.find(a_pKey);
+    if (iKeyVal == sectionValue.end()) {
         return a_pDefault;
     }
 
     // check for multiple entries with the same key
     if (m_bAllowMultiKey && a_pHasMultiple) {
         typename TKeyVal::const_iterator iTemp = iKeyVal;
-        if (++iTemp != iSection->second.end()) {
+        if (++iTemp != sectionValue.end()) {
             if (!IsLess(a_pKey, iTemp->first.pItem)) {
                 *a_pHasMultiple = true;
             }
