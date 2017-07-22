@@ -5,10 +5,10 @@
 
 #pragma once
 
-#include <spdlog/sinks/base_sink.h>
-#include <spdlog/details/null_mutex.h>
-#include <spdlog/details/file_helper.h>
-#include <spdlog/fmt/fmt.h>
+#include "spdlog/sinks/base_sink.h"
+#include "spdlog/details/null_mutex.h"
+#include "spdlog/details/file_helper.h"
+#include "spdlog/fmt/fmt.h"
 
 #include <algorithm>
 #include <chrono>
@@ -33,10 +33,7 @@ public:
     {
         _file_helper.open(filename, truncate);
     }
-    void flush() override
-    {
-        _file_helper.flush();
-    }
+
     void set_force_flush(bool force_flush)
     {
         _force_flush = force_flush;
@@ -48,6 +45,10 @@ protected:
         _file_helper.write(msg);
         if(_force_flush)
             _file_helper.flush();
+    }
+    void _flush() override
+    {
+        _file_helper.flush();
     }
 private:
     details::file_helper _file_helper;
@@ -76,10 +77,6 @@ public:
         _current_size = _file_helper.size(); //expensive. called only once
     }
 
-    void flush() override
-    {
-        _file_helper.flush();
-    }
 
 protected:
     void _sink_it(const details::log_msg& msg) override
@@ -91,6 +88,11 @@ protected:
             _current_size = msg.formatted.size();
         }
         _file_helper.write(msg);
+    }
+
+    void _flush() override
+    {
+        _file_helper.flush();
     }
 
 private:
@@ -194,10 +196,6 @@ public:
         _file_helper.open(FileNameCalc::calc_filename(_base_filename));
     }
 
-    void flush() override
-    {
-        _file_helper.flush();
-    }
 
 protected:
     void _sink_it(const details::log_msg& msg) override
@@ -208,6 +206,11 @@ protected:
             _rotation_tp = _next_rotation_tp();
         }
         _file_helper.write(msg);
+    }
+
+    void _flush() override
+    {
+        _file_helper.flush();
     }
 
 private:

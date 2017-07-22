@@ -12,12 +12,12 @@
 
 #pragma once
 
-#include <spdlog/common.h>
-#include <spdlog/sinks/sink.h>
-#include <spdlog/details/mpmc_bounded_q.h>
-#include <spdlog/details/log_msg.h>
-#include <spdlog/details/os.h>
-#include <spdlog/formatter.h>
+#include "spdlog/common.h"
+#include "spdlog/sinks/sink.h"
+#include "spdlog/details/mpmc_bounded_q.h"
+#include "spdlog/details/log_msg.h"
+#include "spdlog/details/os.h"
+#include "spdlog/formatter.h"
 
 #include <chrono>
 #include <exception>
@@ -51,6 +51,7 @@ class async_log_helper
         size_t thread_id;
         std::string txt;
         async_msg_type msg_type;
+        size_t msg_id;
 
         async_msg() = default;
         ~async_msg() = default;
@@ -60,11 +61,17 @@ async_msg(async_msg&& other) SPDLOG_NOEXCEPT:
         logger_name(std::move(other.logger_name)),
                     level(std::move(other.level)),
                     time(std::move(other.time)),
+                    thread_id(other.thread_id),
                     txt(std::move(other.txt)),
-                    msg_type(std::move(other.msg_type))
+                    msg_type(std::move(other.msg_type)),
+                    msg_id(other.msg_id)
         {}
 
-        async_msg(async_msg_type m_type):msg_type(m_type)
+        async_msg(async_msg_type m_type):
+            level(level::info),
+            thread_id(0),
+            msg_type(m_type),
+            msg_id(0)
         {}
 
         async_msg& operator=(async_msg&& other) SPDLOG_NOEXCEPT
@@ -75,6 +82,7 @@ async_msg(async_msg&& other) SPDLOG_NOEXCEPT:
             thread_id = other.thread_id;
             txt = std::move(other.txt);
             msg_type = other.msg_type;
+            msg_id = other.msg_id;
             return *this;
         }
 
@@ -88,7 +96,8 @@ async_msg(async_msg&& other) SPDLOG_NOEXCEPT:
             time(m.time),
             thread_id(m.thread_id),
             txt(m.raw.data(), m.raw.size()),
-            msg_type(async_msg_type::log)
+            msg_type(async_msg_type::log),
+            msg_id(m.msg_id)
         {
 #ifndef SPDLOG_NO_NAME
             logger_name = *m.logger_name;
@@ -104,6 +113,7 @@ async_msg(async_msg&& other) SPDLOG_NOEXCEPT:
             msg.time = time;
             msg.thread_id = thread_id;
             msg.raw << txt;
+            msg.msg_id = msg_id;
         }
     };
 

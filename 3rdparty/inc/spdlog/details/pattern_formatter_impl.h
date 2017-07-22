@@ -5,10 +5,10 @@
 
 #pragma once
 
-#include <spdlog/formatter.h>
-#include <spdlog/details/log_msg.h>
-#include <spdlog/details/os.h>
-#include <spdlog/fmt/fmt.h>
+#include "spdlog/formatter.h"
+#include "spdlog/details/log_msg.h"
+#include "spdlog/details/os.h"
+#include "spdlog/fmt/fmt.h"
 
 #include <chrono>
 #include <ctime>
@@ -92,7 +92,14 @@ class a_formatter:public flag_formatter
         msg.formatted << days()[tm_time.tm_wday];
     }
 };
-
+// message counter formatter
+class i_formatter SPDLOG_FINAL:public flag_formatter
+{
+    void format(details::log_msg& msg, const std::tm&) override
+    {
+        msg.formatted << '#' << msg.msg_id;
+    }
+};
 //Full weekday name
 static const days_array& full_days()
 {
@@ -317,14 +324,13 @@ class T_formatter SPDLOG_FINAL:public flag_formatter
     }
 };
 
-
 // ISO 8601 offset from UTC in timezone (+-HH:MM)
 class z_formatter SPDLOG_FINAL:public flag_formatter
 {
 public:
     const std::chrono::seconds cache_refresh = std::chrono::seconds(5);
 
-    z_formatter():_last_update(std::chrono::seconds(0))
+    z_formatter():_last_update(std::chrono::seconds(0)), _offset_minutes(0)
     {}
     z_formatter(const z_formatter&) = delete;
     z_formatter& operator=(const z_formatter&) = delete;
@@ -488,7 +494,8 @@ class full_formatter SPDLOG_FINAL:public flag_formatter
 ///////////////////////////////////////////////////////////////////////////////
 // pattern_formatter inline impl
 ///////////////////////////////////////////////////////////////////////////////
-inline spdlog::pattern_formatter::pattern_formatter(const std::string& pattern)
+inline spdlog::pattern_formatter::pattern_formatter(const std::string& pattern, pattern_time_type pattern_time)
+    : _pattern_time(pattern_time)
 {
     compile_pattern(pattern);
 }
@@ -645,6 +652,12 @@ inline void spdlog::pattern_formatter::handle_flag(char flag)
         _formatters.push_back(std::unique_ptr<details::flag_formatter>(new details::pid_formatter()));
         break;
 
+#if defined(SPDLOG_ENABLE_MESSAGE_COUNTER)
+    case ('i'):
+        _formatters.push_back(std::unique_ptr<details::flag_formatter>(new details::i_formatter()));
+        break;
+#endif
+
     default: //Unknown flag appears as is
         _formatters.push_back(std::unique_ptr<details::flag_formatter>(new details::ch_formatter('%')));
         _formatters.push_back(std::unique_ptr<details::flag_formatter>(new details::ch_formatter(flag)));
@@ -652,12 +665,19 @@ inline void spdlog::pattern_formatter::handle_flag(char flag)
     }
 }
 
+inline std::tm spdlog::pattern_formatter::get_time(details::log_msg& msg)
+{
+    if (_pattern_time == pattern_time_type::local)
+        return details::os::localtime(log_clock::to_time_t(msg.time));
+    else
+        return details::os::gmtime(log_clock::to_time_t(msg.time));
+}
 
 inline void spdlog::pattern_formatter::format(details::log_msg& msg)
 {
 
 #ifndef SPDLOG_NO_DATETIME
-    auto tm_time = details::os::localtime(log_clock::to_time_t(msg.time));
+    auto tm_time = get_time(msg);
 #else
     std::tm tm_time;
 #endif

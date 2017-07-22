@@ -10,10 +10,10 @@
 // all locking is taken care of here so no locking needed by the implementers..
 //
 
-#include <spdlog/sinks/sink.h>
-#include <spdlog/formatter.h>
-#include <spdlog/common.h>
-#include <spdlog/details/log_msg.h>
+#include "spdlog/sinks/sink.h"
+#include "spdlog/formatter.h"
+#include "spdlog/common.h"
+#include "spdlog/details/log_msg.h"
 
 #include <mutex>
 
@@ -36,9 +36,14 @@ public:
         std::lock_guard<Mutex> lock(_mutex);
         _sink_it(msg);
     }
+    void flush() SPDLOG_FINAL override
+    {
+        _flush();
+    }
 
 protected:
     virtual void _sink_it(const details::log_msg& msg) = 0;
+    virtual void _flush() = 0;
     Mutex _mutex;
 };
 }
