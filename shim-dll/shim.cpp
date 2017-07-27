@@ -24,10 +24,10 @@ RzApi RZRESULT CreateKeypadEffect(Keypad::EFFECT_TYPE Effect, PRZPARAM pParam, R
 RzApi RZRESULT SetEffect(RZEFFECTID EffectId);
 RzApi RZRESULT DeleteEffect(RZEFFECTID EffectId);
 
-//////////////////////////////////////////////////////////////////////////
-// All functions below this line are not implemented.
 RzApi RZRESULT QueryDevice(RZDEVICEID DeviceId, DEVICE_INFO_TYPE& DeviceInfo);
 
+//////////////////////////////////////////////////////////////////////////
+// All functions below this line are not implemented.
 RzApi RZRESULT RegisterEventNotification(HWND hWnd);
 RzApi RZRESULT UnregisterEventNotification();
 //////////////////////////////////////////////////////////////////////////
@@ -193,8 +193,16 @@ RZRESULT DeleteEffect(RZEFFECTID EffectId) {
 	RpcEndExcept
 }
 
-RZRESULT QueryDevice(RZDEVICEID /*DeviceId*/, DEVICE_INFO_TYPE& /*DeviceInfo*/) {
-	return RZRESULT_SUCCESS;
+RZRESULT QueryDevice(RZDEVICEID DeviceID, DEVICE_INFO_TYPE& DeviceInfo) {
+	for (int devID = KEYBOARD; devID < ALL; devID++) {
+		if (DeviceID == CONFIG.emulatedDeviceIDS[devID]) {
+			DeviceInfo.Connected = CONFIG.supportedDeviceTypes[devID];
+			return RZRESULT_SUCCESS;
+		}
+	}
+
+	DeviceInfo.Connected = FALSE;
+	return RZRESULT_DEVICE_NOT_AVAILABLE;
 }
 
 RZRESULT RegisterEventNotification(HWND /*hWnd*/) {
