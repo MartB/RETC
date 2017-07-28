@@ -502,8 +502,8 @@ bool CorsairSDK::findKeyboardLed(CorsairLedId ledid, int* row, int* col) {
 		maptoassign(CLK_LeftShift, RZKEY_LSHIFT);
 		maptoassign(CLK_RightShift, RZKEY_RSHIFT);
 		maptoassign(CLK_GraveAccentAndTilde, RZKEY_OEM_1);
-		maptoassign(CLK_EqualsAndPlus, RZKEY_OEM_2);
-		maptoassign(CLK_MinusAndUnderscore, RZKEY_OEM_3);
+		maptoassign(CLK_EqualsAndPlus, RZKEY_OEM_3);
+		maptoassign(CLK_MinusAndUnderscore, RZKEY_OEM_2);
 		maptoassign(CLK_BracketLeft, RZKEY_OEM_4);
 		maptoassign(CLK_BracketRight, RZKEY_OEM_5);
 		maptoassign(CLK_Backslash, RZKEY_OEM_6);
