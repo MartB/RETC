@@ -57,8 +57,8 @@ int main() {
 
 	try {
 		std::vector<spdlog::sink_ptr> sinks;
-		sinks.push_back(std::make_shared<spdlog::sinks::wincolor_stdout_sink_st>());
-		sinks.push_back(std::make_shared<spdlog::sinks::simple_file_sink_st>("server.log"));
+		sinks.emplace_back(std::make_shared<spdlog::sinks::wincolor_stdout_sink_st>());
+		sinks.emplace_back(std::make_shared<spdlog::sinks::simple_file_sink_st>("server.log"));
 		LOG = std::make_shared<spdlog::logger>("logger", begin(sinks), end(sinks));
 
 		LOG->set_pattern(CONFIG->GetAsciiString(L"log", L"format", L"[%d.%m %H:%M:%S.%e][%l] %v"));

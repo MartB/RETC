@@ -82,14 +82,14 @@ bool CorsairSDK::initialize() {
 			ledVector.reserve(numberOfKeys);
 			for (auto key = 0; key < numberOfKeys; key++) {
 				auto ledId = static_cast<CorsairLedId>(CLM_1 + key);
-				ledVector.push_back(ledId);
+				ledVector.emplace_back(ledId);
 			}
 			break;
 		}
 		case HEADSET: {
 			ledVector.reserve(2);
-			ledVector.push_back(CLH_LeftLogo);
-			ledVector.push_back(CLH_RightLogo);
+			ledVector.emplace_back(CLH_LeftLogo);
+			ledVector.emplace_back(CLH_RightLogo);
 			break;
 		}
 		case KEYBOARD:
@@ -107,7 +107,7 @@ bool CorsairSDK::initialize() {
 			const auto& ledData = ledPositions->pLedPosition;
 			for (auto key = 0; key < ledCount; key++) {
 				auto ledId = ledData[key].ledId;
-				ledVector.push_back(ledId);
+				ledVector.emplace_back(ledId);
 			}
 			break;
 		}
@@ -180,7 +180,7 @@ RZRESULT CorsairSDK::prepareKeyboardEffect(int type, const char effectData[]) {
 
 		for (const auto ledId : ledVector) {
 			ledColor.ledId = ledId;
-			m_outputColorVector.push_back(ledColor);
+			m_outputColorVector.emplace_back(ledColor);
 		}
 	}
 	else if (type == CHROMA_STATIC) {
@@ -193,7 +193,7 @@ RZRESULT CorsairSDK::prepareKeyboardEffect(int type, const char effectData[]) {
 			}
 
 			ledColor.ledId = ledId;
-			m_outputColorVector.push_back(ledColor);
+			m_outputColorVector.emplace_back(ledColor);
 		}
 	}
 	else if (type == CHROMA_CUSTOM) {
@@ -205,7 +205,7 @@ RZRESULT CorsairSDK::prepareKeyboardEffect(int type, const char effectData[]) {
 
 			auto ledColor = convertLedColor(custEffect->Color[row][col]);
 			ledColor.ledId = ledId;
-			m_outputColorVector.push_back(ledColor);
+			m_outputColorVector.emplace_back(ledColor);
 		}
 	}
 	else if (type == CHROMA_CUSTOM_KEY) {
@@ -222,7 +222,7 @@ RZRESULT CorsairSDK::prepareKeyboardEffect(int type, const char effectData[]) {
 
 			auto ledColor = convertLedColor(origColor);
 			ledColor.ledId = ledId;
-			m_outputColorVector.push_back(ledColor);
+			m_outputColorVector.emplace_back(ledColor);
 		}
 	}
 	else {
@@ -245,7 +245,7 @@ RZRESULT CorsairSDK::prepareMouseEffect(int type, const char effectData[]) {
 
 		for (const auto ledId : ledVector) {
 			ledColor.ledId = ledId;
-			m_outputColorVector.push_back(ledColor);
+			m_outputColorVector.emplace_back(ledColor);
 		}
 	}
 	else if (type == CHROMA_STATIC) {
@@ -260,14 +260,14 @@ RZRESULT CorsairSDK::prepareMouseEffect(int type, const char effectData[]) {
 				}
 
 				ledColor.ledId = ledId;
-				m_outputColorVector.push_back(ledColor);
+				m_outputColorVector.emplace_back(ledColor);
 			}
 		}
 		else {
 			ledColor.ledId = findMouseLed(custEffect->LEDId);
 
 			if (ledColor.ledId != CLI_Invalid) {
-				m_outputColorVector.push_back(ledColor);
+				m_outputColorVector.emplace_back(ledColor);
 			}
 		}
 	}
@@ -283,7 +283,7 @@ RZRESULT CorsairSDK::prepareMouseEffect(int type, const char effectData[]) {
 
 			auto ledColor = convertLedColor(custEffect->Color[val]);
 			ledColor.ledId = ledId;
-			m_outputColorVector.push_back(ledColor);
+			m_outputColorVector.emplace_back(ledColor);
 		}
 	}
 	else if (type == CHROMA_CUSTOM2) {
@@ -297,7 +297,7 @@ RZRESULT CorsairSDK::prepareMouseEffect(int type, const char effectData[]) {
 			auto ledColor = convertLedColor(custEffect->Color[row][col]);
 			ledColor.ledId = ledId;
 
-			m_outputColorVector.push_back(ledColor);
+			m_outputColorVector.emplace_back(ledColor);
 		}
 	}
 	else {
@@ -317,7 +317,7 @@ RZRESULT CorsairSDK::prepareMousePadEffect(int type, const char effectData[]) {
 
 		for (const auto ledId : ledVector) {
 			ledColor.ledId = ledId;
-			m_outputColorVector.push_back(ledColor);
+			m_outputColorVector.emplace_back(ledColor);
 		}
 	}
 	else if (type == CHROMA_STATIC) {
@@ -327,7 +327,7 @@ RZRESULT CorsairSDK::prepareMousePadEffect(int type, const char effectData[]) {
 
 		for (const auto led : ledVector) {
 			ledColor.ledId = led;
-			m_outputColorVector.push_back(ledColor);
+			m_outputColorVector.emplace_back(ledColor);
 		}
 	}
 	else if (type == CHROMA_CUSTOM) {
@@ -336,7 +336,7 @@ RZRESULT CorsairSDK::prepareMousePadEffect(int type, const char effectData[]) {
 		for (const auto led : ledVector) {
 			auto ledColor = convertLedColor(custEffect->Color[(led - CLMM_Zone1)]);
 			ledColor.ledId = led;
-			m_outputColorVector.push_back(ledColor);
+			m_outputColorVector.emplace_back(ledColor);
 		}
 	}
 
@@ -353,7 +353,7 @@ RZRESULT CorsairSDK::prepareHeadsetEffect(int type, const char effectData[]) {
 
 		for (const auto ledId : ledVector) {
 			ledColor.ledId = ledId;
-			m_outputColorVector.push_back(ledColor);
+			m_outputColorVector.emplace_back(ledColor);
 		}
 	}
 	else if (type == CHROMA_STATIC) {
@@ -362,7 +362,7 @@ RZRESULT CorsairSDK::prepareHeadsetEffect(int type, const char effectData[]) {
 
 		for (const auto led : ledVector) {
 			ledColor.ledId = led;
-			m_outputColorVector.push_back(ledColor);
+			m_outputColorVector.emplace_back(ledColor);
 		}
 	}
 	else if (type == CHROMA_CUSTOM) {
@@ -371,7 +371,7 @@ RZRESULT CorsairSDK::prepareHeadsetEffect(int type, const char effectData[]) {
 		for (const auto led : ledVector) {
 			auto ledColor = convertLedColor(custEffect->Color[findMousepadLed(led)]);
 			ledColor.ledId = led;
-			m_outputColorVector.push_back(ledColor);
+			m_outputColorVector.emplace_back(ledColor);
 		}
 	}
 
