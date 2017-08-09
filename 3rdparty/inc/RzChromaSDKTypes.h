@@ -24,14 +24,14 @@ namespace ChromaSDK
     typedef enum EFFECT_TYPE
     {
         CHROMA_NONE = 0,            //!< No effect.
-        CHROMA_WAVE,                //!< Wave effect.
-        CHROMA_SPECTRUMCYCLING,     //!< Spectrum cycling effect.
-        CHROMA_BREATHING,           //!< Breathing effect.
-        CHROMA_BLINKING,            //!< Blinking effect.
-        CHROMA_REACTIVE,            //!< Reactive effect.
+        CHROMA_WAVE,                //!< Wave effect (This effect type has deprecated and should not be used).
+        CHROMA_SPECTRUMCYCLING,     //!< Spectrum cycling effect (This effect type has deprecated and should not be used).
+        CHROMA_BREATHING,           //!< Breathing effect (This effect type has deprecated and should not be used).
+        CHROMA_BLINKING,            //!< Blinking effect (This effect type has deprecated and should not be used).
+        CHROMA_REACTIVE,            //!< Reactive effect (This effect type has deprecated and should not be used).
         CHROMA_STATIC,              //!< Static effect.
         CHROMA_CUSTOM,              //!< Custom effect. For mice, please see Mouse::CHROMA_CUSTOM2.
-        CHROMA_RESERVED,            //!< TODO
+        CHROMA_RESERVED,            //!< Reserved
         CHROMA_INVALID              //!< Invalid effect.
     } EFFECT_TYPE;
 
@@ -56,7 +56,7 @@ namespace ChromaSDK
     const RZSIZE MAX_ROW = 30;      //!< Maximum rows for custom effects.
     const RZSIZE MAX_COLUMN = 30;   //!< Maximum columns for custom effects.
 
-    //! Blinking effect.
+    //! Blinking effect (This effect type has deprecated and should not be used).
     typedef struct BLINKING_EFFECT_TYPE
     {
         RZSIZE Size;        //!< Size of the structure. Size = sizeof(BLINKING_EFFECT_TYPE)
@@ -65,7 +65,7 @@ namespace ChromaSDK
         COLORREF Color;     //!< Blinking color
     } BLINKING_EFFECT_TYPE;
 
-    //! Breathing effect.
+    //! Breathing effect (This effect type has deprecated and should not be used).
     typedef struct BREATHING_EFFECT_TYPE
     {
         RZSIZE Size;        //!< Size of ths structure. Size = sizeof(BREATHING_EFFECT_TYPE)
@@ -83,7 +83,7 @@ namespace ChromaSDK
         COLORREF Color2;    //!< Second color.
     } BREATHING_EFFECT_TYPE;
 
-    //! Custom effect.
+    //! Custom effect (This effect type has deprecated and should not be used).
     typedef struct CUSTOM_EFFECT_TYPE
     {
         RZSIZE Size;        //!< Size of the structure. Size = sizeof(CUSTOM_EFFECT_TYPE)
@@ -99,7 +99,7 @@ namespace ChromaSDK
         DWORD Param;        //!< Extra parameters.
     } NO_EFFECT_TYPE;
 
-    //! Reactive effect.
+    //! Reactive effect (This effect type has deprecated and should not be used).
     typedef struct REACTIVE_EFFECT_TYPE
     {
         RZSIZE Size;        //!< Size of the structure. Size = sizeof(REACTIVE_EFFECT_TYPE)
@@ -116,14 +116,14 @@ namespace ChromaSDK
         COLORREF Color;         //!< Color of the effect.
     } REACTIVE_EFFECT_TYPE;
 
-    //! Spectrum cycling effect.
+    //! Spectrum cycling effect (This effect type has deprecated and should not be used).
     typedef struct SPECTRUMCYCLING_EFFECT_TYPE
     {
         RZSIZE Size;        //!< Size of the structure. Size = sizeof(SPECTRUMCYCLING_EFFECT_TYPE)
         DWORD Param;        //!< Extra parameters.
     } SPECTRUMCYCLING_EFFECT_TYPE;
 
-    //! Starlight effect.
+    //! Starlight effect (This effect type has deprecated and should not be used).
     typedef struct STARLIGHT_EFFECT_TYPE
     {
         RZSIZE Size;        //!< Size of the structure. Size = sizeof(SPECTRUMCYCLING_EFFECT_TYPE)
@@ -149,7 +149,7 @@ namespace ChromaSDK
 
     } STARLIGHT_EFFECT_TYPE;
 
-    //! Static effect.
+    //! Static effect (This effect type has deprecated and should not be used).
     typedef struct STATIC_EFFECT_TYPE
     {
         RZSIZE Size;        //!< Size of the structure. Size = sizeof(STATIC_EFFECT_TYPE)
@@ -158,7 +158,7 @@ namespace ChromaSDK
         COLORREF Color;     //!< Color of the effect.
     } STATIC_EFFECT_TYPE;
 
-    //! Wave effect.
+    //! Wave effect (This effect type has deprecated and should not be used).
     typedef struct WAVE_EFFECT_TYPE
     {
         RZSIZE Size;        //!< Size of the structure. Size = sizeof(WAVE_EFFECT_TYPE)
@@ -331,19 +331,19 @@ namespace ChromaSDK
         typedef enum EFFECT_TYPE
         {
             CHROMA_NONE = 0,            //!< No effect.
-            CHROMA_BREATHING,           //!< Breathing effect.
+            CHROMA_BREATHING,           //!< Breathing effect (This effect has deprecated and should not be used).
             CHROMA_CUSTOM,              //!< Custom effect.
-            CHROMA_REACTIVE,            //!< Reactive effect.
+            CHROMA_REACTIVE,            //!< Reactive effect (This effect has deprecated and should not be used).
             CHROMA_STATIC,              //!< Static effect.
-            CHROMA_SPECTRUMCYCLING,     //!< Spectrum cycling effect.
-            CHROMA_WAVE,                //!< Wave effect.
-            CHROMA_RESERVED,            //!< TODO.
+            CHROMA_SPECTRUMCYCLING,     //!< Spectrum cycling effect (This effect has deprecated and should not be used).
+            CHROMA_WAVE,                //!< Wave effect (This effect has deprecated and should not be used).
+            CHROMA_RESERVED,            //!< Reserved.
             CHROMA_CUSTOM_KEY,          //!< Custom effects with keys.
             CHROMA_INVALID              //!< Invalid effect.
         } EFFECT_TYPE;
 
         // Chroma keyboard effects
-        //! Breathing effect type
+        //! Breathing effect type (This effect has deprecated and should not be used).
         typedef struct BREATHING_EFFECT_TYPE
         {
             //! Breathing effects.
@@ -370,7 +370,7 @@ namespace ChromaSDK
             COLORREF Key[MAX_ROW][MAX_COLUMN];          //!< Keys information. 6 rows by 22 columns. To indidate there is a key effect, OR with 0x01000000. i.e. Key[0][1] = 0x01000000 | Color;
         } CUSTOM_KEY_EFFECT_TYPE;
 
-        //! Reactive effect type
+        //! Reactive effect type (This effect has deprecated and should not be used).
         typedef struct REACTIVE_EFFECT_TYPE
         {
             //! Duration of the effect.
@@ -386,7 +386,7 @@ namespace ChromaSDK
             COLORREF Color;         //!< Color of the effect
         } REACTIVE_EFFECT_TYPE;
 
-        //! Starlight effect.
+        //! Starlight effect (This effect has deprecated and should not be used).
         typedef struct STARLIGHT_EFFECT_TYPE
         {
             //! Starlight effect types.
@@ -415,7 +415,7 @@ namespace ChromaSDK
             COLORREF Color;     //!< Color of the effect
         } STATIC_EFFECT_TYPE;
 
-        //! Wave effect type
+        //! Wave effect type (This effect has deprecated and should not be used).
         typedef struct WAVE_EFFECT_TYPE
         {
             //! Direction of the wave effect.
@@ -450,7 +450,7 @@ namespace ChromaSDK
         //! Mice LED virtual grid layout.
         const RZCOLOR RZLED_LAYOUT2[MAX_ROW][MAX_COLUMN] = {};
 
-        //! Mouse LED Id defintion (old definition to maintain backward compatibility).
+        //! Mouse LED Id defintion (This effect type has deprecated and should not be used).
         typedef enum RZLED
         {
             RZLED_NONE          = 0,    //!< No LED.
@@ -505,13 +505,13 @@ namespace ChromaSDK
         typedef enum EFFECT_TYPE
         {
             CHROMA_NONE = 0,            //!< No effect.
-            CHROMA_BLINKING,            //!< Blinking effect.
-            CHROMA_BREATHING,           //!< Breathing effect.
+            CHROMA_BLINKING,            //!< Blinking effect (This effect has deprecated and should not be used).
+            CHROMA_BREATHING,           //!< Breathing effect (This effect has deprecated and should not be used).
             CHROMA_CUSTOM,              //!< Custom effect (old definition to maintain backward compatibility).
-            CHROMA_REACTIVE,            //!< Reactive effect.
-            CHROMA_SPECTRUMCYCLING,     //!< Spectrum cycling effect.
+            CHROMA_REACTIVE,            //!< Reactive effect (This effect has deprecated and should not be used).
+            CHROMA_SPECTRUMCYCLING,     //!< Spectrum cycling effect (This effect has deprecated and should not be used).
             CHROMA_STATIC,              //!< Static effect.
-            CHROMA_WAVE,                //!< Wave effect.
+            CHROMA_WAVE,                //!< Wave effect (This effect has deprecated and should not be used).
             CHROMA_CUSTOM2,             //!< Custom effects using a virtual grid.
             CHROMA_INVALID              //!< Invalid effect.
         } EFFECT_TYPE;
@@ -523,14 +523,14 @@ namespace ChromaSDK
             COLORREF Color;     //!< Color of the effect.
         } STATIC_EFFECT_TYPE;
 
-        //! Blinking effect type.
+        //! Blinking effect type (This effect has deprecated and should not be used).
         typedef struct BLINKING_EFFECT_TYPE
         {
             RZLED LEDId;        //!< LED Id
             COLORREF Color;     //!< Color.
         } BLINKING_EFFECT_TYPE;
 
-        //! Breathing effect.
+        //! Breathing effect (This effect has deprecated and should not be used).
         typedef struct BREATHING_EFFECT_TYPE
         {
             RZLED LEDId;        //!< LED Id
@@ -548,7 +548,7 @@ namespace ChromaSDK
             COLORREF Color2;    //!< Second color.
         } BREATHING_EFFECT_TYPE;
 
-        //! Custom effect.
+        //! Custom effect (This effect type has deprecated and should not be used).
         typedef struct CUSTOM_EFFECT_TYPE
         {
             RZCOLOR Color[MAX_LEDS]; //!< Array of colors.
@@ -561,7 +561,7 @@ namespace ChromaSDK
             RZCOLOR Color[MAX_ROW][MAX_COLUMN]; //!< Array of colors.
         } CUSTOM_EFFECT_TYPE2;
 
-        //! Reactive effect.
+        //! Reactive effect (This effect has deprecated and should not be used).
         typedef struct REACTIVE_EFFECT_TYPE
         {
             RZLED LEDId;        //!< LED Id
@@ -578,19 +578,19 @@ namespace ChromaSDK
             RZCOLOR Color;          //!< Color of the effect.
         } REACTIVE_EFFECT_TYPE;
 
-        //! No effect.
+        //! No effect (This effect has deprecated and should not be used).
         typedef struct NO_EFFECT_TYPE
         {
             RZLED LEDId;        //!< LED Id
         } NO_EFFECT_TYPE;
 
-        //! Spectrum cycling.
+        //! Spectrum cycling (This effect has deprecated and should not be used).
         typedef struct SPECTRUMCYCLING_EFFECT_TYPE
         {
             RZLED LEDId;            //!< LED id.
         } SPECTRUMCYCLING_EFFECT_TYPE;
 
-        //! Wave effect.
+        //! Wave effect (This effect has deprecated and should not be used).
         typedef struct WAVE_EFFECT_TYPE
         {
             //! Direction of the wave effect.
@@ -613,8 +613,8 @@ namespace ChromaSDK
         {
             CHROMA_NONE = 0,            //!< No effect.
             CHROMA_STATIC,              //!< Static effect.
-            CHROMA_BREATHING,           //!< Breathing effect.
-            CHROMA_SPECTRUMCYCLING,     //!< Spectrum cycling effect.
+            CHROMA_BREATHING,           //!< Breathing effect (This effect has deprecated and should not be used).
+            CHROMA_SPECTRUMCYCLING,     //!< Spectrum cycling effect (This effect has deprecated and should not be used).
             CHROMA_CUSTOM,              //!< Custom effects.
             CHROMA_INVALID              //!< Invalid effect.
         } EFFECT_TYPE;
@@ -625,7 +625,7 @@ namespace ChromaSDK
             COLORREF Color;             //!< Color of the effect.
         } STATIC_EFFECT_TYPE;
 
-        //! Breathing effect type.
+        //! Breathing effect type (This effect has deprecated and should not be used).
         typedef struct BREATHING_EFFECT_TYPE
         {
             COLORREF Color;             //!< Color.
@@ -648,16 +648,16 @@ namespace ChromaSDK
         typedef enum EFFECT_TYPE
         {
             CHROMA_NONE = 0,            //!< No effect.
-            CHROMA_BREATHING,           //!< Breathing effect.
+            CHROMA_BREATHING,           //!< Breathing effect (This effect has deprecated and should not be used).
             CHROMA_CUSTOM,              //!< Custom effect.
-            CHROMA_SPECTRUMCYCLING,     //!< Spectrum cycling effect.
+            CHROMA_SPECTRUMCYCLING,     //!< Spectrum cycling effect (This effect has deprecated and should not be used).
             CHROMA_STATIC,              //!< Static effect.
-            CHROMA_WAVE,                //!< Wave effect.
+            CHROMA_WAVE,                //!< Wave effect (This effect has deprecated and should not be used).
             CHROMA_INVALID              //!< Invalid effect.
         } EFFECT_TYPE;
 
         // Chroma mousepad effects
-        //! Breathing effect type.
+        //! Breathing effect type (This effect has deprecated and should not be used).
         typedef struct BREATHING_EFFECT_TYPE
         {
             //! Breathing effects.
@@ -714,17 +714,17 @@ namespace ChromaSDK
         typedef enum EFFECT_TYPE
         {
             CHROMA_NONE = 0,            //!< No effect.
-            CHROMA_BREATHING,           //!< Breathing effect.
+            CHROMA_BREATHING,           //!< Breathing effect (This effect has deprecated and should not be used).
             CHROMA_CUSTOM,              //!< Custom effect.
-            CHROMA_REACTIVE,            //!< Reactive effect.
-            CHROMA_SPECTRUMCYCLING,     //!< Spectrum cycling effect.
+            CHROMA_REACTIVE,            //!< Reactive effect (This effect has deprecated and should not be used).
+            CHROMA_SPECTRUMCYCLING,     //!< Spectrum cycling effect (This effect has deprecated and should not be used).
             CHROMA_STATIC,              //!< Static effect.
-            CHROMA_WAVE,                //!< Wave effect.
+            CHROMA_WAVE,                //!< Wave effect (This effect has deprecated and should not be used).
             CHROMA_INVALID              //!< Invalid effect.
         } EFFECT_TYPE;
 
         // Chroma keypad effects
-        //! Breathing effect type.
+        //! Breathing effect type (This effect has deprecated and should not be used).
         typedef struct BREATHING_EFFECT_TYPE
         {
             //! Breathing effects.
@@ -745,7 +745,7 @@ namespace ChromaSDK
                                                 //!< For Razer Tartarus Chroma only Color[0] is valid. Use index '0' to change the keypad color.
         } CUSTOM_EFFECT_TYPE;
 
-        //! Reactive effect type
+        //! Reactive effect type (This effect has deprecated and should not be used).
         typedef struct REACTIVE_EFFECT_TYPE
         {
             //! Duration of the effect.
@@ -767,7 +767,7 @@ namespace ChromaSDK
             RZCOLOR Color;  //!< Color of the effect.
         } STATIC_EFFECT_TYPE;
 
-        //! Wave effect type
+        //! Wave effect type (This effect has deprecated and should not be used).
         typedef struct WAVE_EFFECT_TYPE
         {
             //! Direction of the wave effect.
@@ -779,6 +779,34 @@ namespace ChromaSDK
                 DIRECTION_INVALID           //!< Invalid direction.
             } Direction;                    //!< Direction of the wave.
         } WAVE_EFFECT_TYPE;
+    }
+
+    //! Chroma Link
+    namespace ChromaLink
+    {
+        //! Maximum number of elements/LEDs
+        const RZSIZE MAX_LEDS = 5;
+
+        //! Chroma Link effect types
+        typedef enum EFFECT_TYPE
+        {
+            CHROMA_NONE = 0,            //!< No effect.
+            CHROMA_CUSTOM,              //!< Custom effect.
+            CHROMA_STATIC,              //!< Static effect.
+            CHROMA_INVALID              //!< Invalid effect.
+        } EFFECT_TYPE;
+
+        //! Custom effect type
+        typedef struct CUSTOM_EFFECT_TYPE
+        {
+            RZCOLOR Color[MAX_LEDS];    //!< Array of colors. 
+        } CUSTOM_EFFECT_TYPE;
+
+        //! Static effect type
+        typedef struct STATIC_EFFECT_TYPE
+        {
+            RZCOLOR Color;  //!< Color of the effect.
+        } STATIC_EFFECT_TYPE;
     }
 }
 
