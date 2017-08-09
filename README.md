@@ -55,7 +55,7 @@ The only functionality you lose is the specific device effects from *CreateEffec
 
 ### Which applications are supported?
 Pretty much every application that uses the Razer Chroma SDK through the supplied dlls is supported.
-Keep in mind that some effects might not work correctly in some output sdks.
+Keep in mind that some (now deprecated) effects might not work correctly in some output sdks.
 
 # Troubleshooting:
 ## Corsair Output SDK
