@@ -4,11 +4,12 @@ import os
 import distutils.dir_util
 import shutil
 
-CUE_SDK_DL_URL = "http://downloads.corsair.com/download?item=Files/CUE/CUESDK_2.10.91.zip"
+CUE_SDK_DL_URL = "http://downloads.corsair.com/download?item=Files/CUE/CUESDK_2.18.127.zip"
 CUE_SDK_DLL_NAME_32 = "CUESDK_2015.dll"
 CUE_SDK_DLL_NAME_64 = "CUESDK.x64_2015.dll"
 
-NSSM_DL_URL = "https://nssm.cc/release/nssm-2.24.zip"
+# Pre-release build of nssm for the creators update issue.
+NSSM_DL_URL = "https://nssm.cc/ci/nssm-2.24-101-g897c7ad.zip"
 NSSM_BIN_NAME = "nssm.exe"
 
 SERVER_BUILD_PATH_32 = '../out/x86/Release/Server/'
@@ -16,6 +17,8 @@ SERVER_BUILD_PATH_64 = '../out/x64/Release/Server/'
 
 CLIENT_BUILD_PATH_32 = '../out/x86/Release/ShimDLL/'
 CLIENT_BUILD_PATH_64 = '../out/x64/Release/ShimDLL/'
+
+THIRD_PARTY_INC_PATH = '../3rdparty/inc/'
 
 FILE_PATH = 'files/'
 FILE_PATH_32 = FILE_PATH + 'win32/'
@@ -25,7 +28,7 @@ TMP_PATH = FILE_PATH + 'tmp/'
 def checkFiles(list):
 	for file in list:
 		if not os.path.isfile(file):
-			print "FileCheck: could not find",file
+			print("FileCheck: could not find",file)
 			return False
 			
 	return True
@@ -43,21 +46,21 @@ def findInList(list, string):
 	
 class zipopfailed(Exception): pass
 def downloadAndExtractZipFile(url, ziplist):
-	import urllib2
+	import urllib.request, urllib.error, urllib.parse
 	import zipfile
 	try:
 		try:
-			response = urllib2.urlopen(url)
-		except urllib2.HTTPError, e:
-			print "Download: http error",e.reason," url(",url,")"
+			response = urllib.request.urlopen(url)
+		except urllib.error.HTTPError as e:
+			print("Download: http error",e.reason," url(",url,")")
 			return False
-		except urllib2.URLError, e:
-			print "Download: url error",e.reason," url(",url,")"
+		except urllib.error.URLError as e:
+			print("Download: url error",e.reason," url(",url,")")
 			return False
 			
 		data = response.read()
 		fileName = url.split('/')[-1]
-		print "Downloading: ",fileName
+		print("Downloading: ",fileName)
 		distutils.dir_util.mkpath(TMP_PATH)
 		with open(TMP_PATH+fileName , 'wb') as file:
 			file.write(data)
@@ -66,17 +69,17 @@ def downloadAndExtractZipFile(url, ziplist):
 			fileList = zip.namelist()
 			
 			for entry in ziplist:
-				print "Extracting: ", entry[0]
+				print("Extracting: ", entry[0])
 				zipFileEntry = findInList(fileList, entry[0])
 				if not zipFileEntry:
-					print "Did not find",entry[0],"in zip"
+					print("Did not find",entry[0],"in zip")
 					raise zipopfailed()
 					
 				with open(entry[1], 'wb') as file: 
 					try:
 						file.write(zip.read(zipFileEntry[0]))
 					except IOError as e:
-						print e
+						print(e)
 						raise zipopfailed()
 	except zipopfailed:
 		os.remove(TMP_PATH+fileName)
@@ -108,23 +111,38 @@ def copyBuildFiles():
 		(CLIENT_BUILD_PATH_64, FILE_PATH_64, "RzChromaSDK64.dll"),
 	]
 	
-	for file in buildFiles:
-		shutil.copy2(file[0]+file[2], file[1]+file[2])
-		
+	copyFiles(buildFiles)
+
+def copyLicenses():
+		licenses = [
+			(THIRD_PARTY_INC_PATH + "spdlog/LICENSE",FILE_PATH + "SPDLOG_LICENSE"),
+			(THIRD_PARTY_INC_PATH + "SimpleIni/LICENCE.txt",FILE_PATH + "SIMPLEINI_LICENSE"),
+		]
+
+		copyFiles(licenses)
+
+
+def copyFiles(buildFiles):
+		 for file in buildFiles:
+				if len(file) > 2:
+					shutil.copy2(file[0]+file[2], file[1]+file[2])
+				else:
+					shutil.copy2(file[0], file[1])
+
 def cleanBuildFiles():
-	print "Cleaning build files"
+	print("Cleaning build files")
 	try:
 		shutil.rmtree(TMP_PATH)
 	except OSError:
 		pass
 	else:
-		print "Deleting", TMP_PATH
+		print("Deleting", TMP_PATH)
 		
 	for root, dirs, files in os.walk(FILE_PATH):
 		for file in files:
 			if file.endswith((".dll",".exe","LICENSE", ".md")):
 				filePath = os.path.join(root,file)
-				print "Deleting", filePath
+				print("Deleting", filePath)
 				os.remove(filePath)
 				
 def main(argv):
@@ -143,24 +161,25 @@ def main(argv):
 	])
 	
 	if not nssmExists and not downloadNSSM():
-		print "Could not download nssm"
+		print("Could not download nssm")
 		return
 		
 	if not cueSDKExists and not downloadCueSdk():
-		print "Could not download cue sdk"
+		print("Could not download cue sdk")
 		return
 	
 	copyBuildFiles()
+	copyLicenses()
 	
 	nsisExecutable = checkFileAlternatives([
 		"makensis.exe",
-		os.environ["ProgramFiles"] + "\NSIS\makensis.exe",
-		os.environ["ProgramFiles(x86)"] + "\NSIS\makensis.exe"
+		os.environ["ProgramFiles"] + "\\NSIS\\makensis.exe",
+		os.environ["ProgramFiles(x86)"] + "\\NSIS\\makensis.exe"
 	])
 	
 	if nsisExecutable == "":
-		print "NSIS Not found please install it from here: https://sourceforge.net/projects/nsis/"
-		print "You also need the moreinfo plugin from here: http://nsis.sourceforge.net/MoreInfo_plug-in"
+		print("NSIS Not found please install it from here: https://sourceforge.net/projects/nsis/")
+		print("You also need the moreinfo plugin from here: http://nsis.sourceforge.net/MoreInfo_plug-in")
 		return
 
 	from subprocess import call

@@ -219,6 +219,9 @@ Section "RETC (required)" Sec_RETC
 	File "${FILES}\win32\nssm.exe"
 	File "${FILES}\win64\nssm.exe"
 	File "${FILES}\LICENSE"
+	File "${FILES}\SIMPLEINI_LICENSE"
+	File "${FILES}\SPDLOG_LICENSE"
+
 	File "${FILES}\README.md"
 	
 	SetOutPath $INSTDIR\wrappers
