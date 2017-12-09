@@ -8,6 +8,7 @@ extern "C"
 #endif
 
 #include "CorsairLedIdEnum.h"
+#include "CorsairKeyIdEnum.h"
 
 	enum CorsairDeviceType		// contains list of available device types
 	{
@@ -15,7 +16,8 @@ extern "C"
 		CDT_Mouse = 1,
 		CDT_Keyboard = 2,
 		CDT_Headset = 3,
-		CDT_MouseMat = 4
+		CDT_MouseMat = 4,
+		CDT_HeadsetStand = 5
 	};
 
 	enum CorsairPhysicalLayout	// contains list of available physical layouts for keyboards
@@ -125,6 +127,9 @@ extern "C"
 	// set specified leds to some colors.The color is retained until changed by successive calls.This function does not take logical layout into account
 	CORSAIR_LIGHTING_SDK_EXPORT bool CorsairSetLedsColors(int size, CorsairLedColor* ledsColors);
 
+	// get current color for the list of requested LEDs
+	CORSAIR_LIGHTING_SDK_EXPORT bool CorsairGetLedsColors(int size, CorsairLedColor* ledsColors);
+
 	CORSAIR_LIGHTING_SDK_EXPORT bool CorsairSetLedsColorsAsync(int size, CorsairLedColor* ledsColors, void(*CallbackType)(void*, bool, CorsairError), void *context);
 
 	// returns number of connected Corsair devices that support lighting control.
@@ -153,6 +158,12 @@ extern "C"
 
 	//releases previously requested control for specified access mode
 	CORSAIR_LIGHTING_SDK_EXPORT bool CorsairReleaseControl(CorsairAccessMode accessMode);
+
+	// set layer priority for this shared client
+	CORSAIR_LIGHTING_SDK_EXPORT bool CorsairSetLayerPriority(int priority);
+
+	// registers a callback that will be called by SDK when some of G or M keys are pressed or released
+	CORSAIR_LIGHTING_SDK_EXPORT bool CorsairRegisterKeypressCallback(void (*CallbackType)(void *context, CorsairKeyId keyId, bool pressed), void *context);
 
 #ifdef __cplusplus
 } //exten "C"

@@ -200,5 +200,15 @@ enum CorsairLedId
 	CLM_5 = 189,
 	CLM_6 = 190,
 
-	CLI_Last = CLM_6
+	CLHSS_Zone1 = 191,
+	CLHSS_Zone2 = 192,
+	CLHSS_Zone3 = 193,
+	CLHSS_Zone4 = 194,
+	CLHSS_Zone5 = 195,
+	CLHSS_Zone6 = 196,
+	CLHSS_Zone7 = 197,
+	CLHSS_Zone8 = 198,
+	CLHSS_Zone9 = 199,
+
+	CLI_Last = CLHSS_Zone9
 };
