@@ -12,7 +12,7 @@
 
 #define SDKLoaderAssignNameToVariable(func) func## _t func;
 #define SDKLoaderMapNameToFunction(func) func = (func## _t)DLL_FUNCTION_LIST[#func];
-#define MAX_CONFIG_SECTION_LEN 64u
+#define MAX_CONFIG_SECTION_LEN (size_t)64
 
 class LightingSDK {
 public:

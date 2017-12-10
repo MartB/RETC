@@ -15,7 +15,6 @@
     <ClInclude Include="..\rpc-midl\rpc_retc.h">
       <Filter>rpc</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ShimDLL.rc" />

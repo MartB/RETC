@@ -225,7 +225,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\rpc-midl\rpc_retc.h" />
-    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ShimDLL.rc" />

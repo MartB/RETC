@@ -5,7 +5,7 @@
 #define CONFIG_FILENAME L"config.ini"
 
 ConfigManager::ConfigManager() {
-	simpleIni = std::unique_ptr<CSimpleIni>(new CSimpleIni());
+	simpleIni = std::make_unique<CSimpleIniW>();
 	simpleIni->SetUnicode();
 
 	ReloadConfigFile();
@@ -23,8 +23,7 @@ void ConfigManager::ReloadConfigFile() {
 // Please do not use these if you expect special characters > 7 bit to work
 std::string ConfigManager::GetAsciiString(const wchar_t* section, const wchar_t* key, const wchar_t* def) {
 	const std::wstring res = GetWString(section, key, def);
-	const std::string ret(res.begin(), res.end());
-	return ret;
+	return std::string(res.begin(), res.end());
 }
 
 std::string ConfigManager::GetAsciiString(const wchar_t* section, const wchar_t* key, const std::string &def) {

@@ -55,7 +55,6 @@
     <ClInclude Include="commonData.h">
       <Filter>src\common</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h" />
     <ClInclude Include="ConfigManager.h">
       <Filter>src\config</Filter>
     </ClInclude>

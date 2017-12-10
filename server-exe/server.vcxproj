@@ -244,7 +244,6 @@
     <ClInclude Include="CorsairSDK.h" />
     <ClInclude Include="EffectManager.h" />
     <ClInclude Include="RazerSDK.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="RPCReceiver.h" />
     <ClInclude Include="SDKLoader.h" />
     <ClInclude Include="SDKManager.h" />

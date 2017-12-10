@@ -12,6 +12,7 @@ std::shared_ptr<spdlog::logger> LOG(nullptr);
 
 // Main
 bool userCancelled = false;
+std::condition_variable cv;
 
 void cleanup() {
 	if (rpcReceiver) { //-V547
@@ -34,6 +35,7 @@ BOOL WINAPI consoleHandler(DWORD signal) {
 	switch (signal) {
 	case CTRL_C_EVENT:
 		userCancelled = true;
+		cv.notify_all();
 		return TRUE;
 	case CTRL_CLOSE_EVENT:
 		cleanup();
@@ -64,8 +66,8 @@ int main() {
 		LOG->set_pattern(CONFIG->GetAsciiString(L"log", L"format", L"[%d.%m %H:%M:%S.%e][%l] %v"));
 		spdlog::set_async_mode(1024);
 
-		LOG->set_level((spdlog::level::level_enum)CONFIG->GetLong(L"log", L"level", DEF_LOG_LEVEL));
-		LOG->flush_on((spdlog::level::level_enum)CONFIG->GetLong(L"log", L"flush", DEF_FLUSH_LEVEL));
+		LOG->set_level(static_cast<spdlog::level::level_enum>(CONFIG->GetLong(L"log", L"level", DEF_LOG_LEVEL)));
+		LOG->flush_on(static_cast<spdlog::level::level_enum>(CONFIG->GetLong(L"log", L"flush", DEF_FLUSH_LEVEL)));
 
 		spdlog::set_error_handler([](const std::string& msg) {
 			LOG->error("ERR: {}", msg);
@@ -86,9 +88,10 @@ int main() {
 	rpcReceiver->startListening();
 
 	// We dont have stuff to do for now so we will just keep sleeping.
+	std::mutex m;
+	std::unique_lock<std::mutex> lock(m);
 	while (!userCancelled) {
-		using namespace std::chrono_literals;
-		std::this_thread::sleep_for(1ms);
+		cv.wait(lock);
 	}
 
 	// Dont put code below this just add all your exit code to cleanup()
