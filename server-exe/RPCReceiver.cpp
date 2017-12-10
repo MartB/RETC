@@ -4,6 +4,7 @@
 #include "RPCReceiver.h"
 
 #define STATUS_OK (m_RpcStatus == RPC_S_OK)
+long PROCESSING_DELAY = 0;
 
 void* __RPC_USER midl_user_allocate(size_t size) {
 	return malloc(size);
@@ -15,8 +16,8 @@ void __RPC_USER midl_user_free(void* p) {
 
 RPCReceiver::RPCReceiver() {
 	m_RpcStatus = RPC_S_OK;
+	PROCESSING_DELAY = CONFIG->GetLong(L"rpc", L"processingdelay", 0);
 }
-
 
 void RpcServerListenThreadProc() {
 	RpcServerListen(1, RPC_C_LISTEN_MAX_CALLS_DEFAULT, FALSE);
@@ -66,9 +67,8 @@ CONTEXT_HANDLE initialize(handle_t /*hBinding*/, RETCClientConfig* out) {
 }
 
 RZRESULT playEffect(RETCDeviceType deviceType, int effectType, RZEFFECTID* pEffectId, unsigned long effectSize, char* effectData, CONTEXT_HANDLE) {
-	long processingDelay;
-	if ((processingDelay = CONFIG->GetLong(L"rpc", L"processingdelay", 0)) != 0) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(processingDelay));
+	if (PROCESSING_DELAY > 0) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(PROCESSING_DELAY));
 	}
 
 	return sdkManager->playEffect(deviceType, effectType, pEffectId, effectSize, effectData);
