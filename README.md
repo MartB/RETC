@@ -51,7 +51,6 @@ Mousepads: (since sdk version 2015)
 ```
 ### Razer
 **The razer sdk implementation is just forwarding to the real and installed sdk if available.**
-The only functionality you lose is the specific device effects from *CreateEffect*. (no biggie)
 
 ### Which applications are supported?
 Pretty much every application that uses the Razer Chroma SDK through the supplied dlls is supported.
