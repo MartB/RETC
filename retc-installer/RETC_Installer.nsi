@@ -244,7 +244,6 @@ Section "RETC (required)" Sec_RETC
 	${EndIf}
 	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" set RETC AppDirectory "$INSTDIR"'
 	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" set RETC AppExit Default Restart'
-	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" set RETC AppNoConsole 1'
 	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" set RETC AppStdout "$INSTDIR\retc-server-nssm.log"'
 	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" set RETC AppStdoutCreationDisposition 2'
 	nsExec::ExecToLog /OEM '"$INSTDIR\nssm.exe" set RETC AppStderr "$INSTDIR\retc-server-nssm.log"'
