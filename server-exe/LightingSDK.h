@@ -8,9 +8,11 @@
 #include "RzErrors.h"
 #include "RzChromaSDKDefines.h"
 #include "RzChromaSDKTypes.h"
+#include <algorithm>
 
 #define SDKLoaderAssignNameToVariable(func) func## _t func;
 #define SDKLoaderMapNameToFunction(func) func = (func## _t)DLL_FUNCTION_LIST[#func];
+#define MAX_CONFIG_SECTION_LEN 64u
 
 class LightingSDK {
 public:
@@ -33,8 +35,9 @@ public:
 			LOG_W("Skipped an invalid SDK due to missing DLL_NAME.");
 			return false;
 		}
-		wcscat_s(SDK_CONFIG_SECTION, SDK_MAIN_SUB_CONFIG_SECTION);
-		wcscat_s(SDK_CONFIG_SECTION, SDK_NAME.c_str());
+		
+		const auto& sdkConfString = (SDK_MAIN_SUB_CONFIG_SECTION + SDK_NAME);
+		std::copy_n(std::begin(sdkConfString), std::min(sdkConfString.length(), MAX_CONFIG_SECTION_LEN), SDK_CONFIG_SECTION);
 
 		if (!CONFIG->GetBool(SDK_CONFIG_SECTION, L"enabled", true)) {
 			LOG_D(L"{0} load aborted disabled by config.", SDK_NAME);
@@ -81,7 +84,7 @@ protected:
 	functionList DLL_FUNCTION_LIST;
 	std::string SDK_DLL;
 	std::wstring SDK_NAME;
-	wchar_t SDK_CONFIG_SECTION[64] = {0};
+	wchar_t SDK_CONFIG_SECTION[MAX_CONFIG_SECTION_LEN] = {0};
 
 	supportArray_t m_supportedDevices;
 
