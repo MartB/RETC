@@ -3,10 +3,11 @@
 #include "EffectManager.h"
 
 bool EffectManager::storeEffect(const RETCDeviceType& deviceType, int effectType, RZEFFECTID* pEffectID, unsigned long effectSize, const char effectData[]) {
-	auto effData = internalEffectData();
+	internalEffectData effData;
 	effData.type = effectType;
 	effData.deviceType = deviceType;
-	effData.data = std::string(effectData, effectData + effectSize);
+	effData.data = new char[effectSize];
+	std::copy(effectData, effectData + effectSize, effData.data);
 
 	RZEFFECTID newEffectID;
 	if (!createUniqueEffectID(&newEffectID)) {
@@ -26,6 +27,7 @@ bool EffectManager::deleteEffect(const RZEFFECTID& pEffectID) {
 		return false;
 	}
 
+	delete[] it->second.data;
 	m_effectMap.erase(it);
 
 	return true;

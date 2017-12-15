@@ -6,7 +6,7 @@
 typedef struct internalEffectData {
 	int type;
 	RETCDeviceType deviceType;
-	std::string data;
+	char *data;
 } internalEffectData;
 
 

@@ -155,5 +155,5 @@ RZRESULT SDKManager::setEffect(const RZEFFECTID& effID) {
 		return RZRESULT_NOT_FOUND;
 	}
 
-	return playbackEffect(effectEntry->deviceType, effectEntry->type, effectEntry->data.c_str());
+	return playbackEffect(effectEntry->deviceType, effectEntry->type, effectEntry->data);
 }
