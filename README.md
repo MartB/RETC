@@ -3,7 +3,7 @@ RETC is a custom server application with a dll shim for clients, designed to be 
 I believe in performance so RETC is designed to run with the smallest amount of overhead possible.
 ## Installation:
 ### Automatic
-Just download the latest installer executable and follow the installation steps. 
+Just download the latest installer executable [from here](https://github.com/MartB/RETC/releases/latest) and follow the installation steps. 
 You should have working effects afterwards, if not proceed to the troubleshooting section.
 
 If you want to add a custom application see `Manual->Patching application`
