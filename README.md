@@ -61,6 +61,8 @@ Keep in mind that some (now deprecated) effects might not work correctly in some
 ##### Did you start the Corsair Utility Engine ?
 ##### Did you enable the SDK in Corsair CUE ?
 ![cue-sdk-settings](http://i.imgur.com/c7d7hLR.png)
+##### [error] [SDKLoader::load] LoadLibraryA(CUESDK[.x64_]2015.dll) failed with code 126 ?
+Download the latest VC++2015 x86 and x64 redistributable [from here](https://www.microsoft.com/en-us/download/details.aspx?id=48145)  
 ## Razer Output SDK
 ##### Make sure Razer Synapse is installed properly and allows SDK access.
 ## General
