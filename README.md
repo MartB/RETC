@@ -3,10 +3,12 @@ RETC is a custom server application with a dll shim for clients, designed to be 
 I believe in performance so RETC is designed to run with the smallest amount of overhead possible.
 ## Installation:
 ### Automatic
+Follow the guide [how to install RETC](https://github.com/MartB/RETC/wiki/Installing).  
+**tl:dr**
 Just download the latest installer executable [from here](https://github.com/MartB/RETC/releases/latest) and follow the installation steps. 
-You should have working effects afterwards, if not proceed to the troubleshooting section.
+In both cases you should have working effects afterwards, if not proceed to the troubleshooting section.
 
-If you want to add a custom application see `Manual->Patching application`
+If you want to add a custom application see [Patching application](https://github.com/MartB/RETC#patching-application)
 ### Manual
 #### Patching application
 Copy both `RzChromaSDK.dll` and `RzChromaSDK64.dll` into the folder of the Application you want to use e.g `C:\Program Files\Overwatch`.
