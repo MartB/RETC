@@ -14,9 +14,10 @@ class EffectManager {
 public:
 	static bool createUniqueEffectID(RZEFFECTID* guid) { return CoCreateGuid(guid) == S_OK; }
 
+	~EffectManager();
 	bool storeEffect(const RETCDeviceType& deviceType, int effectType, RZEFFECTID* pEffectID, unsigned long effectSize, const char effectData[]);
 	bool deleteEffect(const RZEFFECTID& pEffectID);
-	void clearEffects() { m_effectMap.clear(); }
+	void clearEffects();
 
 	const internalEffectData* getEffect(const RZEFFECTID& pEffectID);
 

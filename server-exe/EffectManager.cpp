@@ -2,12 +2,18 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "EffectManager.h"
 
+
+EffectManager::~EffectManager()
+{
+  clearEffects();
+}
+
 bool EffectManager::storeEffect(const RETCDeviceType& deviceType, int effectType, RZEFFECTID* pEffectID, unsigned long effectSize, const char effectData[]) {
 	internalEffectData effData;
 	effData.type = effectType;
 	effData.deviceType = deviceType;
 	effData.data = new char[effectSize];
-	std::copy(effectData, effectData + effectSize, effData.data);
+	std::move(effectData, effectData + effectSize, effData.data);
 
 	RZEFFECTID newEffectID;
 	if (!createUniqueEffectID(&newEffectID)) {
@@ -31,6 +37,16 @@ bool EffectManager::deleteEffect(const RZEFFECTID& pEffectID) {
 	m_effectMap.erase(it);
 
 	return true;
+}
+
+void EffectManager::clearEffects()
+{
+  std::for_each(m_effectMap.begin(), m_effectMap.end(), [](const auto &effect) -> void
+  {
+    delete [] effect.second.data;
+  });
+
+  m_effectMap.clear();
 }
 
 const internalEffectData* EffectManager::getEffect(const RZEFFECTID& pEffectID) {
