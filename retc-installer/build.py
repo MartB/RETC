@@ -8,8 +8,7 @@ CUE_SDK_DL_URL = "http://downloads.corsair.com/download?item=Files/CUE/CUESDK_2.
 CUE_SDK_DLL_NAME_32 = "CUESDK_2015.dll"
 CUE_SDK_DLL_NAME_64 = "CUESDK.x64_2015.dll"
 
-# Pre-release build of nssm for the creators update issue.
-NSSM_DL_URL = "https://nssm.cc/ci/nssm-2.24-101-g897c7ad.zip"
+# NSSM Binary
 NSSM_BIN_NAME = "nssm.exe"
 
 SERVER_BUILD_PATH_32 = '../out/x86/Release/Server/'
@@ -95,11 +94,6 @@ def downloadCueSdk():
 		(CUE_SDK_DLL_NAME_64, FILE_PATH_64 + CUE_SDK_DLL_NAME_64)
 	])
 
-def downloadNSSM():
-	return downloadAndExtractZipFile(NSSM_DL_URL, [
-		("win32/"+NSSM_BIN_NAME, FILE_PATH_32 + NSSM_BIN_NAME),
-		("win64/"+NSSM_BIN_NAME, FILE_PATH_64 + NSSM_BIN_NAME)
-	])
 
 def copyBuildFiles():
 	buildFiles = [
@@ -160,8 +154,8 @@ def main(argv):
 		FILE_PATH_64 + CUE_SDK_DLL_NAME_64
 	])
 	
-	if not nssmExists and not downloadNSSM():
-		print("Could not download nssm")
+	if not nssmExists:
+		print("Could not find nssm (please compile it yourself)")
 		return
 		
 	if not cueSDKExists and not downloadCueSdk():

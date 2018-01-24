@@ -1,3 +1,5 @@
+SetCompressor /SOLID LZMA
+
 ;--------------------------------
 ;Constants
 !define FILES ".\files"
