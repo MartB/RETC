@@ -236,6 +236,7 @@
     <ClCompile Include="SDKLoader.cpp" />
     <ClCompile Include="SDKManager.cpp" />
     <ClCompile Include="server.cpp" />
+    <ClCompile Include="service.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\rpc-midl\rpc_retc.h" />

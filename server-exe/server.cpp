@@ -15,27 +15,34 @@ bool userCancelled = false;
 std::condition_variable cv;
 
 void cleanup() {
-	if (rpcReceiver) { //-V547
+	if (rpcReceiver) {
+		//-V547
 		rpcReceiver->shutdown();
 		rpcReceiver.reset();
 	}
 
-	if (sdkManager) { //-V547
+	if (sdkManager) {
+		//-V547
 		sdkManager.reset();
 	}
 
-	if (CONFIG) { //-V547
+	if (CONFIG) {
+		//-V547
 		if (!CONFIG->SaveConfig()) {
 			LOG->error("Failed to save config file.");
 		}
 	}
 }
 
+extern void requestTermination() {
+	userCancelled = true;
+	cv.notify_all();
+}
+
 BOOL WINAPI consoleHandler(DWORD signal) {
 	switch (signal) {
 	case CTRL_C_EVENT:
-		userCancelled = true;
-		cv.notify_all();
+		requestTermination();
 		return TRUE;
 	case CTRL_CLOSE_EVENT:
 		cleanup();
@@ -54,7 +61,7 @@ BOOL WINAPI consoleHandler(DWORD signal) {
 #define DEF_FLUSH_LEVEL spdlog::level::err
 #endif
 
-int main() {
+DWORD WINAPI SVCWorkerThread(LPVOID) {
 	CONFIG.reset(new ConfigManager());
 
 	try {
@@ -75,12 +82,12 @@ int main() {
 	}
 	catch (const spdlog::spdlog_ex& ex) {
 		std::cout << "Log init failed: " << ex.what() << std::endl;
-		return EXIT_FAILURE;
+		return ERROR_CANTOPEN;
 	}
 
 	if (!SetConsoleCtrlHandler(consoleHandler, TRUE)) {
 		LOG_E("Setting the console handler failed");
-		return EXIT_FAILURE;
+		return ERROR_INVALID_HANDLE;
 	}
 
 	sdkManager.reset(new SDKManager());
@@ -96,5 +103,5 @@ int main() {
 
 	// Dont put code below this just add all your exit code to cleanup()
 	cleanup();
-	return EXIT_SUCCESS;
+	return ERROR_SUCCESS;
 }

@@ -8,9 +8,6 @@ CUE_SDK_DL_URL = "http://downloads.corsair.com/download?item=Files/CUE/CUESDK_2.
 CUE_SDK_DLL_NAME_32 = "CUESDK_2015.dll"
 CUE_SDK_DLL_NAME_64 = "CUESDK.x64_2015.dll"
 
-# NSSM Binary
-NSSM_BIN_NAME = "nssm.exe"
-
 SERVER_BUILD_PATH_32 = '../out/x86/Release/Server/'
 SERVER_BUILD_PATH_64 = '../out/x64/Release/Server/'
 
@@ -144,20 +141,10 @@ def main(argv):
 		cleanBuildFiles()
 		return
 		
-	nssmExists = checkFiles([
-		FILE_PATH_32 + NSSM_BIN_NAME,
-		FILE_PATH_64 + NSSM_BIN_NAME
-	])
-	
 	cueSDKExists = checkFiles([
 		FILE_PATH_32 + CUE_SDK_DLL_NAME_32,
 		FILE_PATH_64 + CUE_SDK_DLL_NAME_64
 	])
-	
-	if not nssmExists:
-		print("Could not find nssm (please compile it yourself)")
-		return
-		
 	if not cueSDKExists and not downloadCueSdk():
 		print("Could not download cue sdk")
 		return

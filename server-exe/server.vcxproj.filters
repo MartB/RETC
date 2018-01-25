@@ -29,6 +29,9 @@
     <ClCompile Include="RazerSDK.cpp">
       <Filter>src\SDKS\Razer</Filter>
     </ClCompile>
+    <ClCompile Include="service.cpp">
+      <Filter>src\Service</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utils.h">
@@ -89,6 +92,9 @@
     </Filter>
     <Filter Include="src\SDKS\Razer">
       <UniqueIdentifier>{ff229edb-146c-4197-b65d-6bbacf6acd32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Service">
+      <UniqueIdentifier>{df5eb91d-a00f-447a-ad13-7f730bd8ac7e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

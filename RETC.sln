@@ -1,12 +1,25 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RPC", "rpc-midl\midl.vcxproj", "{6536EBEC-014E-4D6B-97BE-223137694CA8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "server-exe\server.vcxproj", "{758DB128-9123-4E1B-A6C3-47323714123A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShimDLL", "shim-dll\shim.vcxproj", "{758DB129-9123-4E1B-A6C3-47323714123A}"
+EndProject
+Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "retc-rpc-server-32", "out\x86\Debug\Server\retc-rpc-server-32.exe", "{99C1CD65-766B-4E30-AFA5-F5FFF092F5CF}"
+	ProjectSection(DebuggerProjectSystem) = preProject
+		PortSupplier = 00000000-0000-0000-0000-000000000000
+		Executable = D:\projects\Privat\RETC\out\x86\Debug\Server\retc-rpc-server-32.exe
+		RemoteMachine = DESKTOP-6T3SGUV
+		StartingDirectory = D:\projects\Privat\RETC\out\x86\Debug\Server
+		Environment = Standard
+		LaunchingEngine = 00000000-0000-0000-0000-000000000000
+		UseLegacyDebugEngines = No
+		LaunchSQLEngine = No
+		AttachLaunchAction = No
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,8 +53,15 @@ Global
 		{758DB129-9123-4E1B-A6C3-47323714123A}.Release|Win32.Build.0 = Release|Win32
 		{758DB129-9123-4E1B-A6C3-47323714123A}.Release|x64.ActiveCfg = Release|x64
 		{758DB129-9123-4E1B-A6C3-47323714123A}.Release|x64.Build.0 = Release|x64
+		{99C1CD65-766B-4E30-AFA5-F5FFF092F5CF}.Debug|Win32.ActiveCfg = Release|x86
+		{99C1CD65-766B-4E30-AFA5-F5FFF092F5CF}.Debug|x64.ActiveCfg = Release|x86
+		{99C1CD65-766B-4E30-AFA5-F5FFF092F5CF}.Release|Win32.ActiveCfg = Release|x86
+		{99C1CD65-766B-4E30-AFA5-F5FFF092F5CF}.Release|x64.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BF942D65-D62B-456A-8EB0-358C83FAFEB5}
 	EndGlobalSection
 EndGlobal
