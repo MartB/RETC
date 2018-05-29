@@ -17,7 +17,7 @@ Copy both `RzChromaSDK.dll` and `RzChromaSDK64.dll` into the folder of the Appli
 Never move these dlls to a global dll loading path like `C:\Windows\System32` or the retc-server.exe directory itself otherwise you will end up crashing the application.**
 #### Preparing files
 Download the latest release from github or compile it yourself.
-Download and extract the corsair cue sdk from the [official corsair download page](http://downloads.corsair.com/download?item=Files/CUE/CUESDK_2.18.127.zip) 
+Download and extract the corsair cue sdk from the [official corsair download page](http://downloads.corsair.com/download?item=Files/CUE/CUESDK_3.0.171.zip) 
  Create a new folder called `retc-server` this will be the place where you start RETC from.
 ##### The following steps depend on your systems architecture
 i.e whether you are using a `64bit (x64, x86_64, AMD64, etc.)` or `32bit (x86, i386, etc)` system.

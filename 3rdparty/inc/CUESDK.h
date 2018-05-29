@@ -17,7 +17,9 @@ extern "C"
 		CDT_Keyboard = 2,
 		CDT_Headset = 3,
 		CDT_MouseMat = 4,
-		CDT_HeadsetStand = 5
+		CDT_HeadsetStand = 5,
+		CDT_CommanderPro = 6,
+		CDT_LightingNodePro = 7
 	};
 
 	enum CorsairPhysicalLayout	// contains list of available physical layouts for keyboards
@@ -80,6 +82,36 @@ extern "C"
 		CE_InvalidArguments,			// if developer supplied invalid arguments to the function(for specifics look at function descriptions). (developer error)
 	};
 
+	enum CorsairChannelDeviceType				// contains list of the LED-devices which can be connected to the DIY-device.
+	{
+		CCDT_Invalid = 0,	// dummy value
+		CCDT_HD_Fan = 1,
+		CCDT_SP_Fan = 2,
+		CCDT_LL_Fan = 3,
+		CCDT_ML_Fan = 4,
+		CCDT_Strip = 5,
+		CCDT_DAP = 6
+	};
+
+	struct CorsairChannelDeviceInfo		// contains information about separate LED-device connected to the channel controlled by the DIY-device.
+	{
+		CorsairChannelDeviceType type;	// type of the LED-device
+		int deviceLedCount;			// number of LEDs controlled by LED-device
+	};
+
+	struct CorsairChannelInfo				// contains information about separate channel of the DIY-device.
+	{
+		int totalLedsCount;					// total number of LEDs connected to the channel
+		int devicesCount;					// number of LED-devices (fans, strips, etc.) connected to the channel which is controlled by the DIY device
+		CorsairChannelDeviceInfo* devices;	// array containing information about each separate LED-device connected to the channel controlled by the DIY device. Index of the LED-device in array is same as the index of the LED-device connected to the DIY-device
+	};
+
+	struct CorsairChannelsInfo			// contains information about channels of the DIY-devices
+	{
+		int channelsCount;				// number of channels controlled by the device
+		CorsairChannelInfo* channels;	// array containing information about each separate channel of the DIY-device. Index of the channel in the array is same as index of the channel on the DIY-device
+	};
+
 	struct CorsairDeviceInfo	// contains information about device
 	{
 		CorsairDeviceType type;			// enum describing device type
@@ -88,6 +120,7 @@ extern "C"
 		CorsairLogicalLayout logicalLayout;  // enum describing logical layout of the keyboard as set in CUE settings
 		int capsMask;					// mask that describes device capabilities, formed as logical “or” of CorsairDeviceCaps enum values
 		int ledsCount;					// number of controllable LEDs on the device
+		CorsairChannelsInfo channels;	// structure that describes channels of the DIY-devices
 	};
 
 	struct CorsairLedPosition	// contains led id and position of led rectangle.Most of the keys are rectangular.In case if key is not rectangular(like Enter in ISO / UK layout) it returns the smallest rectangle that fully contains the key
@@ -127,8 +160,20 @@ extern "C"
 	// set specified leds to some colors.The color is retained until changed by successive calls.This function does not take logical layout into account
 	CORSAIR_LIGHTING_SDK_EXPORT bool CorsairSetLedsColors(int size, CorsairLedColor* ledsColors);
 
+	// set specified LEDs to some colors. This function set LEDs colors in the buffer which is written to the devices via CorsairSedLedsColorsFlushBuffer or CorsairSedLedsColorsFlushBufferAsync
+	CORSAIR_LIGHTING_SDK_EXPORT bool CorsairSetLedsColorsBufferByDeviceIndex(int deviceIndex, int size, CorsairLedColor* ledsColors);
+
+	// writes to the devices LEDs colors buffer which is previously filled by the CorsairSetLedsColorsBufferByDeviceIndex function
+	CORSAIR_LIGHTING_SDK_EXPORT bool CorsairSetLedsColorsFlushBuffer();
+
+	// same as CorsairSetLedsColorsFlushBuffer but returns control to the caller immediately.
+	CORSAIR_LIGHTING_SDK_EXPORT bool CorsairSetLedsColorsFlushBufferAsync(void (*callback)(void *context, bool result, CorsairError error), void *context);
+
 	// get current color for the list of requested LEDs
 	CORSAIR_LIGHTING_SDK_EXPORT bool CorsairGetLedsColors(int size, CorsairLedColor* ledsColors);
+
+	// get current color for the list of requested LEDs for specified device
+	CORSAIR_LIGHTING_SDK_EXPORT bool CorsairGetLedsColorsByDeviceIndex(int deviceIndex, int size, CorsairLedColor* ledsColors);
 
 	CORSAIR_LIGHTING_SDK_EXPORT bool CorsairSetLedsColorsAsync(int size, CorsairLedColor* ledsColors, void(*CallbackType)(void*, bool, CorsairError), void *context);
 
