@@ -1,5 +1,9 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 #include <Windows.h>
 #include <tchar.h>
+#include <thread>
 
 #define SVC_NAME  _T("RETC")
 #define SVC_FNAME _T("RETC Service")
@@ -12,7 +16,7 @@ void InstallService();
 void RemoveService();
 VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
 VOID WINAPI ServiceController(DWORD);
-DWORD WINAPI SVCWorkerThread(LPVOID lpParam);
+int SVCWorkerThread();
 
 
 SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
@@ -38,9 +42,11 @@ int _tmain(const int argc, TCHAR* argv[]) {
 
 	if (StartServiceCtrlDispatcher(ServiceTableEntry) == FALSE) {
 		OutputDebugString(_T("Service start failed, falling back to normal launch."));
-		SVCWorkerThread(nullptr);
+		SVCWorkerThread();
 		return GetLastError();
 	}
+
+	return EXIT_SUCCESS;
 }
 
 VOID WINAPI ServiceMain(DWORD, LPTSTR*) {
@@ -61,8 +67,10 @@ VOID WINAPI ServiceMain(DWORD, LPTSTR*) {
 
 	SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
 
-	// Start mainthread.
-	const auto hThread = CreateThread(nullptr, 0, SVCWorkerThread, nullptr, 0, nullptr);
+	// Start service thread
+	auto serviceThread = std::thread([=] {
+		SVCWorkerThread();
+	});
 
 	g_ServiceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP;
 	g_ServiceStatus.dwCurrentState = SERVICE_RUNNING;
@@ -71,7 +79,8 @@ VOID WINAPI ServiceMain(DWORD, LPTSTR*) {
 
 	SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
 
-	WaitForSingleObject(hThread, INFINITE);
+	// Wait until the server terminates
+	serviceThread.join();
 
 	g_ServiceStatus.dwControlsAccepted = 0;
 	g_ServiceStatus.dwCurrentState = SERVICE_STOPPED;

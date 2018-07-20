@@ -11,7 +11,7 @@ ConfigManager::ConfigManager() {
 	ReloadConfigFile();
 }
 
-#define SUCCESS(cond) cond >= SI_OK
+#define SUCCESS(cond) ((cond) >= SI_OK)
 
 void ConfigManager::ReloadConfigFile() {
 	simpleIni->Reset();

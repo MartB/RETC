@@ -8,12 +8,12 @@ EffectManager::~EffectManager()
   clearEffects();
 }
 
-bool EffectManager::storeEffect(const RETCDeviceType& deviceType, int effectType, RZEFFECTID* pEffectID, unsigned long effectSize, const char effectData[]) {
+bool EffectManager::storeEffect(const RETCDeviceType& deviceType, int effectType, RZEFFECTID* pEffectID, efsize_t effectSize, const char effectData[]) {
 	internalEffectData effData;
 	effData.type = effectType;
 	effData.deviceType = deviceType;
-	effData.data = new char[effectSize];
-	std::move(effectData, effectData + effectSize, effData.data);
+	effData.data = new char[static_cast<size_t>(effectSize)];
+	std::move(effectData, effectData + static_cast<size_t>(effectSize), effData.data);
 
 	RZEFFECTID newEffectID;
 	if (!createUniqueEffectID(&newEffectID)) {

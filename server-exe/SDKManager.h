@@ -26,7 +26,7 @@ public:
 public:
 	RZRESULT deleteEffect(const RZEFFECTID& effID) const;
 	RZRESULT setEffect(const RZEFFECTID& effID);
-	RZRESULT playEffect(const RETCDeviceType& devType, int effectType, RZEFFECTID* pEffectId, unsigned long size, const char effectData[]);
+	RZRESULT playEffect(const RETCDeviceType& devType, int effectType, RZEFFECTID* pEffectId, efsize_t size, const char effectData[]);
 
 private:
 	void checkAvailability();

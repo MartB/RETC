@@ -61,7 +61,7 @@ BOOL WINAPI consoleHandler(DWORD signal) {
 #define DEF_FLUSH_LEVEL spdlog::level::err
 #endif
 
-DWORD WINAPI SVCWorkerThread(LPVOID) {
+int SVCWorkerThread() {
 	CONFIG.reset(new ConfigManager());
 
 	try {

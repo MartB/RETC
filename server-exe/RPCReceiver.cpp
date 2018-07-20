@@ -66,7 +66,7 @@ CONTEXT_HANDLE initialize(handle_t /*hBinding*/, RETCClientConfig* out) {
 	return sdkManager->getClientConfig();
 }
 
-RZRESULT playEffect(RETCDeviceType deviceType, int effectType, RZEFFECTID* pEffectId, unsigned long effectSize, char* effectData, CONTEXT_HANDLE) {
+RZRESULT playEffect(RETCDeviceType deviceType, int effectType, RZEFFECTID* pEffectId, efsize_t effectSize, char* effectData, CONTEXT_HANDLE) {
 	if (PROCESSING_DELAY > 0) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(PROCESSING_DELAY));
 	}

@@ -77,7 +77,7 @@ void SDKManager::reloadEmulatedDevices() {
 }
 
 LightingSDK* SDKManager::getSDKForDeviceType(RETCDeviceType type) {
-	if (type >= ALL || type < KEYBOARD) {
+	if (type >= ALL) {
 		return nullptr;
 	}
 
@@ -85,7 +85,7 @@ LightingSDK* SDKManager::getSDKForDeviceType(RETCDeviceType type) {
 }
 
 void SDKManager::checkAvailability() {
-	bool hasAnySDK = false;;
+	bool hasAnySDK = false;
 	for (auto&& sdk : m_availableSDKs) {
 		if (!sdk->init(m_sdkLoader.get())) {
 			LOG_T(L"an sdk failed to initialize {0}", sdk->getSDKName());
@@ -135,7 +135,7 @@ RZRESULT SDKManager::playbackEffect(const RETCDeviceType& devType, int effectTyp
 	return (sdk) ? sdk->playEffect(devType, effectType, effectData) : RZRESULT_NOT_FOUND;
 }
 
-RZRESULT SDKManager::playEffect(const RETCDeviceType& devType, int effectType, RZEFFECTID* pEffectId, unsigned long size, const char effectData[]) {
+RZRESULT SDKManager::playEffect(const RETCDeviceType& devType, int effectType, RZEFFECTID* pEffectId, efsize_t size, const char effectData[]) {
 	// We need to store the effect
 	if (pEffectId != nullptr) {
 		return m_effectManager->storeEffect(devType, effectType, pEffectId, size, effectData) ? RZRESULT_SUCCESS : RZRESULT_FAILED;

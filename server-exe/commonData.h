@@ -17,7 +17,7 @@ namespace LookupArrays {
 		{Keypad::CHROMA_NONE, Keypad::CHROMA_WAVE, Keypad::CHROMA_SPECTRUMCYCLING, Keypad::CHROMA_BREATHING, -1, Keypad::CHROMA_REACTIVE, Keypad::CHROMA_STATIC, Keypad::CHROMA_CUSTOM} // Keypad
 	};
 
-	static const unsigned long effectSize[ESIZE][CHROMA_RESERVED] = {
+	static const efsize_t effectSize[ESIZE][CHROMA_RESERVED] = {
 		{sizeof(Keyboard::BREATHING_EFFECT_TYPE), sizeof(Keyboard::CUSTOM_EFFECT_TYPE), sizeof(Keyboard::REACTIVE_EFFECT_TYPE), sizeof(Keyboard::STATIC_EFFECT_TYPE), sizeof(SPECTRUMCYCLING_EFFECT_TYPE), sizeof(WAVE_EFFECT_TYPE), 0, sizeof(Keyboard::CUSTOM_KEY_EFFECT_TYPE)},
 		{sizeof(Mouse::BLINKING_EFFECT_TYPE), sizeof(Keyboard::BREATHING_EFFECT_TYPE), sizeof(Keyboard::CUSTOM_EFFECT_TYPE), sizeof(Keyboard::REACTIVE_EFFECT_TYPE), sizeof(SPECTRUMCYCLING_EFFECT_TYPE), sizeof(STATIC_EFFECT_TYPE), sizeof(WAVE_EFFECT_TYPE), sizeof(Mouse::CUSTOM_EFFECT_TYPE2)},
 		{sizeof(Headset::STATIC_EFFECT_TYPE), sizeof(Headset::BREATHING_EFFECT_TYPE), sizeof(SPECTRUMCYCLING_EFFECT_TYPE), sizeof(Headset::CUSTOM_EFFECT_TYPE), 0, 0, 0, 0},

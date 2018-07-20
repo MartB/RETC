@@ -78,9 +78,9 @@ bool CorsairSDK::initialize() {
 
 		switch (devType) {
 		case MOUSE: {
-			const auto& numberOfKeys = devInfo->physicalLayout - CPL_Zones1 + 1;
+			const auto& numberOfKeys = static_cast<size_t>(devInfo->physicalLayout - CPL_Zones1 + 1);
 			ledVector.reserve(numberOfKeys);
-			for (auto key = 0; key < numberOfKeys; key++) {
+			for (size_t key = 0; key < numberOfKeys; key++) {
 				auto ledId = static_cast<CorsairLedId>(CLM_1 + key);
 				ledVector.emplace_back(ledId);
 			}
@@ -96,7 +96,7 @@ bool CorsairSDK::initialize() {
 		case MOUSEPAD:
 		case KEYPAD: {
 			auto const ledPositions = CorsairGetLedPositionsByDeviceIndex(i);
-			auto const ledCount = ledPositions->numberOfLed;
+			auto const ledCount = static_cast<size_t>(ledPositions->numberOfLed);
 
 			if (ledCount == 0) {
 				continue;
@@ -105,7 +105,7 @@ bool CorsairSDK::initialize() {
 			ledVector.reserve(ledCount);
 
 			const auto& ledData = ledPositions->pLedPosition;
-			for (auto key = 0; key < ledCount; key++) {
+			for (size_t key = 0; key < ledCount; key++) {
 				auto ledId = ledData[key].ledId;
 				ledVector.emplace_back(ledId);
 			}
@@ -277,7 +277,7 @@ RZRESULT CorsairSDK::prepareMouseEffect(int type, const char effectData[]) {
 
 		for (const auto ledId : ledVector) {
 			RZLED val = findMouseLed(ledId);
-			if (val == -1) {
+			if (val == RZLED_NONE) {
 				continue;
 			}
 

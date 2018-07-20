@@ -15,7 +15,7 @@ public:
 	static bool createUniqueEffectID(RZEFFECTID* guid) { return CoCreateGuid(guid) == S_OK; }
 
 	~EffectManager();
-	bool storeEffect(const RETCDeviceType& deviceType, int effectType, RZEFFECTID* pEffectID, unsigned long effectSize, const char effectData[]);
+	bool storeEffect(const RETCDeviceType& deviceType, int effectType, RZEFFECTID* pEffectID, efsize_t effectSize, const char effectData[]);
 	bool deleteEffect(const RZEFFECTID& pEffectID);
 	void clearEffects();
 

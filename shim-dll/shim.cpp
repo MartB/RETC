@@ -45,7 +45,7 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD /*callReason*/, LPVOID /*lpRese
 }
 
 BOOL hasSupportFor(RETCDeviceType type) {
-	if (!isInitialized() || type >= ESIZE || type < KEYBOARD) {
+	if (!isInitialized() || type >= ESIZE) {
 		return false;
 	}
 
@@ -133,7 +133,7 @@ RZRESULT sendEffect(RETCDeviceType deviceType, int effectID, PRZPARAM effectData
 	RpcEndExcept
 }
 
-RZRESULT CreateEffect(RZDEVICEID DeviceId, EFFECT_TYPE effectID, PRZPARAM pParam, RZEFFECTID* pEffectId) {
+RZRESULT CreateEffect(RZDEVICEID DeviceId, EFFECT_TYPE effectID, PRZPARAM pParam, RZEFFECTID* pEffectId) { //-V813
 	auto deviceType = ESIZE;
 
 	if (DeviceId == GUID_NULL) {
@@ -177,7 +177,7 @@ RZRESULT CreateKeypadEffect(Keypad::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFEC
 }
 
 
-RZRESULT SetEffect(RZEFFECTID EffectId) {
+RZRESULT SetEffect(RZEFFECTID EffectId) { //-V813
 	RpcTryExcept
 		return setEffect(EffectId, rpcCTXHandle);
 	RpcExcept(1)
@@ -185,7 +185,7 @@ RZRESULT SetEffect(RZEFFECTID EffectId) {
 	RpcEndExcept
 }
 
-RZRESULT DeleteEffect(RZEFFECTID EffectId) {
+RZRESULT DeleteEffect(RZEFFECTID EffectId) { //-V813
 	RpcTryExcept
 		return deleteEffect(EffectId, rpcCTXHandle);
 	RpcExcept(1)
@@ -193,7 +193,7 @@ RZRESULT DeleteEffect(RZEFFECTID EffectId) {
 	RpcEndExcept
 }
 
-RZRESULT QueryDevice(RZDEVICEID DeviceID, DEVICE_INFO_TYPE& DeviceInfo) {
+RZRESULT QueryDevice(RZDEVICEID DeviceID, DEVICE_INFO_TYPE& DeviceInfo) { //-V813
 	for (int devID = KEYBOARD; devID < ALL; devID++) {
 		if (DeviceID == CONFIG.emulatedDeviceIDS[devID]) {
 			DeviceInfo.Connected = CONFIG.supportedDeviceTypes[devID];

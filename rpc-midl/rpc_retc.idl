@@ -14,8 +14,9 @@ interface rpc_retc
 	typedef GUID	RZEFFECTID;
 	typedef GUID	RZDEVICEID;
 	typedef LONG	RZRESULT;
+	typedef unsigned __int32 efsize_t;
 
-	// If you change the order in the below enum adjust commonData.h
+	// If you change the order in the below enum adjust the order of genericEffectType and effectSize in server/src/common/commonData.h
 	typedef enum RETCDeviceType
 	{
 		KEYBOARD,
@@ -40,7 +41,7 @@ interface rpc_retc
 	
 	CONTEXT_HANDLE initialize([in] handle_t hBinding, [out] RETCClientConfig* config);
 
-	RZRESULT playEffect(RETCDeviceType deviceType, [in] int type, [in, out, unique]RZEFFECTID *pEffectID, unsigned long effectSize, [size_is(effectSize)] char effectData[*], CONTEXT_HANDLE hContext);
+	RZRESULT playEffect(RETCDeviceType deviceType, [in] int type, [in, out, unique]RZEFFECTID *pEffectID, efsize_t effectSize, [size_is(effectSize)] char effectData[*], CONTEXT_HANDLE hContext);
 
 	RZRESULT setEffect([in] RZEFFECTID effID, CONTEXT_HANDLE hContext);
 	RZRESULT deleteEffect([in] RZEFFECTID effID, CONTEXT_HANDLE hContext);
