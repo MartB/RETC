@@ -20,6 +20,7 @@ RzApi RZRESULT CreateMouseEffect(Mouse::EFFECT_TYPE Effect, PRZPARAM pParam, RZE
 RzApi RZRESULT CreateHeadsetEffect(Headset::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
 RzApi RZRESULT CreateMousepadEffect(Mousepad::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
 RzApi RZRESULT CreateKeypadEffect(Keypad::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
+RzApi RZRESULT CreateChromaLinkEffect(ChromaLink::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
 
 RzApi RZRESULT SetEffect(RZEFFECTID EffectId);
 RzApi RZRESULT DeleteEffect(RZEFFECTID EffectId);
@@ -27,7 +28,7 @@ RzApi RZRESULT DeleteEffect(RZEFFECTID EffectId);
 RzApi RZRESULT QueryDevice(RZDEVICEID DeviceId, DEVICE_INFO_TYPE& DeviceInfo);
 
 //////////////////////////////////////////////////////////////////////////
-// All functions below this line are not implemented.
+// All functions in this block are not implemented.
 RzApi RZRESULT RegisterEventNotification(HWND hWnd);
 RzApi RZRESULT UnregisterEventNotification();
 //////////////////////////////////////////////////////////////////////////
@@ -78,7 +79,7 @@ RZRESULT Init() {
 		return RZRESULT_SERVICE_NOT_ACTIVE;
 	}
 
-	status = RpcEpResolveBinding(hRetcBinding, rpc_retc_v2_3_c_ifspec);
+	status = RpcEpResolveBinding(hRetcBinding, rpc_retc_v2_4_c_ifspec);
 	if (status) {
 		return RZRESULT_SERVICE_NOT_ACTIVE;
 	}
@@ -176,6 +177,9 @@ RZRESULT CreateKeypadEffect(Keypad::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFEC
 	return sendEffect(KEYPAD, Effect, pParam, pEffectId);
 }
 
+RZRESULT CreateChromaLinkEffect(ChromaLink::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID * pEffectId) {
+	return sendEffect(SYSTEM, Effect, pParam, pEffectId);
+}
 
 RZRESULT SetEffect(RZEFFECTID EffectId) { //-V813
 	RpcTryExcept
@@ -212,7 +216,6 @@ RZRESULT RegisterEventNotification(HWND /*hWnd*/) {
 RZRESULT UnregisterEventNotification() {
 	return RZRESULT_SUCCESS;
 }
-
 
 void* __RPC_USER midl_user_allocate(size_t size) {
 	return malloc(size);

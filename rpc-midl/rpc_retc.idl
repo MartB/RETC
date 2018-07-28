@@ -5,8 +5,8 @@ midl_pragma warning(disable: 2111)
 import "oaidl.idl";
 
 [
-	uuid(f14b48fb-efd2-471e-917c-ae24f26a3ec7),
-	version(2.3)
+	uuid(4b0af0e2-325a-4305-af21-1a611e55a196),
+	version(2.4)
 ]
 
 interface rpc_retc
@@ -24,6 +24,7 @@ interface rpc_retc
 		HEADSET,
 		MOUSEPAD,
 		KEYPAD,
+		SYSTEM,
 		ALL,
 		ESIZE, // If you get that as type its invalid, goes always last!
 	} RETCDeviceType;

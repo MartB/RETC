@@ -20,6 +20,8 @@ private:
 	typedef RZRESULT (*CreateHeadsetEffect_t)(Headset::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
 	typedef RZRESULT (*CreateMousepadEffect_t)(Mousepad::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
 	typedef RZRESULT (*CreateKeypadEffect_t)(Keypad::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
+	typedef RZRESULT (*CreateChromaLinkEffect_t)(ChromaLink::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
+
 	typedef RZRESULT (*SetEffect_t)(RZEFFECTID EffectId);
 	typedef RZRESULT (*DeleteEffect_t)(RZEFFECTID EffectId);
 	typedef RZRESULT (*QueryDevice_t)(RZDEVICEID EffectId, DEVICE_INFO_TYPE& DeviceInfo);
@@ -31,8 +33,8 @@ private:
 	SDKLoaderAssignNameToVariable(CreateHeadsetEffect)
 	SDKLoaderAssignNameToVariable(CreateMousepadEffect)
 	SDKLoaderAssignNameToVariable(CreateKeypadEffect)
+	SDKLoaderAssignNameToVariable(CreateChromaLinkEffect)
 	SDKLoaderAssignNameToVariable(SetEffect)
 	SDKLoaderAssignNameToVariable(DeleteEffect)
 	SDKLoaderAssignNameToVariable(QueryDevice)
-
 };

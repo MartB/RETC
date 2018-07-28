@@ -23,6 +23,7 @@ RazerSDK::RazerSDK() {
 		{"CreateHeadsetEffect", nullptr},
 		{"CreateMousepadEffect", nullptr},
 		{"CreateKeypadEffect", nullptr},
+		{"CreateChromaLinkEffect", nullptr},
 		{"SetEffect", nullptr},
 		{"DeleteEffect", nullptr},
 		{"QueryDevice", nullptr}
@@ -45,6 +46,7 @@ bool RazerSDK::initialize() {
 	SDKLoaderMapNameToFunction(CreateHeadsetEffect);
 	SDKLoaderMapNameToFunction(CreateMousepadEffect);
 	SDKLoaderMapNameToFunction(CreateKeypadEffect);
+	SDKLoaderMapNameToFunction(CreateChromaLinkEffect);	
 	SDKLoaderMapNameToFunction(SetEffect);
 	SDKLoaderMapNameToFunction(DeleteEffect);
 	SDKLoaderMapNameToFunction(QueryDevice);
@@ -107,6 +109,9 @@ RZRESULT RazerSDK::playEffect(RETCDeviceType device, int type, const char data[]
 	case KEYPAD:
 		res = CreateKeypadEffect(static_cast<Keypad::EFFECT_TYPE>(type), PRZPARAM(data), nullptr);
 		break;
+	case SYSTEM:
+		res = CreateChromaLinkEffect(static_cast<ChromaLink::EFFECT_TYPE>(type), PRZPARAM(data), nullptr);
+		break;
 	default:
 		res = RZRESULT_INVALID;
 		break;
@@ -134,6 +139,7 @@ RZRESULT RazerSDK::playEffect(RETCDeviceType device, int type, const char data[]
 	case DEVICE_INFO_TYPE::DEVICE_KEYPAD:
 		return KEYPAD;
 	case DEVICE_INFO_TYPE::DEVICE_SYSTEM:
+		return SYSTEM;
 	case DEVICE_INFO_TYPE::DEVICE_INVALID:
 		return ESIZE;
 	default:

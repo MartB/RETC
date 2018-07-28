@@ -30,7 +30,7 @@ bool RPCReceiver::startListening() {
 		return false;
 	}
 
-	m_RpcStatus = RpcServerRegisterIf2(rpc_retc_v2_3_s_ifspec, nullptr, nullptr, RPC_IF_ALLOW_CALLBACKS_WITH_NO_AUTH, RPC_C_LISTEN_MAX_CALLS_DEFAULT, static_cast<unsigned>(-1), nullptr);
+	m_RpcStatus = RpcServerRegisterIf2(rpc_retc_v2_4_s_ifspec, nullptr, nullptr, RPC_IF_ALLOW_CALLBACKS_WITH_NO_AUTH, RPC_C_LISTEN_MAX_CALLS_DEFAULT, static_cast<unsigned>(-1), nullptr);
 
 	if (!STATUS_OK) {
 		return false;

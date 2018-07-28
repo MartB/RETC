@@ -148,6 +148,9 @@ RZRESULT CorsairSDK::playEffect(RETCDeviceType deviceType, int effectType, const
 	case KEYPAD:
 		res = RZRESULT_NOT_SUPPORTED;
 		break;
+	case SYSTEM: // Chroma link not supported...
+		res = RZRESULT_NOT_SUPPORTED;
+		break;
 	default:
 		res = RZRESULT_INVALID;
 		break;

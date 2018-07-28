@@ -37,7 +37,7 @@ bool SDKLoader::load(HINSTANCE& inst, const std::string& dllName, functionList& 
 		const char * funcPtrName = func.first.c_str();
 		void* fptr = GetProcAddress(inst, funcPtrName);
 		if (!fptr) {
-			LOG_E("FunctionPtr {0} {1}", dllName, funcPtrName);
+			LOG_E("Could not find required method {0}, please check {1}.", funcPtrName, dllName);
 			FreeLibrary(inst);
 			return false;
 		}

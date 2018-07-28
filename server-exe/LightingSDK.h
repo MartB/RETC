@@ -45,7 +45,7 @@ public:
 		}
 
 		if (!sdkLoader->load(m_dllInstance, SDK_DLL, DLL_FUNCTION_LIST)) {
-			LOG_E(L"{0} failed to load.", SDK_NAME);
+			LOG_E(L"{0} failed to load, please check if an update is available.", SDK_NAME);
 			return false;
 		}
 
