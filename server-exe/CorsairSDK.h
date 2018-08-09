@@ -18,7 +18,7 @@ private:
 	RZRESULT prepareHeadsetEffect(int type, const char effectData[]);
 
 	// Helper functions
-	static CorsairLedColor convertLedColor(const COLORREF& color);
+	CorsairLedColor convertLedColor(const COLORREF& color);
 	static RETCDeviceType corsairToRETCDeviceTYPE(CorsairDeviceType type);
 
 	static bool findKeyboardLed(CorsairLedId ledid, int* row, int* col);

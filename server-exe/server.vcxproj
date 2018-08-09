@@ -240,10 +240,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\rpc-midl\rpc_retc.h" />
+    <ClInclude Include="colorTransformation.h" />
     <ClInclude Include="commonData.h" />
     <ClInclude Include="ConfigManager.h" />
     <ClInclude Include="CorsairSDK.h" />
     <ClInclude Include="EffectManager.h" />
+    <ClInclude Include="gammaTransformation.h" />
     <ClInclude Include="RazerSDK.h" />
     <ClInclude Include="RPCReceiver.h" />
     <ClInclude Include="SDKLoader.h" />

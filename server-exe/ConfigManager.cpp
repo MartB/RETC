@@ -2,6 +2,8 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include "ConfigManager.h"
+#include "utils.h"
+#include <sstream>
 #define CONFIG_FILENAME L"config.ini"
 
 ConfigManager::ConfigManager() {
@@ -52,6 +54,26 @@ long ConfigManager::GetLong(const wchar_t* section, const wchar_t* key, const lo
 	return simpleIni->GetLongValue(section, key, def);
 }
 
+Vec3D ConfigManager::GetVec3D(const wchar_t * section, const wchar_t * key, const Vec3D &def) {
+	auto rawValue = GetWString(section, key, nullptr);
+	if (rawValue == nullptr) {
+		return def;
+	}
+
+	std::wstringstream ws(rawValue);
+	Vec3D ret;
+	ws >> ret.x;
+	ws >> ret.y;
+	ws >> ret.z;
+
+	if (ws.fail()) {
+		LOG_E(L"Malformed vec3d section {0}, key {1}. Format: X.X Y.Y Z.Z (divided by spaces)", section, key);
+		return def;
+	}
+
+	return ret;
+}
+
 bool ConfigManager::SetBool(const wchar_t* section, const wchar_t* key, bool value) {
 	return SUCCESS(simpleIni->SetBoolValue(section, key, value));
 }
@@ -67,6 +89,21 @@ bool ConfigManager::SetWString(const wchar_t* section, const wchar_t* key, const
 bool ConfigManager::SetDouble(const wchar_t* section, const wchar_t* key, const double value) {
 	return SUCCESS(simpleIni->SetDoubleValue(section, key, value));
 }
+
+bool ConfigManager::SetVec3D(const wchar_t* section, const wchar_t* key, const Vec3D &value) {
+	std::wstringstream ws;
+	ws << value.x;
+	ws << value.y;
+	ws << value.z;
+
+	if (ws.fail()) {
+		LOG_E(L"Issue while saving vec3d section {0}, key {1}.", section, key);
+		return false;
+	}
+
+	return SUCCESS(simpleIni->SetValue(section, key, ws.str().c_str()));
+}
+
 
 bool ConfigManager::SaveConfig() {
 	return SUCCESS(simpleIni->SaveFile(CONFIG_FILENAME));

@@ -64,6 +64,12 @@
     <ClInclude Include="RazerSDK.h">
       <Filter>src\SDKS\Razer</Filter>
     </ClInclude>
+    <ClInclude Include="gammaTransformation.h">
+      <Filter>src\ColorTransformations</Filter>
+    </ClInclude>
+    <ClInclude Include="colorTransformation.h">
+      <Filter>src\ColorTransformations</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -95,6 +101,9 @@
     </Filter>
     <Filter Include="src\Service">
       <UniqueIdentifier>{df5eb91d-a00f-447a-ad13-7f730bd8ac7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\ColorTransformations">
+      <UniqueIdentifier>{67b8e0d1-ca60-4d52-bf26-c456682a4ad1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

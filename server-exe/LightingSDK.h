@@ -9,6 +9,8 @@
 #include "RzChromaSDKDefines.h"
 #include "RzChromaSDKTypes.h"
 #include <algorithm>
+#include "colorTransformation.h"
+#include "gammaTransformation.h"
 
 #define SDKLoaderAssignNameToVariable(func) func## _t func;
 #define SDKLoaderMapNameToFunction(func) func = (func## _t)DLL_FUNCTION_LIST[#func];
@@ -51,8 +53,43 @@ public:
 
 		m_sdkLoader = sdkLoader;
 
+		if (CONFIG->GetBool(SDK_CONFIG_SECTION, L"enable_colortransformations", true)) {
+			LOG_D(L"{0} color transformations enabled.", SDK_NAME);
+
+			if (!initializeColorTransformations()) {
+				LOG_E(L"{0}: Error while trying to initialize the color transformations, continuing with partial init.", SDK_NAME);
+			}
+		}
+		
+
 		LOG_I(L"{0} loaded {1} initializing SDK.", SDK_NAME, SDK_DLL);
 		return initialize();
+	}
+
+	bool initializeColorTransformations() {
+		// Gamma adjustment
+		auto gammaTransformationValues = CONFIG->GetVec3D(SDK_CONFIG_SECTION, L"gamma_adjustment", Vec3D());
+		if (!gammaTransformationValues.isZero()) { // Skip the transformation if we got the default vector.
+			m_activeColorTransformations.push_back(std::make_unique<GammaTransformation>(gammaTransformationValues));
+		}
+
+		return true;
+	}
+
+	// r,g,b used as input and output 
+	void TRANSFORM_COLORS(int &r, int &g, int &b) {
+		for (const auto &transformation : m_activeColorTransformations)	{
+			transformation->apply(r, g, b);
+		}
+	}
+
+	// r,g,b used as output 
+	void TRANSFORM_COLORS(const COLORREF& color, int &r, int &g, int &b) {
+		r = GetRValue(color);
+		g = GetGValue(color);
+		b = GetBValue(color);
+
+		return TRANSFORM_COLORS(r, g, b);
 	}
 
 	void enableSupportFor(RETCDeviceType type) { m_supportedDevices[type] = TRUE; }
@@ -69,6 +106,8 @@ public:
 		if (m_dllInstance != nullptr) {
 			reset();
 		}
+
+		m_activeColorTransformations.clear();
 		unloadDLL();
 	}
 
@@ -87,6 +126,9 @@ protected:
 	wchar_t SDK_CONFIG_SECTION[MAX_CONFIG_SECTION_LEN] = {0};
 
 	supportArray_t m_supportedDevices;
+
+	// Color transformation
+	std::vector<std::unique_ptr<ColorTransformation>> m_activeColorTransformations;
 
 private:
 	SDKLoader* m_sdkLoader;

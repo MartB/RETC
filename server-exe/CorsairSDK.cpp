@@ -383,9 +383,7 @@ RZRESULT CorsairSDK::prepareHeadsetEffect(int type, const char effectData[]) {
 
 CorsairLedColor CorsairSDK::convertLedColor(const COLORREF& color) {
 	CorsairLedColor ledColor;
-	ledColor.r = GetRValue(color);
-	ledColor.g = GetGValue(color);
-	ledColor.b = GetBValue(color);
+	TRANSFORM_COLORS(color, ledColor.r, ledColor.g, ledColor.b);
 	ledColor.ledId = CLI_Invalid;
 
 	return ledColor;
