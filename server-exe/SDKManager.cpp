@@ -106,7 +106,7 @@ void SDKManager::checkAvailability() {
 	}
 
 	// Force enable the mousepad support if a headset_stand is connected, this does not assign a sdk!
-	if (m_clientConfig->supportedDeviceTypes[MOUSEPAD] == FALSE && m_clientConfig->supportedDeviceTypes[HEADSET_STAND] == TRUE) {
+	if (m_clientConfig->supportedDeviceTypes[MOUSEPAD] == FALSE && m_clientConfig->supportedDeviceTypes[HEADSET_STAND] != FALSE) {
 		m_clientConfig->supportedDeviceTypes[MOUSEPAD] = TRUE;
 	}
 

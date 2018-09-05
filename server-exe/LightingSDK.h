@@ -2,13 +2,15 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #pragma once
+#include <set>
+#include <algorithm>
+
 #include "../rpc-midl/rpc_retc.h"
 #include "SDKLoader.h"
 #include "commonData.h"
 #include "RzErrors.h"
 #include "RzChromaSDKDefines.h"
 #include "RzChromaSDKTypes.h"
-#include <algorithm>
 #include "colorTransformation.h"
 #include "gammaTransformation.h"
 
@@ -70,7 +72,7 @@ public:
 		// Gamma adjustment
 		auto gammaTransformationValues = CONFIG->GetVec3D(SDK_CONFIG_SECTION, L"gamma_adjustment", Vec3D());
 		if (!gammaTransformationValues.isZero()) { // Skip the transformation if we got the default vector.
-			m_activeColorTransformations.push_back(std::make_unique<GammaTransformation>(gammaTransformationValues));
+			m_activeColorTransformations.insert(std::make_unique<GammaTransformation>(gammaTransformationValues));
 		}
 
 		return true;
@@ -138,7 +140,7 @@ protected:
 	supportArray_t m_supportedDevices;
 
 	// Color transformation
-	std::vector<std::unique_ptr<ColorTransformation>> m_activeColorTransformations;
+	std::set<std::unique_ptr<ColorTransformation>> m_activeColorTransformations;
 
 private:
 	SDKLoader* m_sdkLoader;

@@ -62,6 +62,7 @@ bool CorsairSDK::initialize() {
 		}	
 	}
 
+	size_t maxLeds = 0;
 	for (auto i = 0; i < devCount; i++) {
 		const CorsairDeviceInfo* devInfo = CorsairGetDeviceInfo(i);
 
@@ -122,9 +123,16 @@ bool CorsairSDK::initialize() {
 			continue;
 		}
 
+		// Get the max number of leds so we can later reserve the output color vector.
+		const auto ledCount = ledVector.size();
+		if (ledCount > maxLeds) {
+			maxLeds = ledCount;
+		}
+
 		enableSupportFor(devType);
 	}
 
+	m_outputColorVector.reserve(maxLeds);
 	return true;
 }
 
@@ -170,7 +178,7 @@ RZRESULT CorsairSDK::playEffect(RETCDeviceType deviceType, int effectType, const
 	}
 
 	CorsairSetLedsColors(static_cast<int>(m_outputColorVector.size()), m_outputColorVector.data());
-	m_outputColorVector.resize(0);
+	m_outputColorVector.clear(); // resize(0) not needed anymore standard states capacity remains unchanged.
 
 	if (const auto error = CorsairGetLastError()) {
 		LOG_D("{0}", errToString(error));
