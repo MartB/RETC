@@ -3,11 +3,12 @@
 #include "SDKManager.h"
 #include <thread>
 
-#pragma once
+#define STATUS_OK(x) (x == RPC_S_OK)
+
 class RPCReceiver {
 public:
 	RPCReceiver();
-	bool startListening();
+	RPC_STATUS startListening();
 	void reset();
 
 	bool shutdown();

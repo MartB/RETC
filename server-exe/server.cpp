@@ -42,10 +42,8 @@ extern void requestTermination() {
 BOOL WINAPI consoleHandler(DWORD signal) {
 	switch (signal) {
 	case CTRL_C_EVENT:
-		requestTermination();
-		return TRUE;
 	case CTRL_CLOSE_EVENT:
-		cleanup();
+		requestTermination();
 		return TRUE;
 	default:
 		return FALSE;
@@ -92,7 +90,13 @@ int SVCWorkerThread() {
 
 	sdkManager.reset(new SDKManager());
 	rpcReceiver.reset(new RPCReceiver());
-	rpcReceiver->startListening();
+	
+	const auto rpcStatus = rpcReceiver->startListening();
+	if (!STATUS_OK(rpcStatus)) {
+		LOG_E(L"Starting the remote server failed, please make sure no other RETC instance is active. rpc-code: {0}", rpcStatus);
+		cleanup();
+		return -1;
+	}
 
 	// We dont have stuff to do for now so we will just keep sleeping.
 	std::mutex m;
