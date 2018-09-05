@@ -15,7 +15,8 @@ namespace LookupArrays {
 		{Headset::CHROMA_NONE, -1, Headset::CHROMA_SPECTRUMCYCLING, Headset::CHROMA_BREATHING, -1, -1, Headset::CHROMA_STATIC, Headset::CHROMA_CUSTOM}, // Headset
 		{Mousepad::CHROMA_NONE, Mousepad::CHROMA_WAVE, Mousepad::CHROMA_SPECTRUMCYCLING, Mousepad::CHROMA_BREATHING, -1, -1, Mousepad::CHROMA_STATIC, Mousepad::CHROMA_CUSTOM}, // Mousepad
 		{Keypad::CHROMA_NONE, Keypad::CHROMA_WAVE, Keypad::CHROMA_SPECTRUMCYCLING, Keypad::CHROMA_BREATHING, -1, Keypad::CHROMA_REACTIVE, Keypad::CHROMA_STATIC, Keypad::CHROMA_CUSTOM}, // Keypad
-		{ChromaLink::CHROMA_NONE, -1, -1, -1, -1, -1, ChromaLink::CHROMA_STATIC, ChromaLink::CHROMA_CUSTOM } // System leds aka chroma link
+		{ChromaLink::CHROMA_NONE, -1, -1, -1, -1, -1, ChromaLink::CHROMA_STATIC, ChromaLink::CHROMA_CUSTOM }, // System leds aka chroma link
+		{-1, 1, -1, -1, -1, -1, -1, -1} // Headset Stand leds (no corresponding device for razer => api defect)
 	};
 
 	static const efsize_t effectSize[ESIZE][CHROMA_RESERVED] = {
@@ -25,7 +26,8 @@ namespace LookupArrays {
 		{sizeof(Mousepad::BREATHING_EFFECT_TYPE), sizeof(Mousepad::CUSTOM_EFFECT_TYPE), sizeof(SPECTRUMCYCLING_EFFECT_TYPE), sizeof(Mousepad::STATIC_EFFECT_TYPE), sizeof(Mousepad::WAVE_EFFECT_TYPE), 0, 0, 0},
 		{sizeof(Keypad::BREATHING_EFFECT_TYPE), sizeof(Keypad::CUSTOM_EFFECT_TYPE), sizeof(Keypad::REACTIVE_EFFECT_TYPE), sizeof(SPECTRUMCYCLING_EFFECT_TYPE), sizeof(Keypad::STATIC_EFFECT_TYPE), sizeof(Keypad::WAVE_EFFECT_TYPE), 0, 0},
 		{sizeof(ChromaLink::CUSTOM_EFFECT_TYPE), sizeof(ChromaLink::STATIC_EFFECT_TYPE), 0, 0, 0, 0, 0, 0},
-		{sizeof(WAVE_EFFECT_TYPE), sizeof(SPECTRUMCYCLING_EFFECT_TYPE), sizeof(BREATHING_EFFECT_TYPE), sizeof(BLINKING_EFFECT_TYPE), sizeof(REACTIVE_EFFECT_TYPE), sizeof(STATIC_EFFECT_TYPE), sizeof(CUSTOM_EFFECT_TYPE), 0}
+		{sizeof(WAVE_EFFECT_TYPE), sizeof(SPECTRUMCYCLING_EFFECT_TYPE), sizeof(BREATHING_EFFECT_TYPE), sizeof(BLINKING_EFFECT_TYPE), sizeof(REACTIVE_EFFECT_TYPE), sizeof(STATIC_EFFECT_TYPE), sizeof(CUSTOM_EFFECT_TYPE), 0},
+		{0, 0, 0, 0, 0, 0, 0, 0,} // Headset Stand leds (no corresponding device for razer => api defect)
 	};
 
 	static const GUID razerDevices[] = {
@@ -46,8 +48,8 @@ namespace LookupArrays {
 	};
 
 	// Emulated device related values
-	static const wchar_t* EM_KEYS[] = { L"EM_KEYBOARD", L"EM_MOUSE", L"EM_HEADSET", L"EM_MOUSEPAD", L"EM_KEYPAD", L"EM_SYSTEM" };
-	static const wchar_t* EM_VALS[] = { L"BLACKWIDOW_CHROMA", L"MAMBA_CHROMA", L"KRAKEN71_CHROMA", L"FIREFLY_CHROMA", L"ORBWEAVER_CHROMA", L"LENOVO_Y900"};
+	static const wchar_t* EM_KEYS[] = { L"EM_KEYBOARD", L"EM_MOUSE", L"EM_HEADSET", L"EM_MOUSEPAD", L"EM_KEYPAD", L"EM_SYSTEM", L"!EM_!INVALID_HEADSET_STAND!" };
+	static const wchar_t* EM_VALS[] = { L"BLACKWIDOW_CHROMA", L"MAMBA_CHROMA", L"KRAKEN71_CHROMA", L"FIREFLY_CHROMA", L"ORBWEAVER_CHROMA", L"LENOVO_Y900", nullptr};
 
 }
 

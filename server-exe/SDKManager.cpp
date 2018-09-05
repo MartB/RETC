@@ -3,6 +3,7 @@
 
 #include "SDKManager.h"
 #include "RzErrors.h"
+#include "LightingSDK.h"
 
 SDKManager::SDKManager() {
 	m_sdkLoader = std::make_shared<SDKLoader>();
@@ -11,15 +12,17 @@ SDKManager::SDKManager() {
 	/**
 	 * Register your sdk here, make sure the RazerSDK is always at the beginning.
 	 */
-	m_availableSDKs.insert(std::make_unique<RazerSDK>());
-	m_availableSDKs.insert(std::make_unique<CorsairSDK>());
+	m_availableSDKs.insert(std::make_shared<RazerSDK>());
+	m_availableSDKs.insert(std::make_shared<CorsairSDK>());
 
 	m_clientConfig = new RETCClientConfig;
 	reset();
 }
 
 void SDKManager::reset() {
-	std::fill(m_selectedSDKs, m_selectedSDKs + ALL, nullptr);
+	for (auto &sdkList : m_selectedSDKs) {
+		sdkList.clear();
+	}
 
 	std::fill(m_clientConfig->supportedDeviceTypes, m_clientConfig->supportedDeviceTypes + ESIZE, FALSE);
 	std::fill(m_clientConfig->emulatedDeviceIDS, m_clientConfig->emulatedDeviceIDS + ALL, GUID_NULL);
@@ -61,6 +64,11 @@ void SDKManager::reloadEmulatedDevices() {
 
 	std::wstring lastConfigValue;
 	for (int idx = KEYBOARD; idx < ALL; idx++) {
+		// Razers api does not do HEADSET_STAND support properly, so skip this for now.
+		if (idx == HEADSET_STAND) {
+			continue;
+		}
+
 		lastConfigValue = CONFIG->GetWString(SDK_MAIN_CONFIG_SECTION, EM_KEYS[idx], EM_VALS[idx]);
 		auto it = LookupMaps::razerStringToDevID.find(lastConfigValue);
 
@@ -76,14 +84,6 @@ void SDKManager::reloadEmulatedDevices() {
 	}
 }
 
-LightingSDK* SDKManager::getSDKForDeviceType(RETCDeviceType type) {
-	if (type >= ALL) {
-		return nullptr;
-	}
-
-	return m_selectedSDKs[type];
-}
-
 void SDKManager::checkAvailability() {
 	bool hasAnySDK = false;
 	for (auto&& sdk : m_availableSDKs) {
@@ -94,14 +94,20 @@ void SDKManager::checkAvailability() {
 
 		auto& supportedDevices = sdk->getSupportedModes();
 		for (int devID = KEYBOARD; devID < ALL; devID++) {
+			// Check if the device is not supported
 			if (supportedDevices[devID] == FALSE) {
 				continue;
 			}
 
-			m_selectedSDKs[devID] = sdk.get();
+			m_selectedSDKs[devID].insert(sdk);
 			m_clientConfig->supportedDeviceTypes[devID] = TRUE;
 			hasAnySDK = true;
 		}
+	}
+
+	// Force enable the mousepad support if a headset_stand is connected, this does not assign a sdk!
+	if (m_clientConfig->supportedDeviceTypes[MOUSEPAD] == FALSE && m_clientConfig->supportedDeviceTypes[HEADSET_STAND] == TRUE) {
+		m_clientConfig->supportedDeviceTypes[MOUSEPAD] = TRUE;
 	}
 
 	if (hasAnySDK) {
@@ -112,14 +118,12 @@ void SDKManager::checkAvailability() {
 RZRESULT SDKManager::playEffectOnAllSDKs(int effectType, const char effectData[]) const {
 	RZRESULT res = RZRESULT_NOT_SUPPORTED;
 	for (int devID = KEYBOARD; devID < ALL; devID++) {
-		const auto& sdk = m_selectedSDKs[devID];
-		if (!sdk) {
-			continue;
-		}
-
-		res = sdk->playEffect(static_cast<RETCDeviceType>(devID), effectType, effectData);
-		if (res != RZRESULT_SUCCESS) {
-			break;
+		for (const auto& sdk : m_selectedSDKs[devID]) {
+			res = sdk->playEffect(static_cast<RETCDeviceType>(devID), effectType, effectData);
+			if (res != RZRESULT_SUCCESS) {
+				LOG_D(L"SDK: {0} failed to play an effect.", sdk->getSDKName());
+				continue; // dont hard fail if one sdk failed.
+			}
 		}
 	}
 
@@ -131,8 +135,20 @@ RZRESULT SDKManager::playbackEffect(const RETCDeviceType& devType, int effectTyp
 		return playEffectOnAllSDKs(effectType, effectData);
 	}
 
-	auto sdk = getSDKForDeviceType(devType);
-	return (sdk) ? sdk->playEffect(devType, effectType, effectData) : RZRESULT_NOT_FOUND;
+	RZRESULT res = RZRESULT_NOT_FOUND;
+
+	for (auto&& sdk : m_selectedSDKs[devType]) {
+		res = sdk->playEffect(devType, effectType, effectData);
+	}
+
+	// *WORKAROUND ALERT!* Send fake data to headset_stands based on the mousepad data.
+	if (devType == MOUSEPAD) {
+		for (auto&& sdk : m_selectedSDKs[HEADSET_STAND]) {
+			res = sdk->playEffect(HEADSET_STAND, effectType, effectData);
+		}
+	}
+
+	return res;
 }
 
 RZRESULT SDKManager::playEffect(const RETCDeviceType& devType, int effectType, RZEFFECTID* pEffectId, efsize_t size, const char effectData[]) {

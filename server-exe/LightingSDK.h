@@ -92,8 +92,18 @@ public:
 		return TRANSFORM_COLORS(r, g, b);
 	}
 
-	void enableSupportFor(RETCDeviceType type) { m_supportedDevices[type] = TRUE; }
-	void disableSupportFor(RETCDeviceType type) { m_supportedDevices[type] = FALSE; }
+	void setSupportFor(RETCDeviceType type, BOOL support) {
+		m_supportedDevices[type] = support;
+	}
+
+	void enableSupportFor(RETCDeviceType type) { 
+		setSupportFor(type, TRUE);
+	}
+
+	void disableSupportFor(RETCDeviceType type) {
+		setSupportFor(type, FALSE);
+	}
+
 	bool hasSupportFor(RETCDeviceType deviceID) const { return m_supportedDevices[deviceID] != FALSE; }
 
 	supportArray_t& getSupportedModes() { return m_supportedDevices; }

@@ -25,6 +25,7 @@ interface rpc_retc
 		MOUSEPAD,
 		KEYPAD,
 		SYSTEM,
+		HEADSET_STAND,
 		ALL,
 		ESIZE, // If you get that as type its invalid, goes always last!
 	} RETCDeviceType;

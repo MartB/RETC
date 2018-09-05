@@ -78,7 +78,7 @@ bool CorsairSDK::initialize() {
 
 		switch (devType) {
 		case MOUSE: {
-			const auto& numberOfKeys = static_cast<size_t>(devInfo->physicalLayout - CPL_Zones1 + 1);
+			const auto& numberOfKeys = static_cast<size_t>(devInfo->physicalLayout - CPL_Zones1) + 1;
 			ledVector.reserve(numberOfKeys);
 			for (size_t key = 0; key < numberOfKeys; key++) {
 				auto ledId = static_cast<CorsairLedId>(CLM_1 + key);
@@ -94,8 +94,14 @@ bool CorsairSDK::initialize() {
 		}
 		case KEYBOARD:
 		case MOUSEPAD:
-		case KEYPAD: {
+		case KEYPAD: 
+		case HEADSET_STAND: {
 			auto const ledPositions = CorsairGetLedPositionsByDeviceIndex(i);
+			if (!ledPositions) {
+				LOG_E("Cue SDK call: CorsairGetLedPositionsByDeviceIndex failed, aborted.");
+				return false;
+			}
+
 			auto const ledCount = static_cast<size_t>(ledPositions->numberOfLed);
 
 			if (ledCount == 0) {
@@ -150,6 +156,9 @@ RZRESULT CorsairSDK::playEffect(RETCDeviceType deviceType, int effectType, const
 		break;
 	case SYSTEM: // Chroma link not supported...
 		res = RZRESULT_NOT_SUPPORTED;
+		break;
+	case HEADSET_STAND:
+		res = prepareHeadsetStandEffect(effectType, data);
 		break;
 	default:
 		res = RZRESULT_INVALID;
@@ -258,16 +267,12 @@ RZRESULT CorsairSDK::prepareMouseEffect(int type, const char effectData[]) {
 
 		if (custEffect->LEDId == RZLED_ALL) {
 			for (const auto ledId : ledVector) {
-				if (!findMouseLed(ledId, &row, &col)) {
-					continue;
-				}
-
 				ledColor.ledId = ledId;
 				m_outputColorVector.emplace_back(ledColor);
 			}
 		}
 		else {
-			ledColor.ledId = findMouseLed(custEffect->LEDId);
+			ledColor.ledId = findMouseLedForRZLED(custEffect->LEDId);
 
 			if (ledColor.ledId != CLI_Invalid) {
 				m_outputColorVector.emplace_back(ledColor);
@@ -279,7 +284,7 @@ RZRESULT CorsairSDK::prepareMouseEffect(int type, const char effectData[]) {
 
 
 		for (const auto ledId : ledVector) {
-			RZLED val = findMouseLed(ledId);
+			RZLED val = findMouseLedForCLD(ledId);
 			if (val == RZLED_NONE) {
 				continue;
 			}
@@ -337,7 +342,8 @@ RZRESULT CorsairSDK::prepareMousePadEffect(int type, const char effectData[]) {
 		const auto& custEffect = reinterpret_cast<const CUSTOM_EFFECT_TYPE*>(effectData);
 
 		for (const auto led : ledVector) {
-			auto ledColor = convertLedColor(custEffect->Color[(led - CLMM_Zone1)]);
+			// Razer mousepad leds start with 0 on the right but 0 is left on corsair so re-map accordingly.
+			auto ledColor = convertLedColor(custEffect->Color[MAX_LEDS - (led - CLMM_Zone1) - 1]); 
 			ledColor.ledId = led;
 			m_outputColorVector.emplace_back(ledColor);
 		}
@@ -372,7 +378,100 @@ RZRESULT CorsairSDK::prepareHeadsetEffect(int type, const char effectData[]) {
 		const auto& custEffect = reinterpret_cast<const CUSTOM_EFFECT_TYPE*>(effectData);
 
 		for (const auto led : ledVector) {
-			auto ledColor = convertLedColor(custEffect->Color[findMousepadLed(led)]);
+			auto ledColor = convertLedColor(custEffect->Color[(led - CLH_LeftLogo)]);
+			ledColor.ledId = led;
+			m_outputColorVector.emplace_back(ledColor);
+		}
+	}
+
+	return RZRESULT_SUCCESS;
+}
+
+/*
+	**!WORKAROUND_ALERT!**
+	This contains a custom led mapping logic, it will work good enough for most
+	cases but it will look a bit off on "fluid" color travelling animations.
+
+	Reasons:
+	- ChromaLedCount = 15 > CorsairLedCount = 9
+	- Mapping is different
+	- Only 1 bottom LED on corsair.
+	- No top led on Razer
+	- Some missing side leds on corsair.
+
+	The code tries to paint the following picture:
+	(Each line is a corsair LED Position, read counterclockwise)
+	- (TOP+LOGO) zone1, rzid = 0
+	- (TOP) zone2, rzids 0
+	- (R) zone3, rzid 1,2
+	- (R) zone4, rzid 3
+	- (R) zone5, rzid 4
+	- (BOTTOM) zone6, rzid 5,6,7,8,9
+	- (L) zone7, rzid 10,11
+	- (L) zone8, rzid 12,13
+	- (L) zone9, rzid 14
+*/
+RZRESULT CorsairSDK::prepareHeadsetStandEffect(int type, const char effectData[]) {
+	using namespace ChromaSDK::Mousepad;
+
+	const ledIDVector& ledVector = m_availableLeds[HEADSET_STAND];
+
+	if (type == CHROMA_NONE) {
+		auto ledColor = convertLedColor(0);
+
+		for (const auto ledId : ledVector) {
+			ledColor.ledId = ledId;
+			m_outputColorVector.emplace_back(ledColor);
+		}
+	}
+	else if (type == CHROMA_STATIC) {
+		const auto& custEffect = reinterpret_cast<const STATIC_EFFECT_TYPE*>(effectData);
+		auto ledColor = convertLedColor(custEffect->Color);
+
+		for (const auto led : ledVector) {
+			ledColor.ledId = led;
+			m_outputColorVector.emplace_back(ledColor);
+		}
+	}
+	else if (type == CHROMA_CUSTOM) {
+		const auto& custEffect = reinterpret_cast<const CUSTOM_EFFECT_TYPE*>(effectData);
+
+		for (const auto led : ledVector) {
+			COLORREF color = 0;
+			if (led == CLHSS_Zone6) {
+				color = custEffect->Color[5];
+				for (int idx = 6; idx <= 9 && color == 0; idx++) {
+					color = custEffect->Color[idx];
+				}
+			}
+			else if (led == CLHSS_Zone3) {
+				color = custEffect->Color[1];
+				if (color == 0) {
+					color = custEffect->Color[2];
+				}
+			}
+			else if (led == CLHSS_Zone7) {
+				color = custEffect->Color[10];
+				if (color == 0) {
+					color = custEffect->Color[11];
+				}
+			}
+			else if (led == CLHSS_Zone8) {
+				color = custEffect->Color[12];
+				if (color == 0) {
+					color = custEffect->Color[13];
+				}
+			}
+			else {
+				int cIDX = findHeadsetStandLed(led);
+				if (cIDX == -1) {
+					return RZRESULT_NOT_SUPPORTED;
+				}
+
+				color = custEffect->Color[cIDX];
+			}
+
+			auto ledColor = convertLedColor(color);
 			ledColor.ledId = led;
 			m_outputColorVector.emplace_back(ledColor);
 		}
@@ -400,6 +499,7 @@ RETCDeviceType CorsairSDK::corsairToRETCDeviceTYPE(CorsairDeviceType type) {
 		mapto(CDT_Keyboard, RETCDeviceType::KEYBOARD);
 		mapto(CDT_Headset, RETCDeviceType::HEADSET);
 		mapto(CDT_MouseMat, RETCDeviceType::MOUSEPAD);
+		mapto(CDT_HeadsetStand, RETCDeviceType::HEADSET_STAND);
 	default:
 		return ESIZE;
 	}
@@ -529,48 +629,56 @@ bool CorsairSDK::findMouseLed(const CorsairLedId ledid, int* row, int* col) {
 	switch (ledid) {
 		maptoassign(CLI_Invalid, RZLED_NONE);
 		maptoassign(CLM_1, RZLED2_LOGO);
-		maptoassign(CLM_2, RZLED2_BOTTOM1);
-		maptoassign(CLM_3, RZLED2_SCROLLWHEEL);
-		maptoassign(CLM_4, RZLED2_BACKLIGHT);
+		maptoassign(CLM_2, RZLED2_SCROLLWHEEL);
+		maptoassign(CLM_3, RZLED2_BACKLIGHT);
+		maptoassign(CLM_4, RZLED2_LEFT_SIDE1);
 	default:
 		return false;
 	}
 }
 
-ChromaSDK::Mouse::RZLED CorsairSDK::findMouseLed(const CorsairLedId ledid) {
-	using namespace ChromaSDK::Mouse;
-
-	switch (ledid) {
-		mapto(CLI_Invalid, RZLED_NONE);
-		mapto(CLM_1, RZLED_LOGO);
-		mapto(CLM_2, RZLED_SIDE_STRIP1);
-		mapto(CLM_3, RZLED_SCROLLWHEEL);
-		mapto(CLM_4, RZLED_BACKLIGHT);
-	default:
-		return RZLED_NONE;
-	}
-}
-
-CorsairLedId CorsairSDK::findMouseLed(ChromaSDK::Mouse::RZLED led) {
+CorsairLedId CorsairSDK::findMouseLedForRZLED(ChromaSDK::Mouse::RZLED led) {
 	using namespace ChromaSDK::Mouse;
 
 	switch (led) {
 		mapto(RZLED_NONE, CLI_Invalid);
 		mapto(RZLED_LOGO, CLM_1);
-		mapto(RZLED_SIDE_STRIP1, CLM_2);
-		mapto(RZLED_SCROLLWHEEL, CLM_3);
-		mapto(RZLED_BACKLIGHT, CLM_4);
+		mapto(RZLED_SCROLLWHEEL, CLM_2);
+		mapto(RZLED_BACKLIGHT, CLM_3);
+		mapto(RZLED_SIDE_STRIP1, CLM_4);
 	default:
 		return CLI_Invalid;
 	}
 }
 
+ChromaSDK::Mouse::RZLED CorsairSDK::findMouseLedForCLD(CorsairLedId led) {
+	using namespace ChromaSDK::Mouse;
 
-int CorsairSDK::findMousepadLed(const CorsairLedId ledid) {
-	using namespace ChromaSDK::Mousepad;
-	return (ledid - CLMM_Zone1);
+	switch (led) {
+		mapto(CLI_Invalid, RZLED_NONE);
+		mapto(CLM_1, RZLED_LOGO);
+		mapto(CLM_2, RZLED_SCROLLWHEEL);
+		mapto(CLM_3, RZLED_BACKLIGHT);
+		mapto(CLM_4, RZLED_SIDE_STRIP1);
+	default:
+		return RZLED_NONE;
+	}
 }
 
+int CorsairSDK::findHeadsetStandLed(CorsairLedId ledid) {
+	using namespace ChromaSDK::Keyboard;
+	switch (ledid) {
+		mapto(CLHSS_Zone1, 0); // Logo just like on razer (right side there)
+
+		mapto(CLHSS_Zone2, 0);
+		mapto(CLHSS_Zone4, 3);
+		mapto(CLHSS_Zone5, 4);
+
+		mapto(CLHSS_Zone9, 14);
+	}
+
+	return -1;
+}
 
 std::string CorsairSDK::errToString(const CorsairError& error) {
 	switch (error) {

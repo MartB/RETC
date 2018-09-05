@@ -9,6 +9,8 @@
 #include "CorsairSDK.h"
 #include "RazerSDK.h"
 
+typedef std::set<std::shared_ptr<LightingSDK>> SDKList;
+
 class SDKManager {
 public:
 	SDKManager();
@@ -20,7 +22,7 @@ public:
 public:
 	bool initialize();
 	void reloadEmulatedDevices();
-	LightingSDK* getSDKForDeviceType(RETCDeviceType type);
+
 	RETCClientConfig* getClientConfig() const { return m_clientConfig; }
 
 public:
@@ -36,11 +38,10 @@ private:
 	std::shared_ptr<SDKLoader> m_sdkLoader;
 
 	std::unique_ptr<EffectManager> m_effectManager;
-	std::set<std::unique_ptr<LightingSDK>> m_availableSDKs;
+	SDKList m_availableSDKs;
 
 	RETCClientConfig* m_clientConfig;
 
-	LightingSDK* m_selectedSDKs[ALL];
-
+	std::array<SDKList, ALL> m_selectedSDKs;
 	bool m_bIsInitialized;
 };

@@ -16,6 +16,7 @@ private:
 	RZRESULT prepareMouseEffect(int type, const char effectData[]);
 	RZRESULT prepareMousePadEffect(int type, const char effectData[]);
 	RZRESULT prepareHeadsetEffect(int type, const char effectData[]);
+	RZRESULT prepareHeadsetStandEffect(int type, const char effectData[]);
 
 	// Helper functions
 	CorsairLedColor convertLedColor(const COLORREF& color);
@@ -23,9 +24,10 @@ private:
 
 	static bool findKeyboardLed(CorsairLedId ledid, int* row, int* col);
 	static bool findMouseLed(const CorsairLedId ledid, int* row, int* col);
-	static ChromaSDK::Mouse::RZLED findMouseLed(const CorsairLedId ledid);
-	static CorsairLedId findMouseLed(ChromaSDK::Mouse::RZLED led);
-	static int findMousepadLed(const CorsairLedId ledid);
+	static CorsairLedId findMouseLedForRZLED(ChromaSDK::Mouse::RZLED led);
+	static ChromaSDK::Mouse::RZLED findMouseLedForCLD(CorsairLedId led);
+	static int findHeadsetStandLed(CorsairLedId ledid);
+
 	static std::string errToString(const CorsairError& error);
 
 	typedef std::vector<CorsairLedId> ledIDVector;
