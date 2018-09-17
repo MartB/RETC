@@ -26,8 +26,8 @@ namespace LookupArrays {
 		{sizeof(Mousepad::BREATHING_EFFECT_TYPE), sizeof(Mousepad::CUSTOM_EFFECT_TYPE), sizeof(SPECTRUMCYCLING_EFFECT_TYPE), sizeof(Mousepad::STATIC_EFFECT_TYPE), sizeof(Mousepad::WAVE_EFFECT_TYPE), 0, 0, 0},
 		{sizeof(Keypad::BREATHING_EFFECT_TYPE), sizeof(Keypad::CUSTOM_EFFECT_TYPE), sizeof(Keypad::REACTIVE_EFFECT_TYPE), sizeof(SPECTRUMCYCLING_EFFECT_TYPE), sizeof(Keypad::STATIC_EFFECT_TYPE), sizeof(Keypad::WAVE_EFFECT_TYPE), 0, 0},
 		{sizeof(ChromaLink::CUSTOM_EFFECT_TYPE), sizeof(ChromaLink::STATIC_EFFECT_TYPE), 0, 0, 0, 0, 0, 0},
-		{sizeof(WAVE_EFFECT_TYPE), sizeof(SPECTRUMCYCLING_EFFECT_TYPE), sizeof(BREATHING_EFFECT_TYPE), sizeof(BLINKING_EFFECT_TYPE), sizeof(REACTIVE_EFFECT_TYPE), sizeof(STATIC_EFFECT_TYPE), sizeof(CUSTOM_EFFECT_TYPE), 0},
-		{0, 0, 0, 0, 0, 0, 0, 0,} // Headset Stand leds (no corresponding device for razer => api defect)
+		{0, 0, 0, 0, 0, 0, 0, 0,}, // Headset Stand leds (no corresponding device for razer => api defect)
+		{sizeof(WAVE_EFFECT_TYPE), sizeof(SPECTRUMCYCLING_EFFECT_TYPE), sizeof(BREATHING_EFFECT_TYPE), sizeof(BLINKING_EFFECT_TYPE), sizeof(REACTIVE_EFFECT_TYPE), sizeof(STATIC_EFFECT_TYPE), sizeof(CUSTOM_EFFECT_TYPE), 0}
 	};
 
 	static const GUID razerDevices[] = {
