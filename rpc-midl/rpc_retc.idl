@@ -5,8 +5,8 @@ midl_pragma warning(disable: 2111)
 import "oaidl.idl";
 
 [
-	uuid(4b0af0e2-325a-4305-af21-1a611e55a196),
-	version(2.4)
+	uuid(5f4db48f-188e-4243-8570-5a9835640b95),
+	version(2.5)
 ]
 
 interface rpc_retc
@@ -40,13 +40,14 @@ interface rpc_retc
 	} RETCClientConfig;
 
 	typedef [context_handle] void* CONTEXT_HANDLE;
+	typedef [ptr] RETCClientConfig* CONFIG_PTR; 
 	
-	CONTEXT_HANDLE initialize([in] handle_t hBinding, [out] RETCClientConfig* config);
+	CONTEXT_HANDLE initialize([in] handle_t hBinding, [in, out] CONFIG_PTR config);
 
-	RZRESULT playEffect(RETCDeviceType deviceType, [in] int type, [in, out, unique]RZEFFECTID *pEffectID, efsize_t effectSize, [size_is(effectSize)] char effectData[*], CONTEXT_HANDLE hContext);
+	RZRESULT playEffect(const RETCDeviceType deviceType, [in] const int type, [in, out, unique]RZEFFECTID *pEffectID, const efsize_t effectSize, [size_is(effectSize)] char effectData[*], CONTEXT_HANDLE hContext);
 
-	RZRESULT setEffect([in] RZEFFECTID effID, CONTEXT_HANDLE hContext);
-	RZRESULT deleteEffect([in] RZEFFECTID effID, CONTEXT_HANDLE hContext);
+	RZRESULT setEffect([in] const RZEFFECTID effID, CONTEXT_HANDLE hContext);
+	RZRESULT deleteEffect([in] const RZEFFECTID effID, CONTEXT_HANDLE hContext);
 
 	void disconnect([in, out] CONTEXT_HANDLE* phContext);
 }

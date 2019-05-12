@@ -3,7 +3,7 @@
 #include "SDKManager.h"
 #include <thread>
 
-#define STATUS_OK(x) (x == RPC_S_OK)
+#define STATUS_OK(x) ((x) == RPC_S_OK)
 
 class RPCReceiver {
 public:
@@ -14,7 +14,7 @@ public:
 	bool shutdown();
 
 private:
-	void setStatus(RPC_STATUS stat) { m_RpcStatus = stat; }
+	void setStatus(const RPC_STATUS stat) { m_RpcStatus = stat; }
 	RPC_STATUS getStatus() const { return m_RpcStatus; }
 
 	RPC_STATUS m_RpcStatus;

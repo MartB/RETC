@@ -29,7 +29,7 @@ RPC_STATUS RPCReceiver::startListening() {
 		return m_RpcStatus;
 	}
 
-	m_RpcStatus = RpcServerRegisterIf2(rpc_retc_v2_4_s_ifspec, nullptr, nullptr, RPC_IF_ALLOW_CALLBACKS_WITH_NO_AUTH, RPC_C_LISTEN_MAX_CALLS_DEFAULT, static_cast<unsigned>(-1), nullptr);
+	m_RpcStatus = RpcServerRegisterIf2(rpc_retc_v2_5_s_ifspec, nullptr, nullptr, RPC_IF_ALLOW_CALLBACKS_WITH_NO_AUTH, RPC_C_LISTEN_MAX_CALLS_DEFAULT, static_cast<unsigned>(-1), nullptr);
 
 	if (!STATUS_OK(m_RpcStatus)) {
 		return m_RpcStatus;
@@ -56,34 +56,34 @@ void __RPC_USER CONTEXT_HANDLE_rundown(CONTEXT_HANDLE hContext) {
 	disconnect(&hContext);
 }
 
-extern std::unique_ptr<SDKManager> sdkManager;
+extern std::unique_ptr<SdkManager> sdk_manager;
 
-CONTEXT_HANDLE initialize(handle_t /*hBinding*/, RETCClientConfig* out) {
-	if (!sdkManager->initialize()) {
+CONTEXT_HANDLE initialize(handle_t /*hBinding*/, RETCClientConfig * config) {
+	if (!sdk_manager->initialize()) {
 		return nullptr;
 	}
 
-	memcpy(out, sdkManager->getClientConfig(), sizeof(RETCClientConfig));
-	return sdkManager->getClientConfig();
+	*config = *sdk_manager->getClientConfig().get();
+	return config; // just return something, we dont need to uniquely identify clients
 }
 
-RZRESULT playEffect(RETCDeviceType deviceType, int effectType, RZEFFECTID* pEffectId, efsize_t effectSize, char* effectData, CONTEXT_HANDLE) {
+RZRESULT playEffect(const RETCDeviceType deviceType, const int type, RZEFFECTID* pEffectID, const efsize_t effectSize, char* effectData, CONTEXT_HANDLE) {
 	if (PROCESSING_DELAY > 0) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(PROCESSING_DELAY));
 	}
 
-	return sdkManager->playEffect(deviceType, effectType, pEffectId, effectSize, effectData);
+	return sdk_manager->playEffect(deviceType, type, pEffectID, effectSize, effectData);
 }
 
-RZRESULT setEffect(RZEFFECTID effID, CONTEXT_HANDLE) { //-V813 c code
-	return sdkManager->setEffect(effID);
+RZRESULT setEffect(const RZEFFECTID effID, CONTEXT_HANDLE) { //-V813 c code
+	return sdk_manager->setEffect(effID);
 }
 
-RZRESULT deleteEffect(RZEFFECTID effID, CONTEXT_HANDLE) { //-V813 c code
-	return sdkManager->deleteEffect(effID);
+RZRESULT deleteEffect(const RZEFFECTID effID, CONTEXT_HANDLE) { //-V813 c code
+	return sdk_manager->deleteEffect(effID);
 }
 
 void disconnect(CONTEXT_HANDLE* phContext) {
-	sdkManager->disconnect();
+	sdk_manager->disconnect();
 	*phContext = nullptr;
 }

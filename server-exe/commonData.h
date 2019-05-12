@@ -4,8 +4,8 @@
 #include <RzChromaSDKDefines.h>
 #include <map>
 
-#define SDK_MAIN_CONFIG_SECTION L"sdk"
-#define SDK_MAIN_SUB_CONFIG_SECTION SDK_MAIN_CONFIG_SECTION L"."
+constexpr auto SDK_MAIN_CONFIG_SECTION = L"sdk";
+constexpr auto SDK_SUB_CONFIG_SECTION = L"sdk.";
 
 namespace LookupArrays {
 	using namespace ChromaSDK;

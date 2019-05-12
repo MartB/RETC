@@ -2,7 +2,7 @@
 #include "LightingSDK.h"
 using namespace ChromaSDK;
 
-class RazerSDK : public LightingSDK {
+class RazerSDK : public LightingSdk {
 public:
 	RazerSDK();
 

@@ -2,20 +2,22 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include "RazerSDK.h"
+#include <RzErrors.h>
+
 /**
  * This sdk is just forwarding to the real dll.
  * WARNING: If the "real" dll is the patched stub we created, this will enter an endless loop!
  * NEVER CREATE GLOBAL DLL OVERWRITES in System32 with this SDK enabled.
  */
 RazerSDK::RazerSDK() {
-	this->SDK_NAME = L"RazerPassthrough";
+	this->m_sdkName = L"RazerPassthrough";
 
 #ifdef _WIN64
-	this->SDK_DLL = "RzChromaSDK64.dll";
+	this->m_sdkDll = "RzChromaSDK64.dll";
 #else
-	this->SDK_DLL = "RzChromaSDK.dll";
+	this->m_sdkDll = "RzChromaSDK.dll";
 #endif
-	this->DLL_FUNCTION_LIST = {
+	this->m_dllFunctionList = {
 		{"Init", nullptr},
 		{"UnInit", nullptr},
 		{"CreateKeyboardEffect", nullptr},
@@ -32,7 +34,7 @@ RazerSDK::RazerSDK() {
 
 // This allows the use of the Razer Chroma Emulators in debug.
 #if defined (_DEBUG)
-#define devicePhysicallyPresent true
+#define devicePhysicallyPresent false
 #else
 #define devicePhysicallyPresent deviceInfo.Connected == 1
 #endif
@@ -51,7 +53,7 @@ bool RazerSDK::initialize() {
 	SDKLoaderMapNameToFunction(DeleteEffect);
 	SDKLoaderMapNameToFunction(QueryDevice);
 
-	auto res = Init();
+	const auto res = Init();
 	if (res != RZRESULT_SUCCESS) {
 		LOG_E("failed with code {0}", res);
 		return false;
@@ -66,7 +68,7 @@ bool RazerSDK::initialize() {
 				continue;
 			}
 
-			if (CONFIG->GetBool(SDK_CONFIG_SECTION, L"overwritedevices", true)) {
+			if (CONFIG->GetBool(m_sdkConfigSection, L"overwritedevices", true)) {
 				auto findResult = std::find_if(std::begin(LookupMaps::razerStringToDevID), std::end(LookupMaps::razerStringToDevID), [&](const auto &pair) {
 					return pair.second == razerdevguid;
 				});

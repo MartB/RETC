@@ -6,7 +6,7 @@
 
 // Global vars
 std::unique_ptr<RPCReceiver> rpcReceiver(nullptr);
-std::unique_ptr<SDKManager> sdkManager(nullptr);
+std::unique_ptr<SdkManager> sdk_manager(nullptr);
 std::unique_ptr<ConfigManager> CONFIG(nullptr);
 std::shared_ptr<spdlog::logger> LOG(nullptr);
 
@@ -21,9 +21,9 @@ void cleanup() {
 		rpcReceiver.reset();
 	}
 
-	if (sdkManager) {
+	if (sdk_manager) {
 		//-V547
-		sdkManager.reset();
+		sdk_manager.reset();
 	}
 
 	if (CONFIG) {
@@ -88,7 +88,7 @@ int SVCWorkerThread() {
 		return ERROR_INVALID_HANDLE;
 	}
 
-	sdkManager.reset(new SDKManager());
+	sdk_manager.reset(new SdkManager());
 	rpcReceiver.reset(new RPCReceiver());
 	
 	const auto rpcStatus = rpcReceiver->startListening();

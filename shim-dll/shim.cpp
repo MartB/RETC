@@ -6,7 +6,6 @@
 #include "../server-exe/commonData.h"
 #include "RzErrors.h"
 #include "RzChromaSDKTypes.h"
-#include "RzChromaSDKDefines.h"
 using namespace ChromaSDK;
 
 #define RzApi extern "C" __declspec (dllexport)
@@ -14,13 +13,13 @@ using namespace ChromaSDK;
 RzApi RZRESULT Init();
 RzApi RZRESULT UnInit();
 
-RzApi RZRESULT CreateEffect(RZDEVICEID DeviceId, EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
-RzApi RZRESULT CreateKeyboardEffect(Keyboard::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
-RzApi RZRESULT CreateMouseEffect(Mouse::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
-RzApi RZRESULT CreateHeadsetEffect(Headset::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
-RzApi RZRESULT CreateMousepadEffect(Mousepad::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
-RzApi RZRESULT CreateKeypadEffect(Keypad::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
-RzApi RZRESULT CreateChromaLinkEffect(ChromaLink::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
+RzApi RZRESULT CreateEffect(RZDEVICEID deviceId, EFFECT_TYPE effectId, PRZPARAM pParam, RZEFFECTID* pEffectId);
+RzApi RZRESULT CreateKeyboardEffect(Keyboard::EFFECT_TYPE effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
+RzApi RZRESULT CreateMouseEffect(Mouse::EFFECT_TYPE effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
+RzApi RZRESULT CreateHeadsetEffect(Headset::EFFECT_TYPE effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
+RzApi RZRESULT CreateMousepadEffect(Mousepad::EFFECT_TYPE effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
+RzApi RZRESULT CreateKeypadEffect(Keypad::EFFECT_TYPE effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
+RzApi RZRESULT CreateChromaLinkEffect(ChromaLink::EFFECT_TYPE effect, PRZPARAM pParam, RZEFFECTID* pEffectId);
 
 RzApi RZRESULT SetEffect(RZEFFECTID EffectId);
 RzApi RZRESULT DeleteEffect(RZEFFECTID EffectId);
@@ -37,25 +36,27 @@ bool m_Initialized = false;
 bool isInitialized() { return m_Initialized; }
 
 CONTEXT_HANDLE rpcCTXHandle;
-RETCClientConfig CONFIG;
+RETCClientConfig *CONFIG;
 
 handle_t hRetcBinding = nullptr;
+
+#define ABORT_IF_NOT_INITIALIZED if (!m_Initialized) { return RZRESULT_NOT_VALID_STATE; }
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD /*callReason*/, LPVOID /*lpReserved*/) {
 	return TRUE;
 }
 
-BOOL hasSupportFor(RETCDeviceType type) {
+BOOL hasSupportFor(const RETCDeviceType type) {
 	if (!isInitialized() || type >= ESIZE) {
 		return false;
 	}
 
-	return CONFIG.supportedDeviceTypes[type];
+	return CONFIG->supportedDeviceTypes[type];
 }
 
 RZRESULT Init() {
 	if (m_Initialized) {
-		return RZRESULT_SERVICE_NOT_ACTIVE;
+		return RZRESULT_NOT_VALID_STATE;
 	}
 
 	RPC_WSTR szStringBinding = nullptr;
@@ -79,14 +80,15 @@ RZRESULT Init() {
 		return RZRESULT_SERVICE_NOT_ACTIVE;
 	}
 
-	status = RpcEpResolveBinding(hRetcBinding, rpc_retc_v2_4_c_ifspec);
+	status = RpcEpResolveBinding(hRetcBinding, rpc_retc_v2_5_c_ifspec);
 	if (status) {
 		return RZRESULT_SERVICE_NOT_ACTIVE;
 	}
 
 	RpcTryExcept
-		rpcCTXHandle = initialize(hRetcBinding, &CONFIG);
-		if (rpcCTXHandle == nullptr) {
+		CONFIG = new RETCClientConfig;
+		rpcCTXHandle = initialize(hRetcBinding, CONFIG);
+		if (CONFIG == nullptr) {
 			return RZRESULT_SERVICE_NOT_ACTIVE;
 		}
 
@@ -108,20 +110,22 @@ RZRESULT UnInit() {
 		return RZRESULT_NOT_VALID_STATE;
 	RpcEndExcept
 
-	auto status = RpcBindingFree(&hRetcBinding);
-
+	const auto status = RpcBindingFree(&hRetcBinding);
 	m_Initialized = false;
+	delete CONFIG;
 	return (!status) ? RZRESULT_SUCCESS : RZRESULT_NOT_VALID_STATE;
 }
 
 
-RZRESULT sendEffect(RETCDeviceType deviceType, int effectID, PRZPARAM effectData, RZEFFECTID* pEffectId) {
+RZRESULT sendEffect(const RETCDeviceType deviceType, const int effectID, const PRZPARAM effectData, RZEFFECTID* pEffectId) {
+	ABORT_IF_NOT_INITIALIZED;
+
 	if (!hasSupportFor(deviceType)) {
 		return RZRESULT_DEVICE_NOT_AVAILABLE;
 	}
 
-	auto isNoneEffect = (effectID == CHROMA_NONE);
-	auto effectSize = isNoneEffect ? 0 : LookupArrays::effectSize[deviceType][effectID - 1];
+	const auto isNoneEffect = (effectID == CHROMA_NONE);
+	const auto effectSize = isNoneEffect ? 0 : LookupArrays::effectSize[deviceType][effectID - 1];
 
 	if (effectSize == 0 && !isNoneEffect) {
 		return RZRESULT_NOT_SUPPORTED;
@@ -134,15 +138,17 @@ RZRESULT sendEffect(RETCDeviceType deviceType, int effectID, PRZPARAM effectData
 	RpcEndExcept
 }
 
-RZRESULT CreateEffect(RZDEVICEID DeviceId, EFFECT_TYPE effectID, PRZPARAM pParam, RZEFFECTID* pEffectId) { //-V813
-	auto deviceType = ESIZE;
+// ReSharper disable CppParameterMayBeConst
+RZRESULT CreateEffect(RZDEVICEID deviceId, EFFECT_TYPE effectId, PRZPARAM pParam, RZEFFECTID* pEffectId) { //-V813
+	ABORT_IF_NOT_INITIALIZED;
 
-	if (DeviceId == GUID_NULL) {
+	auto deviceType = ESIZE;
+	if (deviceId == GUID_NULL) {
 		deviceType = ALL;
 	}
 	else {
 		for (int devID = KEYBOARD; devID < ALL; devID++) {
-			if (DeviceId == CONFIG.emulatedDeviceIDS[devID]) {
+			if (deviceId == CONFIG->emulatedDeviceIDS[devID]) {
 				deviceType = static_cast<RETCDeviceType>(devID);
 				break;
 			}
@@ -153,35 +159,37 @@ RZRESULT CreateEffect(RZDEVICEID DeviceId, EFFECT_TYPE effectID, PRZPARAM pParam
 		return RZRESULT_DEVICE_NOT_AVAILABLE;
 	}
 
-	auto realEffectID = (deviceType == ALL) ? effectID : LookupArrays::genericEffectType[deviceType][effectID];
+	const auto realEffectID = (deviceType == ALL) ? effectId : LookupArrays::genericEffectType[deviceType][effectId];
 	return sendEffect(deviceType, realEffectID, pParam, pEffectId);
 }
 
-RZRESULT CreateKeyboardEffect(Keyboard::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId) {
-	return sendEffect(KEYBOARD, Effect, pParam, pEffectId);
+RZRESULT CreateKeyboardEffect(Keyboard::EFFECT_TYPE effect, PRZPARAM pParam, RZEFFECTID* pEffectId) {
+	return sendEffect(KEYBOARD, effect, pParam, pEffectId);
 }
 
-RZRESULT CreateMouseEffect(Mouse::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId) {
-	return sendEffect(MOUSE, Effect, pParam, pEffectId);
+RZRESULT CreateMouseEffect(Mouse::EFFECT_TYPE effect, PRZPARAM pParam, RZEFFECTID* pEffectId) {
+	return sendEffect(MOUSE, effect, pParam, pEffectId);
 }
 
-RZRESULT CreateHeadsetEffect(Headset::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId) {
-	return sendEffect(HEADSET, Effect, pParam, pEffectId);
+RZRESULT CreateHeadsetEffect(Headset::EFFECT_TYPE effect, PRZPARAM pParam, RZEFFECTID* pEffectId) {
+	return sendEffect(HEADSET, effect, pParam, pEffectId);
 }
 
-RZRESULT CreateMousepadEffect(Mousepad::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId) {
-	return sendEffect(MOUSEPAD, Effect, pParam, pEffectId);
+RZRESULT CreateMousepadEffect(Mousepad::EFFECT_TYPE effect, PRZPARAM pParam, RZEFFECTID* pEffectId) {
+	return sendEffect(MOUSEPAD, effect, pParam, pEffectId);
 }
 
-RZRESULT CreateKeypadEffect(Keypad::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID* pEffectId) {
-	return sendEffect(KEYPAD, Effect, pParam, pEffectId);
+RZRESULT CreateKeypadEffect(Keypad::EFFECT_TYPE effect, PRZPARAM pParam, RZEFFECTID* pEffectId) {
+	return sendEffect(KEYPAD, effect, pParam, pEffectId);
 }
 
-RZRESULT CreateChromaLinkEffect(ChromaLink::EFFECT_TYPE Effect, PRZPARAM pParam, RZEFFECTID * pEffectId) {
-	return sendEffect(SYSTEM, Effect, pParam, pEffectId);
+RZRESULT CreateChromaLinkEffect(ChromaLink::EFFECT_TYPE effect, PRZPARAM pParam, RZEFFECTID * pEffectId) {
+	return sendEffect(SYSTEM, effect, pParam, pEffectId);
 }
 
 RZRESULT SetEffect(RZEFFECTID EffectId) { //-V813
+	ABORT_IF_NOT_INITIALIZED;
+
 	RpcTryExcept
 		return setEffect(EffectId, rpcCTXHandle);
 	RpcExcept(1)
@@ -190,6 +198,8 @@ RZRESULT SetEffect(RZEFFECTID EffectId) { //-V813
 }
 
 RZRESULT DeleteEffect(RZEFFECTID EffectId) { //-V813
+	ABORT_IF_NOT_INITIALIZED;
+
 	RpcTryExcept
 		return deleteEffect(EffectId, rpcCTXHandle);
 	RpcExcept(1)
@@ -198,9 +208,11 @@ RZRESULT DeleteEffect(RZEFFECTID EffectId) { //-V813
 }
 
 RZRESULT QueryDevice(RZDEVICEID DeviceID, DEVICE_INFO_TYPE& DeviceInfo) { //-V813
-	for (int devID = KEYBOARD; devID < ALL; devID++) {
-		if (DeviceID == CONFIG.emulatedDeviceIDS[devID]) {
-			DeviceInfo.Connected = CONFIG.supportedDeviceTypes[devID];
+	ABORT_IF_NOT_INITIALIZED;
+
+	for (int devId = KEYBOARD; devId < ALL; devId++) {
+		if (DeviceID == CONFIG->emulatedDeviceIDS[devId]) {
+			DeviceInfo.Connected = CONFIG->supportedDeviceTypes[devId];
 			return RZRESULT_SUCCESS;
 		}
 	}
@@ -210,14 +222,21 @@ RZRESULT QueryDevice(RZDEVICEID DeviceID, DEVICE_INFO_TYPE& DeviceInfo) { //-V81
 }
 
 RZRESULT RegisterEventNotification(HWND /*hWnd*/) {
+	ABORT_IF_NOT_INITIALIZED;
+
 	return RZRESULT_SUCCESS;
 }
 
 RZRESULT UnregisterEventNotification() {
+	ABORT_IF_NOT_INITIALIZED;
+
 	return RZRESULT_SUCCESS;
 }
 
-void* __RPC_USER midl_user_allocate(size_t size) {
+// ReSharper restore CppParameterMayBeConst
+
+
+void* __RPC_USER midl_user_allocate(const size_t size) {
 	return malloc(size);
 }
 

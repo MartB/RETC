@@ -3,53 +3,48 @@
 
 #include "SDKLoader.h"
 
-SDKLoader::SDKLoader() {
-
-}
-
-SDKLoader::~SDKLoader() {
+SdkLoader::~SdkLoader() {
 	destroy();
 }
 
-void SDKLoader::destroy() {
-	for (auto inst : m_dllInstances) {
+void SdkLoader::destroy() {
+	for (const auto& inst : m_dllInstances) {
 		FreeLibrary(inst.second);
 	}
 
 	m_dllInstances.clear();
 }
 
-bool SDKLoader::load(HINSTANCE& inst, const std::string& dllName, functionList& fList) {
+bool SdkLoader::load(HINSTANCE& inst, const std::string& name, function_list& fList) {
 	// Force user to call reload.
-	if (isLoaded(dllName)) {
+	if (isLoaded(name)) {
 		LOG_D("DLL already loaded you should call reload!");
 		return false;
 	}
 
-	inst = LoadLibraryA(dllName.c_str());
+	inst = LoadLibraryA(name.c_str());
 
 	if (!inst) {
-		LOG_E("LoadLibraryA({0}) failed with code {1}", dllName, GetLastError());
+		LOG_E("LoadLibraryA({0}) failed with code {1}", name, GetLastError());
 		return false;
 	}
 
 	for (auto& func : fList) {
-		const char * funcPtrName = func.first.c_str();
-		void* fptr = GetProcAddress(inst, funcPtrName);
+		const auto funcPtrName = func.first.c_str();
+		const auto fptr = reinterpret_cast<FARPROC *>(GetProcAddress(inst, funcPtrName));
 		if (!fptr) {
-			LOG_E("Could not find required method {0}, please check {1}.", funcPtrName, dllName);
+			LOG_E("Could not find required method {0}, please check {1}.", funcPtrName, name);
 			FreeLibrary(inst);
 			return false;
 		}
-
 		func.second = fptr;
 	}
 
-	m_dllInstances.insert(make_pair(dllName, inst));
+	m_dllInstances.insert(make_pair(name, inst));
 	return true;
 }
 
-bool SDKLoader::reload(HINSTANCE& inst, const std::string& dllName, functionList& fList) {
+bool SdkLoader::reload(HINSTANCE& inst, const std::string& dllName, function_list& fList) {
 	auto res = unload(dllName);
 	if (!res) {
 		res = unload(inst);
@@ -62,12 +57,12 @@ bool SDKLoader::reload(HINSTANCE& inst, const std::string& dllName, functionList
 	return load(inst, dllName, fList);
 }
 
-bool SDKLoader::isLoaded(const std::string& name) {
+bool SdkLoader::isLoaded(const std::string& name) {
 	return m_dllInstances.find(name) != m_dllInstances.end();
 }
 
-bool SDKLoader::unload(const std::string& name) {
-	auto elem = m_dllInstances.find(name);
+bool SdkLoader::unload(const std::string& name) {
+	const auto elem = m_dllInstances.find(name);
 
 	if (elem == m_dllInstances.end()) {
 		return false;
@@ -79,7 +74,7 @@ bool SDKLoader::unload(const std::string& name) {
 	return true;
 }
 
-bool SDKLoader::unload(HINSTANCE& inst) {
+bool SdkLoader::unload(HINSTANCE& inst) {
 	for (auto& func : m_dllInstances) {
 		if (func.second != inst) {
 			continue;

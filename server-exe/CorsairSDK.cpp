@@ -2,15 +2,16 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include "CorsairSDK.h"
+#include <RzErrors.h>
 
 CorsairSDK::CorsairSDK() {
-	this->SDK_NAME = L"CorsairCueSDK";
+	this->m_sdkName = L"CorsairCueSDK";
 #ifdef _WIN64
-	this->SDK_DLL = "CUESDK.x64_2015.dll";
+	this->m_sdkDll = "CUESDK.x64_2015.dll";
 #else
-	this->SDK_DLL = "CUESDK_2015.dll";
+	this->m_sdkDll = "CUESDK_2015.dll";
 #endif
-	this->DLL_FUNCTION_LIST = {
+	this->m_dllFunctionList = {
 		{"CorsairSetLedsColors", nullptr},
 		{"CorsairSetLedsColorsAsync", nullptr},
 		{"CorsairGetDeviceCount", nullptr},
@@ -37,24 +38,24 @@ bool CorsairSDK::initialize() {
 	SDKLoaderMapNameToFunction(CorsairGetLastError);
 	SDKLoaderMapNameToFunction(CorsairGetLedPositionsByDeviceIndex);
 
-	auto hsDetails = CorsairPerformProtocolHandshake();
-	if (hsDetails.breakingChanges == true) {
+	const auto hsDetails = CorsairPerformProtocolHandshake();
+	if (hsDetails.breakingChanges) {
 		LOG_E("Protocol has breaking changes aborting");
 		return false;
 	}
 
 	if (hsDetails.serverProtocolVersion == 0 || hsDetails.serverVersion == nullptr) {
-		LOG_E("Invalid server protocol");
+		LOG_E("Invalid server protocol, make sure CUE is running and SDK access is enabled!");
 		return false;
 	}
 
-	auto devCount = CorsairGetDeviceCount();
+	const auto devCount = CorsairGetDeviceCount();
 	if (devCount == 0) {
 		LOG_I("No devices found");
 		return false;
 	}
 
-	if (CONFIG->GetBool(SDK_CONFIG_SECTION, L"exclusivemode", false)) {
+	if (CONFIG->GetBool(m_sdkConfigSection, L"exclusivemode", false)) {
 		LOG_I("Using exclusive mode due to config parameter");
 
 		if (!CorsairRequestControl(CorsairAccessMode::CAM_ExclusiveLightingControl)) {
@@ -70,7 +71,7 @@ bool CorsairSDK::initialize() {
 			continue;
 		}
 
-		auto devType = corsairToRETCDeviceTYPE(devInfo->type);
+		auto devType = corsairToRetcDeviceType(devInfo->type);
 		if (devType == ESIZE) {
 			continue;
 		}
@@ -79,12 +80,37 @@ bool CorsairSDK::initialize() {
 
 		switch (devType) {
 		case MOUSE: {
-			const auto& numberOfKeys = static_cast<size_t>(devInfo->physicalLayout - CPL_Zones1) + 1;
+			std::string modelName = devInfo->model;
+			// The following transform is only working for ASCII characters, be careful!
+			std::transform(modelName.begin(), modelName.end(), modelName.begin(), ::tolower);
+
+			const auto numberOfKeys = devInfo->ledsCount;
 			ledVector.reserve(numberOfKeys);
-			for (size_t key = 0; key < numberOfKeys; key++) {
-				auto ledId = static_cast<CorsairLedId>(CLM_1 + key);
+
+			/* #HACK workaround for the api limitation on the glaive.
+			 * It is misreporting as 3 key but has CLM3 mapped to CLM5.
+			*/
+			if (modelName.find("glaive") != std::string::npos && numberOfKeys < 4) {
+				ledVector.emplace_back(CLM_1);
+				ledVector.emplace_back(CLM_2);
+				ledVector.emplace_back(CLM_5);
+				break;
+			}
+
+			const auto maxSequentialIds = CLM_4 - CLM_1;
+			for (auto key = 0; key < numberOfKeys; key++) {
+				auto ledId = CLM_1;
+				if (key > maxSequentialIds) {
+					ledId = static_cast<CorsairLedId>(CLM_5 + ((key -1) - maxSequentialIds));
+				}
+				else {
+					ledId = static_cast<CorsairLedId>(CLM_1 + key);
+				}
+
 				ledVector.emplace_back(ledId);
 			}
+
+			
 			break;
 		}
 		case HEADSET: {
@@ -137,14 +163,14 @@ bool CorsairSDK::initialize() {
 }
 
 void CorsairSDK::reset() {
-	for (int devID = KEYBOARD; devID < ALL; devID++) {
-		m_availableLeds[devID].clear();
+	for (int devId = KEYBOARD; devId < ALL; devId++) {
+		m_availableLeds[devId].clear();
 	}
 
 	m_outputColorVector.clear();
 }
 
-RZRESULT CorsairSDK::playEffect(RETCDeviceType deviceType, int effectType, const char data[]) {
+RZRESULT CorsairSDK::playEffect(const RETCDeviceType deviceType, const int effectType, const char data[]) {
 	RZRESULT res;
 	switch (deviceType) {
 	case KEYBOARD:
@@ -188,7 +214,7 @@ RZRESULT CorsairSDK::playEffect(RETCDeviceType deviceType, int effectType, const
 	return RZRESULT_SUCCESS;
 }
 
-RZRESULT CorsairSDK::prepareKeyboardEffect(int type, const char effectData[]) {
+RZRESULT CorsairSDK::prepareKeyboardEffect(const int type, const char effectData[]) {
 	using namespace ChromaSDK::Keyboard;
 	const auto& ledVector = m_availableLeds[KEYBOARD];
 	// High led count we better reserve.
@@ -235,6 +261,7 @@ RZRESULT CorsairSDK::prepareKeyboardEffect(int type, const char effectData[]) {
 				continue;
 			}
 
+			// Check if the key has a specific override
 			auto origColor = custEffect->Key[row][col];
 			if (origColor == NULL) {
 				origColor = custEffect->Color[row][col];
@@ -253,11 +280,10 @@ RZRESULT CorsairSDK::prepareKeyboardEffect(int type, const char effectData[]) {
 }
 
 
-RZRESULT CorsairSDK::prepareMouseEffect(int type, const char effectData[]) {
+RZRESULT CorsairSDK::prepareMouseEffect(const int type, const char effectData[]) {
 	using namespace ChromaSDK::Mouse;
 
 	int row, col;
-
 	const auto& ledVector = m_availableLeds[MOUSE];
 
 	if (type == CHROMA_NONE) {
@@ -280,7 +306,7 @@ RZRESULT CorsairSDK::prepareMouseEffect(int type, const char effectData[]) {
 			}
 		}
 		else {
-			ledColor.ledId = findMouseLedForRZLED(custEffect->LEDId);
+			ledColor.ledId = findMouseLedForRzled(custEffect->LEDId);
 
 			if (ledColor.ledId != CLI_Invalid) {
 				m_outputColorVector.emplace_back(ledColor);
@@ -292,7 +318,7 @@ RZRESULT CorsairSDK::prepareMouseEffect(int type, const char effectData[]) {
 
 
 		for (const auto ledId : ledVector) {
-			RZLED val = findMouseLedForCLD(ledId);
+			const auto val = findMouseLedForCld(ledId);
 			if (val == RZLED_NONE) {
 				continue;
 			}
@@ -323,10 +349,10 @@ RZRESULT CorsairSDK::prepareMouseEffect(int type, const char effectData[]) {
 	return RZRESULT_SUCCESS;
 }
 
-RZRESULT CorsairSDK::prepareMousePadEffect(int type, const char effectData[]) {
+RZRESULT CorsairSDK::prepareMousePadEffect(const int type, const char effectData[]) {
 	using namespace ChromaSDK::Mousepad;
 
-	const ledIDVector& ledVector = m_availableLeds[MOUSEPAD];
+	const auto& ledVector = m_availableLeds[MOUSEPAD];
 
 	if (type == CHROMA_NONE) {
 		auto ledColor = convertLedColor(0);
@@ -360,10 +386,10 @@ RZRESULT CorsairSDK::prepareMousePadEffect(int type, const char effectData[]) {
 	return RZRESULT_SUCCESS;
 }
 
-RZRESULT CorsairSDK::prepareHeadsetEffect(int type, const char effectData[]) {
+RZRESULT CorsairSDK::prepareHeadsetEffect(const int type, const char effectData[]) {
 	using namespace ChromaSDK::Headset;
 
-	const ledIDVector& ledVector = m_availableLeds[HEADSET];
+	const auto& ledVector = m_availableLeds[HEADSET];
 
 	if (type == CHROMA_NONE) {
 		auto ledColor = convertLedColor(0);
@@ -419,10 +445,10 @@ RZRESULT CorsairSDK::prepareHeadsetEffect(int type, const char effectData[]) {
 	- (L) zone8, rzid 12,13
 	- (L) zone9, rzid 14
 */
-RZRESULT CorsairSDK::prepareHeadsetStandEffect(int type, const char effectData[]) {
+RZRESULT CorsairSDK::prepareHeadsetStandEffect(const int type, const char effectData[]) {
 	using namespace ChromaSDK::Mousepad;
 
-	const ledIDVector& ledVector = m_availableLeds[HEADSET_STAND];
+	const auto& ledVector = m_availableLeds[HEADSET_STAND];
 
 	if (type == CHROMA_NONE) {
 		auto ledColor = convertLedColor(0);
@@ -448,7 +474,7 @@ RZRESULT CorsairSDK::prepareHeadsetStandEffect(int type, const char effectData[]
 			COLORREF color = 0;
 			if (led == CLHSS_Zone6) {
 				color = custEffect->Color[5];
-				for (int idx = 6; idx <= 9 && color == 0; idx++) {
+				for (auto idx = 6; idx <= 9 && color == 0; idx++) {
 					color = custEffect->Color[idx];
 				}
 			}
@@ -471,12 +497,12 @@ RZRESULT CorsairSDK::prepareHeadsetStandEffect(int type, const char effectData[]
 				}
 			}
 			else {
-				int cIDX = findHeadsetStandLed(led);
-				if (cIDX == -1) {
+				const auto cIdx = findHeadsetStandLed(led);
+				if (cIdx == -1) {
 					return RZRESULT_NOT_SUPPORTED;
 				}
 
-				color = custEffect->Color[cIDX];
+				color = custEffect->Color[cIdx];
 			}
 
 			auto ledColor = convertLedColor(color);
@@ -489,142 +515,147 @@ RZRESULT CorsairSDK::prepareHeadsetStandEffect(int type, const char effectData[]
 }
 
 CorsairLedColor CorsairSDK::convertLedColor(const COLORREF& color) {
+	uint8_t r, g, b;
+	CONVERT_AND_TRANSFORM_COLORS(color, r, g, b);
+
 	CorsairLedColor ledColor;
-	TRANSFORM_COLORS(color, ledColor.r, ledColor.g, ledColor.b);
+	ledColor.r = r;
+	ledColor.g = g;
+	ledColor.b = b;
 	ledColor.ledId = CLI_Invalid;
 
 	return ledColor;
 }
 
-#define mapto(x,y) case x: return y;
-#define maptoassign(x,y) case x: { *row = HIBYTE(y); *col = LOBYTE(y); return true;}
-#define customkeyassign(x,y,z) case x: { *row = y; *col = z;  break;}
+#define MAPTO(x,y) case x: return y;
+#define MAPTOASSIGN(x,y) case x: { *row = HIBYTE(y); *col = LOBYTE(y); return true;}
+#define CUSTOMKEYASSIGN(x,y,z) case x: { *row = y; *col = z;  break;}
 
-RETCDeviceType CorsairSDK::corsairToRETCDeviceTYPE(CorsairDeviceType type) {
+RETCDeviceType CorsairSDK::corsairToRetcDeviceType(const CorsairDeviceType type) {
 	switch (type) {
-		mapto(CDT_Unknown, RETCDeviceType::ESIZE);
-		mapto(CDT_Mouse, RETCDeviceType::MOUSE);
-		mapto(CDT_Keyboard, RETCDeviceType::KEYBOARD);
-		mapto(CDT_Headset, RETCDeviceType::HEADSET);
-		mapto(CDT_MouseMat, RETCDeviceType::MOUSEPAD);
-		mapto(CDT_HeadsetStand, RETCDeviceType::HEADSET_STAND);
+		MAPTO(CDT_Unknown, RETCDeviceType::ESIZE);
+		MAPTO(CDT_Mouse, RETCDeviceType::MOUSE);
+		MAPTO(CDT_Keyboard, RETCDeviceType::KEYBOARD);
+		MAPTO(CDT_Headset, RETCDeviceType::HEADSET);
+		MAPTO(CDT_MouseMat, RETCDeviceType::MOUSEPAD);
+		MAPTO(CDT_HeadsetStand, RETCDeviceType::HEADSET_STAND);
 	default:
 		return ESIZE;
 	}
 }
 
-bool CorsairSDK::findKeyboardLed(CorsairLedId ledid, int* row, int* col) {
+bool CorsairSDK::findKeyboardLed(const CorsairLedId ledid, int* row, int* col) {
 	using namespace ChromaSDK::Keyboard;
 	switch (ledid) {
-		maptoassign(CLK_Escape, RZKEY_ESC);
-		maptoassign(CLK_F1, RZKEY_F1);
-		maptoassign(CLK_F2, RZKEY_F2);
-		maptoassign(CLK_F3, RZKEY_F3);
-		maptoassign(CLK_F4, RZKEY_F4);
-		maptoassign(CLK_F5, RZKEY_F5);
-		maptoassign(CLK_F6, RZKEY_F6);
-		maptoassign(CLK_F7, RZKEY_F7);
-		maptoassign(CLK_F8, RZKEY_F8);
-		maptoassign(CLK_F9, RZKEY_F9);
-		maptoassign(CLK_F10, RZKEY_F10);
-		maptoassign(CLK_F11, RZKEY_F11);
-		maptoassign(CLK_F12, RZKEY_F12);
-		maptoassign(CLK_1, RZKEY_1);
-		maptoassign(CLK_2, RZKEY_2);
-		maptoassign(CLK_3, RZKEY_3);
-		maptoassign(CLK_4, RZKEY_4);
-		maptoassign(CLK_5, RZKEY_5);
-		maptoassign(CLK_6, RZKEY_6);
-		maptoassign(CLK_7, RZKEY_7);
-		maptoassign(CLK_8, RZKEY_8);
-		maptoassign(CLK_9, RZKEY_9);
-		maptoassign(CLK_0, RZKEY_0);
-		maptoassign(CLK_A, RZKEY_A);
-		maptoassign(CLK_B, RZKEY_B);
-		maptoassign(CLK_C, RZKEY_C);
-		maptoassign(CLK_D, RZKEY_D);
-		maptoassign(CLK_E, RZKEY_E);
-		maptoassign(CLK_F, RZKEY_F);
-		maptoassign(CLK_G, RZKEY_G);
-		maptoassign(CLK_H, RZKEY_H);
-		maptoassign(CLK_I, RZKEY_I);
-		maptoassign(CLK_J, RZKEY_J);
-		maptoassign(CLK_K, RZKEY_K);
-		maptoassign(CLK_L, RZKEY_L);
-		maptoassign(CLK_M, RZKEY_M);
-		maptoassign(CLK_N, RZKEY_N);
-		maptoassign(CLK_O, RZKEY_O);
-		maptoassign(CLK_P, RZKEY_P);
-		maptoassign(CLK_Q, RZKEY_Q);
-		maptoassign(CLK_R, RZKEY_R);
-		maptoassign(CLK_S, RZKEY_S);
-		maptoassign(CLK_T, RZKEY_T);
-		maptoassign(CLK_U, RZKEY_U);
-		maptoassign(CLK_V, RZKEY_V);
-		maptoassign(CLK_W, RZKEY_W);
-		maptoassign(CLK_X, RZKEY_X);
-		maptoassign(CLK_Y, RZKEY_Y);
-		maptoassign(CLK_Z, RZKEY_Z);
-		maptoassign(CLK_NumLock, RZKEY_NUMLOCK);
-		maptoassign(CLK_Keypad0, RZKEY_NUMPAD0);
-		maptoassign(CLK_Keypad1, RZKEY_NUMPAD1);
-		maptoassign(CLK_Keypad2, RZKEY_NUMPAD2);
-		maptoassign(CLK_Keypad3, RZKEY_NUMPAD3);
-		maptoassign(CLK_Keypad4, RZKEY_NUMPAD4);
-		maptoassign(CLK_Keypad5, RZKEY_NUMPAD5);
-		maptoassign(CLK_Keypad6, RZKEY_NUMPAD6);
-		maptoassign(CLK_Keypad7, RZKEY_NUMPAD7);
-		maptoassign(CLK_Keypad8, RZKEY_NUMPAD8);
-		maptoassign(CLK_Keypad9, RZKEY_NUMPAD9);
-		maptoassign(CLK_KeypadSlash, RZKEY_NUMPAD_DIVIDE);
-		maptoassign(CLK_KeypadAsterisk, RZKEY_NUMPAD_MULTIPLY);
-		maptoassign(CLK_KeypadMinus, RZKEY_NUMPAD_SUBTRACT);
-		maptoassign(CLK_KeypadPlus, RZKEY_NUMPAD_ADD);
-		maptoassign(CLK_KeypadEnter, RZKEY_NUMPAD_ENTER);
-		maptoassign(CLK_KeypadPeriodAndDelete, RZKEY_NUMPAD_DECIMAL);
-		maptoassign(CLK_PrintScreen, RZKEY_PRINTSCREEN);
-		maptoassign(CLK_ScrollLock, RZKEY_SCROLL);
-		maptoassign(CLK_PauseBreak, RZKEY_PAUSE);
-		maptoassign(CLK_Insert, RZKEY_INSERT);
-		maptoassign(CLK_Home, RZKEY_HOME);
-		maptoassign(CLK_PageUp, RZKEY_PAGEUP);
-		maptoassign(CLK_Delete, RZKEY_DELETE);
-		maptoassign(CLK_End, RZKEY_END);
-		maptoassign(CLK_PageDown, RZKEY_PAGEDOWN);
-		maptoassign(CLK_UpArrow, RZKEY_UP);
-		maptoassign(CLK_LeftArrow, RZKEY_LEFT);
-		maptoassign(CLK_DownArrow, RZKEY_DOWN);
-		maptoassign(CLK_RightArrow, RZKEY_RIGHT);
-		maptoassign(CLK_Tab, RZKEY_TAB);
-		maptoassign(CLK_CapsLock, RZKEY_CAPSLOCK);
-		maptoassign(CLK_Backspace, RZKEY_BACKSPACE);
-		maptoassign(CLK_Enter, RZKEY_ENTER);
-		maptoassign(CLK_LeftCtrl, RZKEY_LCTRL);
-		maptoassign(CLK_LeftGui, RZKEY_LWIN);
-		maptoassign(CLK_LeftAlt, RZKEY_LALT);
-		maptoassign(CLK_Space, RZKEY_SPACE);
-		maptoassign(CLK_RightAlt, RZKEY_RALT);
-		maptoassign(CLK_RightGui, RZKEY_FN); 
-		maptoassign(CLK_Fn, RZKEY_FN); // This is actually the same key as RightGui on some keyboard variants
-		maptoassign(CLK_Application, RZKEY_RMENU);
-		maptoassign(CLK_RightCtrl, RZKEY_RCTRL);
-		maptoassign(CLK_LeftShift, RZKEY_LSHIFT);
-		maptoassign(CLK_RightShift, RZKEY_RSHIFT);
-		maptoassign(CLK_GraveAccentAndTilde, RZKEY_OEM_1);
-		maptoassign(CLK_EqualsAndPlus, RZKEY_OEM_3);
-		maptoassign(CLK_MinusAndUnderscore, RZKEY_OEM_2);
-		maptoassign(CLK_BracketLeft, RZKEY_OEM_4);
-		maptoassign(CLK_BracketRight, RZKEY_OEM_5);
-		maptoassign(CLK_Backslash, RZKEY_OEM_6);
-		maptoassign(CLK_SemicolonAndColon, RZKEY_OEM_7);
-		maptoassign(CLK_ApostropheAndDoubleQuote, RZKEY_OEM_8);
-		maptoassign(CLK_CommaAndLessThan, RZKEY_OEM_9);
-		maptoassign(CLK_PeriodAndBiggerThan, RZKEY_OEM_10);
-		maptoassign(CLK_SlashAndQuestionMark, RZKEY_OEM_11);
-		maptoassign(CLK_NonUsTilde, RZKEY_EUR_1);
-		maptoassign(CLK_NonUsBackslash, RZKEY_EUR_2);
-		maptoassign(CLK_Logo, RZLED_LOGO);
-		maptoassign(CLI_Invalid, RZKEY_INVALID);
+		MAPTOASSIGN(CLK_Escape, RZKEY_ESC);
+		MAPTOASSIGN(CLK_F1, RZKEY_F1);
+		MAPTOASSIGN(CLK_F2, RZKEY_F2);
+		MAPTOASSIGN(CLK_F3, RZKEY_F3);
+		MAPTOASSIGN(CLK_F4, RZKEY_F4);
+		MAPTOASSIGN(CLK_F5, RZKEY_F5);
+		MAPTOASSIGN(CLK_F6, RZKEY_F6);
+		MAPTOASSIGN(CLK_F7, RZKEY_F7);
+		MAPTOASSIGN(CLK_F8, RZKEY_F8);
+		MAPTOASSIGN(CLK_F9, RZKEY_F9);
+		MAPTOASSIGN(CLK_F10, RZKEY_F10);
+		MAPTOASSIGN(CLK_F11, RZKEY_F11);
+		MAPTOASSIGN(CLK_F12, RZKEY_F12);
+		MAPTOASSIGN(CLK_1, RZKEY_1);
+		MAPTOASSIGN(CLK_2, RZKEY_2);
+		MAPTOASSIGN(CLK_3, RZKEY_3);
+		MAPTOASSIGN(CLK_4, RZKEY_4);
+		MAPTOASSIGN(CLK_5, RZKEY_5);
+		MAPTOASSIGN(CLK_6, RZKEY_6);
+		MAPTOASSIGN(CLK_7, RZKEY_7);
+		MAPTOASSIGN(CLK_8, RZKEY_8);
+		MAPTOASSIGN(CLK_9, RZKEY_9);
+		MAPTOASSIGN(CLK_0, RZKEY_0);
+		MAPTOASSIGN(CLK_A, RZKEY_A);
+		MAPTOASSIGN(CLK_B, RZKEY_B);
+		MAPTOASSIGN(CLK_C, RZKEY_C);
+		MAPTOASSIGN(CLK_D, RZKEY_D);
+		MAPTOASSIGN(CLK_E, RZKEY_E);
+		MAPTOASSIGN(CLK_F, RZKEY_F);
+		MAPTOASSIGN(CLK_G, RZKEY_G);
+		MAPTOASSIGN(CLK_H, RZKEY_H);
+		MAPTOASSIGN(CLK_I, RZKEY_I);
+		MAPTOASSIGN(CLK_J, RZKEY_J);
+		MAPTOASSIGN(CLK_K, RZKEY_K);
+		MAPTOASSIGN(CLK_L, RZKEY_L);
+		MAPTOASSIGN(CLK_M, RZKEY_M);
+		MAPTOASSIGN(CLK_N, RZKEY_N);
+		MAPTOASSIGN(CLK_O, RZKEY_O);
+		MAPTOASSIGN(CLK_P, RZKEY_P);
+		MAPTOASSIGN(CLK_Q, RZKEY_Q);
+		MAPTOASSIGN(CLK_R, RZKEY_R);
+		MAPTOASSIGN(CLK_S, RZKEY_S);
+		MAPTOASSIGN(CLK_T, RZKEY_T);
+		MAPTOASSIGN(CLK_U, RZKEY_U);
+		MAPTOASSIGN(CLK_V, RZKEY_V);
+		MAPTOASSIGN(CLK_W, RZKEY_W);
+		MAPTOASSIGN(CLK_X, RZKEY_X);
+		MAPTOASSIGN(CLK_Y, RZKEY_Y);
+		MAPTOASSIGN(CLK_Z, RZKEY_Z);
+		MAPTOASSIGN(CLK_NumLock, RZKEY_NUMLOCK);
+		MAPTOASSIGN(CLK_Keypad0, RZKEY_NUMPAD0);
+		MAPTOASSIGN(CLK_Keypad1, RZKEY_NUMPAD1);
+		MAPTOASSIGN(CLK_Keypad2, RZKEY_NUMPAD2);
+		MAPTOASSIGN(CLK_Keypad3, RZKEY_NUMPAD3);
+		MAPTOASSIGN(CLK_Keypad4, RZKEY_NUMPAD4);
+		MAPTOASSIGN(CLK_Keypad5, RZKEY_NUMPAD5);
+		MAPTOASSIGN(CLK_Keypad6, RZKEY_NUMPAD6);
+		MAPTOASSIGN(CLK_Keypad7, RZKEY_NUMPAD7);
+		MAPTOASSIGN(CLK_Keypad8, RZKEY_NUMPAD8);
+		MAPTOASSIGN(CLK_Keypad9, RZKEY_NUMPAD9);
+		MAPTOASSIGN(CLK_KeypadSlash, RZKEY_NUMPAD_DIVIDE);
+		MAPTOASSIGN(CLK_KeypadAsterisk, RZKEY_NUMPAD_MULTIPLY);
+		MAPTOASSIGN(CLK_KeypadMinus, RZKEY_NUMPAD_SUBTRACT);
+		MAPTOASSIGN(CLK_KeypadPlus, RZKEY_NUMPAD_ADD);
+		MAPTOASSIGN(CLK_KeypadEnter, RZKEY_NUMPAD_ENTER);
+		MAPTOASSIGN(CLK_KeypadPeriodAndDelete, RZKEY_NUMPAD_DECIMAL);
+		MAPTOASSIGN(CLK_PrintScreen, RZKEY_PRINTSCREEN);
+		MAPTOASSIGN(CLK_ScrollLock, RZKEY_SCROLL);
+		MAPTOASSIGN(CLK_PauseBreak, RZKEY_PAUSE);
+		MAPTOASSIGN(CLK_Insert, RZKEY_INSERT);
+		MAPTOASSIGN(CLK_Home, RZKEY_HOME);
+		MAPTOASSIGN(CLK_PageUp, RZKEY_PAGEUP);
+		MAPTOASSIGN(CLK_Delete, RZKEY_DELETE);
+		MAPTOASSIGN(CLK_End, RZKEY_END);
+		MAPTOASSIGN(CLK_PageDown, RZKEY_PAGEDOWN);
+		MAPTOASSIGN(CLK_UpArrow, RZKEY_UP);
+		MAPTOASSIGN(CLK_LeftArrow, RZKEY_LEFT);
+		MAPTOASSIGN(CLK_DownArrow, RZKEY_DOWN);
+		MAPTOASSIGN(CLK_RightArrow, RZKEY_RIGHT);
+		MAPTOASSIGN(CLK_Tab, RZKEY_TAB);
+		MAPTOASSIGN(CLK_CapsLock, RZKEY_CAPSLOCK);
+		MAPTOASSIGN(CLK_Backspace, RZKEY_BACKSPACE);
+		MAPTOASSIGN(CLK_Enter, RZKEY_ENTER);
+		MAPTOASSIGN(CLK_LeftCtrl, RZKEY_LCTRL);
+		MAPTOASSIGN(CLK_LeftGui, RZKEY_LWIN);
+		MAPTOASSIGN(CLK_LeftAlt, RZKEY_LALT);
+		MAPTOASSIGN(CLK_Space, RZKEY_SPACE);
+		MAPTOASSIGN(CLK_RightAlt, RZKEY_RALT);
+		MAPTOASSIGN(CLK_RightGui, RZKEY_FN); 
+		MAPTOASSIGN(CLK_Fn, RZKEY_FN); // This is actually the same key as RightGui on some keyboard variants
+		MAPTOASSIGN(CLK_Application, RZKEY_RMENU);
+		MAPTOASSIGN(CLK_RightCtrl, RZKEY_RCTRL);
+		MAPTOASSIGN(CLK_LeftShift, RZKEY_LSHIFT);
+		MAPTOASSIGN(CLK_RightShift, RZKEY_RSHIFT);
+		MAPTOASSIGN(CLK_GraveAccentAndTilde, RZKEY_OEM_1);
+		MAPTOASSIGN(CLK_EqualsAndPlus, RZKEY_OEM_3);
+		MAPTOASSIGN(CLK_MinusAndUnderscore, RZKEY_OEM_2);
+		MAPTOASSIGN(CLK_BracketLeft, RZKEY_OEM_4);
+		MAPTOASSIGN(CLK_BracketRight, RZKEY_OEM_5);
+		MAPTOASSIGN(CLK_Backslash, RZKEY_OEM_6);
+		MAPTOASSIGN(CLK_SemicolonAndColon, RZKEY_OEM_7);
+		MAPTOASSIGN(CLK_ApostropheAndDoubleQuote, RZKEY_OEM_8);
+		MAPTOASSIGN(CLK_CommaAndLessThan, RZKEY_OEM_9);
+		MAPTOASSIGN(CLK_PeriodAndBiggerThan, RZKEY_OEM_10);
+		MAPTOASSIGN(CLK_SlashAndQuestionMark, RZKEY_OEM_11);
+		MAPTOASSIGN(CLK_NonUsTilde, RZKEY_EUR_1);
+		MAPTOASSIGN(CLK_NonUsBackslash, RZKEY_EUR_2);
+		MAPTOASSIGN(CLK_Logo, RZLED_LOGO);
+		MAPTOASSIGN(CLI_Invalid, RZKEY_INVALID);
 	default: {
 		return false;
 	}
@@ -635,57 +666,65 @@ bool CorsairSDK::findMouseLed(const CorsairLedId ledid, int* row, int* col) {
 	using namespace ChromaSDK::Mouse;
 
 	switch (ledid) {
-		maptoassign(CLI_Invalid, RZLED_NONE);
-		maptoassign(CLM_1, RZLED2_LOGO);
-		maptoassign(CLM_2, RZLED2_SCROLLWHEEL);
-		maptoassign(CLM_3, RZLED2_BACKLIGHT);
-		maptoassign(CLM_4, RZLED2_LEFT_SIDE1);
+		MAPTOASSIGN(CLI_Invalid, RZLED_NONE);
+		MAPTOASSIGN(CLM_1, RZLED2_LOGO);
+		MAPTOASSIGN(CLM_2, RZLED2_SCROLLWHEEL);
+		MAPTOASSIGN(CLM_3, RZLED2_BACKLIGHT);
+		MAPTOASSIGN(CLM_4, RZLED2_LEFT_SIDE1);
+		MAPTOASSIGN(CLM_5, RZLED2_BACKLIGHT);
+		MAPTOASSIGN(CLM_6, RZLED2_BOTTOM1);
 	default:
 		return false;
 	}
 }
 
-CorsairLedId CorsairSDK::findMouseLedForRZLED(ChromaSDK::Mouse::RZLED led) {
+// This is deprecated
+CorsairLedId CorsairSDK::findMouseLedForRzled(const ChromaSDK::Mouse::RZLED led) {
 	using namespace ChromaSDK::Mouse;
 
 	switch (led) {
-		mapto(RZLED_NONE, CLI_Invalid);
-		mapto(RZLED_LOGO, CLM_1);
-		mapto(RZLED_SCROLLWHEEL, CLM_2);
-		mapto(RZLED_BACKLIGHT, CLM_3);
-		mapto(RZLED_SIDE_STRIP1, CLM_4);
+		MAPTO(RZLED_NONE, CLI_Invalid);
+		MAPTO(RZLED_LOGO, CLM_1);
+		MAPTO(RZLED_SCROLLWHEEL, CLM_2);
+		MAPTO(RZLED_BACKLIGHT, CLM_3);
+		MAPTO(RZLED_SIDE_STRIP1, CLM_4);
+		MAPTO(RZLED_SIDE_STRIP2, CLM_5);
+		MAPTO(RZLED_SIDE_STRIP3, CLM_6);
 	default:
 		return CLI_Invalid;
 	}
 }
 
-ChromaSDK::Mouse::RZLED CorsairSDK::findMouseLedForCLD(CorsairLedId led) {
+ChromaSDK::Mouse::RZLED CorsairSDK::findMouseLedForCld(const CorsairLedId led) {
 	using namespace ChromaSDK::Mouse;
 
 	switch (led) {
-		mapto(CLI_Invalid, RZLED_NONE);
-		mapto(CLM_1, RZLED_LOGO);
-		mapto(CLM_2, RZLED_SCROLLWHEEL);
-		mapto(CLM_3, RZLED_BACKLIGHT);
-		mapto(CLM_4, RZLED_SIDE_STRIP1);
+		MAPTO(CLI_Invalid, RZLED_NONE);
+		MAPTO(CLM_1, RZLED_LOGO);
+		MAPTO(CLM_2, RZLED_SCROLLWHEEL);
+		MAPTO(CLM_3, RZLED_BACKLIGHT);
+		MAPTO(CLM_4, RZLED_SIDE_STRIP1);
+		MAPTO(CLM_5, RZLED_SIDE_STRIP2);
+		MAPTO(CLM_6, RZLED_SIDE_STRIP3);
+
 	default:
 		return RZLED_NONE;
 	}
 }
 
-int CorsairSDK::findHeadsetStandLed(CorsairLedId ledid) {
+int CorsairSDK::findHeadsetStandLed(const CorsairLedId ledid) {
 	using namespace ChromaSDK::Keyboard;
 	switch (ledid) {
-		mapto(CLHSS_Zone1, 0); // Logo just like on razer (right side there)
+		MAPTO(CLHSS_Zone1, 0); // Logo just like on razer (right side there)
 
-		mapto(CLHSS_Zone2, 0);
-		mapto(CLHSS_Zone4, 3);
-		mapto(CLHSS_Zone5, 4);
+		MAPTO(CLHSS_Zone2, 0);
+		MAPTO(CLHSS_Zone4, 3);
+		MAPTO(CLHSS_Zone5, 4);
 
-		mapto(CLHSS_Zone9, 14);
+		MAPTO(CLHSS_Zone9, 14);
+		default: 
+			return -1;
 	}
-
-	return -1;
 }
 
 std::string CorsairSDK::errToString(const CorsairError& error) {

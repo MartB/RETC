@@ -15,7 +15,8 @@ ConfigManager::ConfigManager() {
 
 #define SUCCESS(cond) ((cond) >= SI_OK)
 
-void ConfigManager::ReloadConfigFile() {
+void ConfigManager::ReloadConfigFile() const
+{
 	simpleIni->Reset();
 
 	// It does not matter if this fails
@@ -23,12 +24,12 @@ void ConfigManager::ReloadConfigFile() {
 }
 
 // Please do not use these if you expect special characters > 7 bit to work
-std::string ConfigManager::GetAsciiString(const wchar_t* section, const wchar_t* key, const wchar_t* def) {
+std::string ConfigManager::GetAsciiString(const wchar_t* section, const wchar_t* key, const wchar_t* def) const {
 	const std::wstring res = GetWString(section, key, def);
 	return std::string(res.begin(), res.end());
 }
 
-std::string ConfigManager::GetAsciiString(const wchar_t* section, const wchar_t* key, const std::string &def) {
+std::string ConfigManager::GetAsciiString(const wchar_t* section, const wchar_t* key, const std::string &def) const {
 	std::wstring defConv(def.begin(), def.end());
 	return GetAsciiString(section, key, defConv.c_str());
 }
@@ -38,11 +39,11 @@ std::string ConfigManager::GetUtf8StdString(const wchar_t* section, const wchar_
 	return WSTR_CONVERTER.to_bytes(GetWString(section, key, WSTR_CONVERTER.from_bytes(def).c_str()));
 }
 
-const wchar_t* ConfigManager::GetWString(const wchar_t* section, const wchar_t* key, const wchar_t* def) {
+const wchar_t* ConfigManager::GetWString(const wchar_t* section, const wchar_t* key, const wchar_t* def) const {
 	return simpleIni->GetValue(section, key, def);
 }
 
-double ConfigManager::GetDouble(const wchar_t* section, const wchar_t* key, double def) {
+double ConfigManager::GetDouble(const wchar_t* section, const wchar_t* key, const double def) const {
 	return simpleIni->GetDoubleValue(section, key, def);
 }
 
@@ -54,8 +55,8 @@ long ConfigManager::GetLong(const wchar_t* section, const wchar_t* key, const lo
 	return simpleIni->GetLongValue(section, key, def);
 }
 
-Vec3D ConfigManager::GetVec3D(const wchar_t * section, const wchar_t * key, const Vec3D &def) {
-	auto rawValue = GetWString(section, key, nullptr);
+Vec3D ConfigManager::GetVec3D(const wchar_t * section, const wchar_t * key, const Vec3D &def) const {
+	const auto rawValue = GetWString(section, key, nullptr);
 	if (rawValue == nullptr) {
 		return def;
 	}
@@ -74,23 +75,23 @@ Vec3D ConfigManager::GetVec3D(const wchar_t * section, const wchar_t * key, cons
 	return ret;
 }
 
-bool ConfigManager::SetBool(const wchar_t* section, const wchar_t* key, bool value) {
+bool ConfigManager::SetBool(const wchar_t* section, const wchar_t* key, const bool value) const {
 	return SUCCESS(simpleIni->SetBoolValue(section, key, value));
 }
 
-bool ConfigManager::SetLong(const wchar_t* section, const wchar_t* key, const long value) {
+bool ConfigManager::SetLong(const wchar_t* section, const wchar_t* key, const long value) const {
 	return SUCCESS(simpleIni->SetLongValue(section, key, value));
 }
 
-bool ConfigManager::SetWString(const wchar_t* section, const wchar_t* key, const wchar_t* value) {
+bool ConfigManager::SetWString(const wchar_t* section, const wchar_t* key, const wchar_t* value) const {
 	return SUCCESS(simpleIni->SetValue(section, key, value));
 }
 
-bool ConfigManager::SetDouble(const wchar_t* section, const wchar_t* key, const double value) {
+bool ConfigManager::SetDouble(const wchar_t* section, const wchar_t* key, const double value) const {
 	return SUCCESS(simpleIni->SetDoubleValue(section, key, value));
 }
 
-bool ConfigManager::SetVec3D(const wchar_t* section, const wchar_t* key, const Vec3D &value) {
+bool ConfigManager::SetVec3D(const wchar_t* section, const wchar_t* key, const Vec3D &value) const {
 	std::wstringstream ws;
 	ws << value.x;
 	ws << value.y;
@@ -105,7 +106,7 @@ bool ConfigManager::SetVec3D(const wchar_t* section, const wchar_t* key, const V
 }
 
 
-bool ConfigManager::SaveConfig() {
+bool ConfigManager::SaveConfig() const {
 	return SUCCESS(simpleIni->SaveFile(CONFIG_FILENAME));
 }
 

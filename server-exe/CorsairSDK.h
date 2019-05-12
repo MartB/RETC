@@ -3,13 +3,13 @@
 #include "CUESDK.h"
 #include <vector>
 
-class CorsairSDK : public LightingSDK {
+class CorsairSDK : public LightingSdk {
 public:
 	CorsairSDK();
 
 	bool initialize() override;
 	void reset() override;
-	RZRESULT playEffect(RETCDeviceType device, int type, const char data[]) override;
+	RZRESULT playEffect(RETCDeviceType deviceType, int effectType, const char data[]) override;
 
 private:
 	RZRESULT prepareKeyboardEffect(int type, const char effectData[]);
@@ -20,12 +20,12 @@ private:
 
 	// Helper functions
 	CorsairLedColor convertLedColor(const COLORREF& color);
-	static RETCDeviceType corsairToRETCDeviceTYPE(CorsairDeviceType type);
+	static RETCDeviceType corsairToRetcDeviceType(CorsairDeviceType type);
 
 	static bool findKeyboardLed(CorsairLedId ledid, int* row, int* col);
-	static bool findMouseLed(const CorsairLedId ledid, int* row, int* col);
-	static CorsairLedId findMouseLedForRZLED(ChromaSDK::Mouse::RZLED led);
-	static ChromaSDK::Mouse::RZLED findMouseLedForCLD(CorsairLedId led);
+	static bool findMouseLed(CorsairLedId ledid, int* row, int* col);
+	static CorsairLedId findMouseLedForRzled(ChromaSDK::Mouse::RZLED led);
+	static ChromaSDK::Mouse::RZLED findMouseLedForCld(CorsairLedId led);
 	static int findHeadsetStandLed(CorsairLedId ledid);
 
 	static std::string errToString(const CorsairError& error);

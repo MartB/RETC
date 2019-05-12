@@ -3,11 +3,13 @@
 
 #include "SDKManager.h"
 #include "RzErrors.h"
-#include "LightingSDK.h"
+#include "RazerSDK.h"
+#include "CorsairSDK.h"
 
-SDKManager::SDKManager() {
-	m_sdkLoader = std::make_shared<SDKLoader>();
+SdkManager::SdkManager() {
+	m_sdkLoader = std::make_shared<SdkLoader>();
 	m_effectManager = std::make_unique<EffectManager>();
+	m_bIsInitialized = false;
 
 	/**
 	 * Register your sdk here, make sure the RazerSDK is always at the beginning.
@@ -15,11 +17,11 @@ SDKManager::SDKManager() {
 	m_availableSDKs.insert(std::make_shared<RazerSDK>());
 	m_availableSDKs.insert(std::make_shared<CorsairSDK>());
 
-	m_clientConfig = new RETCClientConfig;
+	m_clientConfig = std::make_shared<RETCClientConfig>();
 	reset();
 }
 
-void SDKManager::reset() {
+void SdkManager::reset() {
 	for (auto &sdkList : m_selectedSDKs) {
 		sdkList.clear();
 	}
@@ -30,11 +32,7 @@ void SDKManager::reset() {
 	m_bIsInitialized = false;
 }
 
-SDKManager::~SDKManager() {
-	delete m_clientConfig;
-}
-
-void SDKManager::disconnect() {
+void SdkManager::disconnect() {
 	LOG_I("Disconnected cleaning up session.");
 	for (auto&& sdk : m_availableSDKs) {
 		sdk->disconnect();
@@ -44,7 +42,7 @@ void SDKManager::disconnect() {
 	m_effectManager->clearEffects();
 }
 
-bool SDKManager::initialize() {
+bool SdkManager::initialize() {
 	if (m_bIsInitialized) {
 		LOG_E("SDKManager already initialized.");
 		LOG_I("Hint: Only one concurrent session supported");
@@ -58,18 +56,18 @@ bool SDKManager::initialize() {
 	return true;
 }
 
-void SDKManager::reloadEmulatedDevices() {
+void SdkManager::reloadEmulatedDevices() const
+{
 	using namespace LookupMaps;
 	using namespace LookupArrays;
 
-	std::wstring lastConfigValue;
 	for (int idx = KEYBOARD; idx < ALL; idx++) {
 		// Razers api does not do HEADSET_STAND support properly, so skip this for now.
 		if (idx == HEADSET_STAND) {
 			continue;
 		}
 
-		lastConfigValue = CONFIG->GetWString(SDK_MAIN_CONFIG_SECTION, EM_KEYS[idx], EM_VALS[idx]);
+		std::wstring lastConfigValue = CONFIG->GetWString(SDK_MAIN_CONFIG_SECTION, EM_KEYS[idx], EM_VALS[idx]);
 		auto it = LookupMaps::razerStringToDevID.find(lastConfigValue);
 
 		if (it != LookupMaps::razerStringToDevID.end()) {
@@ -84,8 +82,8 @@ void SDKManager::reloadEmulatedDevices() {
 	}
 }
 
-void SDKManager::checkAvailability() {
-	bool hasAnySDK = false;
+void SdkManager::checkAvailability() {
+	auto hasAnySDK = false;
 	for (auto&& sdk : m_availableSDKs) {
 		if (!sdk->init(m_sdkLoader.get())) {
 			LOG_T(L"an sdk failed to initialize {0}", sdk->getSDKName());
@@ -115,14 +113,13 @@ void SDKManager::checkAvailability() {
 	}
 }
 
-RZRESULT SDKManager::playEffectOnAllSDKs(int effectType, const char effectData[]) const {
-	RZRESULT res = RZRESULT_NOT_SUPPORTED;
-	for (int devID = KEYBOARD; devID < ALL; devID++) {
-		for (const auto& sdk : m_selectedSDKs[devID]) {
-			res = sdk->playEffect(static_cast<RETCDeviceType>(devID), effectType, effectData);
+RZRESULT SdkManager::playEffectOnAllSDKs(const int effectType, const char effectData[]) const {
+	auto res = RZRESULT_NOT_SUPPORTED;
+	for (int devId = KEYBOARD; devId < ALL; devId++) {
+		for (const auto& sdk : m_selectedSDKs[devId]) {
+			res = sdk->playEffect(static_cast<RETCDeviceType>(devId), effectType, effectData);
 			if (res != RZRESULT_SUCCESS) {
 				LOG_D(L"SDK: {0} failed to play an effect.", sdk->getSDKName());
-				continue; // dont hard fail if one sdk failed.
 			}
 		}
 	}
@@ -130,12 +127,12 @@ RZRESULT SDKManager::playEffectOnAllSDKs(int effectType, const char effectData[]
 	return res;
 }
 
-RZRESULT SDKManager::playbackEffect(const RETCDeviceType& devType, int effectType, const char effectData[]) {
+RZRESULT SdkManager::playbackEffect(const RETCDeviceType& devType, const int effectType, const char effectData[]) {
 	if (devType == ALL) {
 		return playEffectOnAllSDKs(effectType, effectData);
 	}
 
-	RZRESULT res = RZRESULT_NOT_FOUND;
+	auto res = RZRESULT_NOT_FOUND;
 
 	for (auto&& sdk : m_selectedSDKs[devType]) {
 		res = sdk->playEffect(devType, effectType, effectData);
@@ -151,7 +148,7 @@ RZRESULT SDKManager::playbackEffect(const RETCDeviceType& devType, int effectTyp
 	return res;
 }
 
-RZRESULT SDKManager::playEffect(const RETCDeviceType& devType, int effectType, RZEFFECTID* pEffectId, efsize_t size, const char effectData[]) {
+RZRESULT SdkManager::playEffect(const RETCDeviceType& devType, const int effectType, RZEFFECTID* pEffectId, const efsize_t size, const char effectData[]) {
 	// We need to store the effect
 	if (pEffectId != nullptr) {
 		return m_effectManager->storeEffect(devType, effectType, pEffectId, size, effectData) ? RZRESULT_SUCCESS : RZRESULT_FAILED;
@@ -160,12 +157,12 @@ RZRESULT SDKManager::playEffect(const RETCDeviceType& devType, int effectType, R
 	return playbackEffect(devType, effectType, effectData);
 }
 
-RZRESULT SDKManager::deleteEffect(const RZEFFECTID& effID) const {
-	return m_effectManager->deleteEffect(effID) ? RZRESULT_SUCCESS : RZRESULT_NOT_FOUND;
+RZRESULT SdkManager::deleteEffect(const RZEFFECTID& effId) const {
+	return m_effectManager->deleteEffect(effId) ? RZRESULT_SUCCESS : RZRESULT_NOT_FOUND;
 }
 
-RZRESULT SDKManager::setEffect(const RZEFFECTID& effID) {
-	const auto& effectEntry = m_effectManager->getEffect(effID);
+RZRESULT SdkManager::setEffect(const RZEFFECTID& effId) {
+	const auto& effectEntry = m_effectManager->getEffect(effId);
 
 	if (!effectEntry) {
 		return RZRESULT_NOT_FOUND;

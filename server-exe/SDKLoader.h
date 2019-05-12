@@ -3,16 +3,16 @@
 #include <windows.h>
 #include <unordered_map>
 
-typedef std::unordered_map<std::string, void*> functionList;
-typedef std::unordered_map<std::string, HINSTANCE> dllInstances;
+using function_list = std::unordered_map<std::string, void*>;
+using dll_instances = std::unordered_map<std::string, FARPROC*>;
 
-class SDKLoader {
+class SdkLoader {
 public:
-	SDKLoader();
-	~SDKLoader();
+	SdkLoader() = default;
+	~SdkLoader();
 
-	bool load(HINSTANCE& inst, const std::string& name, functionList& fList);
-	bool reload(HINSTANCE& inst, const std::string& dllName, functionList& fList);
+	bool load(HINSTANCE& inst, const std::string& name, function_list& fList);
+	bool reload(HINSTANCE& inst, const std::string& dllName, function_list& fList);
 	bool isLoaded(const std::string& name);
 	bool unload(const std::string& name);
 	bool unload(HINSTANCE& inst);
@@ -20,7 +20,6 @@ public:
 private:
 	void destroy();
 
-private:
 	// Only for internal use
 	std::unordered_map<std::string, HINSTANCE> m_dllInstances;
 };

@@ -9,7 +9,7 @@ struct Vec3D {
 	double x, y, z;
 	Vec3D() : x(0.0f), y(0.0f), z(0.0f) {}
 
-	bool isZero() {
+	bool isZero() const {
 		return x == 0.0f && y == 0.0f && z == 0.0f; //-V550
 	}
 };
@@ -19,27 +19,27 @@ public:
 	~ConfigManager();
 	ConfigManager();
 
-	void ReloadConfigFile();
+	void ReloadConfigFile() const;
 
-	std::string GetAsciiString(const wchar_t * section, const wchar_t * key, const wchar_t * def);
-	std::string GetAsciiString(const wchar_t * section, const wchar_t * key, const std::string &def);
+	std::string GetAsciiString(const wchar_t * section, const wchar_t * key, const wchar_t * def) const;
+	std::string GetAsciiString(const wchar_t * section, const wchar_t * key, const std::string &def) const;
 
 	std::string GetUtf8StdString(const wchar_t * section, const wchar_t * key, const std::string &def);
 
-	const wchar_t * GetWString(const wchar_t * section, const wchar_t * key, const wchar_t * def);
-	double GetDouble(const wchar_t * section, const wchar_t * key, double def);
-	bool GetBool(const wchar_t * section, const wchar_t * key, const bool def);
-	long GetLong(const wchar_t * section, const wchar_t * key, const long def);
-	Vec3D GetVec3D(const wchar_t * section, const wchar_t *key, const Vec3D &def);
+	const wchar_t * GetWString(const wchar_t * section, const wchar_t * key, const wchar_t * def) const;
+	double GetDouble(const wchar_t * section, const wchar_t * key, double def) const;
+	bool GetBool(const wchar_t * section, const wchar_t * key, bool def);
+	long GetLong(const wchar_t * section, const wchar_t * key, long def);
+	Vec3D GetVec3D(const wchar_t * section, const wchar_t *key, const Vec3D &def) const;
 
-	bool SetBool(const wchar_t * section, const wchar_t * key, bool value);
-	bool SetLong(const wchar_t * section, const wchar_t * key, const long value);
-	bool SetWString(const wchar_t * section, const wchar_t * key, const wchar_t * value);
+	bool SetBool(const wchar_t * section, const wchar_t * key, bool value) const;
+	bool SetLong(const wchar_t * section, const wchar_t * key, long value) const;
+	bool SetWString(const wchar_t * section, const wchar_t * key, const wchar_t * value) const;
 
-	bool SetDouble(const wchar_t * section, const wchar_t * key, const double value);
-	bool SetVec3D(const wchar_t* section, const wchar_t* key, const Vec3D &value);
+	bool SetDouble(const wchar_t * section, const wchar_t * key, double value) const;
+	bool SetVec3D(const wchar_t* section, const wchar_t* key, const Vec3D &value) const;
 
-	bool SaveConfig();
+	bool SaveConfig() const;
 
 private:
 	std::unique_ptr<CSimpleIni> simpleIni;

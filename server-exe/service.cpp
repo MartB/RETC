@@ -90,26 +90,24 @@ VOID WINAPI ServiceMain(DWORD, LPTSTR*) {
 	SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
 }
 
-VOID WINAPI ServiceController(DWORD ctrlCode) {
-	switch (ctrlCode) {
-	case SERVICE_CONTROL_STOP:
-		if (g_ServiceStatus.dwCurrentState != SERVICE_RUNNING)
-			break;
-
-		g_ServiceStatus.dwControlsAccepted = 0;
-		g_ServiceStatus.dwCurrentState = SERVICE_STOP_PENDING;
-		g_ServiceStatus.dwWin32ExitCode = 0;
-		g_ServiceStatus.dwCheckPoint = 0;
-
-		SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
-
-		// Call termination function in server.cpp
-		requestTermination();
-		break;
-
-	default:
-		break;
+VOID WINAPI ServiceController(const DWORD ctrlCode) {
+	if (ctrlCode != SERVICE_CONTROL_STOP) {
+		return;
 	}
+
+	if (g_ServiceStatus.dwCurrentState != SERVICE_RUNNING) {
+		return;
+	}
+
+	g_ServiceStatus.dwControlsAccepted = 0;
+	g_ServiceStatus.dwCurrentState = SERVICE_STOP_PENDING;
+	g_ServiceStatus.dwWin32ExitCode = 0;
+	g_ServiceStatus.dwCheckPoint = 0;
+
+	SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
+
+	// Call termination function in server.cpp
+	requestTermination();
 }
 
 void InstallService() {

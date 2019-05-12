@@ -5,29 +5,25 @@
 #include "EffectManager.h"
 
 #include <set>
+#include "LightingSDK.h"
 
-#include "CorsairSDK.h"
-#include "RazerSDK.h"
+using sdk_list = std::set<std::shared_ptr<LightingSdk>>;
 
-typedef std::set<std::shared_ptr<LightingSDK>> SDKList;
-
-class SDKManager {
+class SdkManager {
 public:
-	SDKManager();
-	~SDKManager();
+	SdkManager();
+	~SdkManager() = default;
 
 	void reset();
 	void disconnect();
 
-public:
 	bool initialize();
-	void reloadEmulatedDevices();
+	void reloadEmulatedDevices() const;
 
-	RETCClientConfig* getClientConfig() const { return m_clientConfig; }
+	std::shared_ptr<RETCClientConfig> getClientConfig() const { return m_clientConfig; }
 
-public:
-	RZRESULT deleteEffect(const RZEFFECTID& effID) const;
-	RZRESULT setEffect(const RZEFFECTID& effID);
+	RZRESULT deleteEffect(const RZEFFECTID& effId) const;
+	RZRESULT setEffect(const RZEFFECTID& effId);
 	RZRESULT playEffect(const RETCDeviceType& devType, int effectType, RZEFFECTID* pEffectId, efsize_t size, const char effectData[]);
 
 private:
@@ -35,13 +31,13 @@ private:
 	RZRESULT playEffectOnAllSDKs(int effectType, const char effectData[]) const;
 	RZRESULT playbackEffect(const RETCDeviceType& devType, int effectType, const char effectData[]);
 
-	std::shared_ptr<SDKLoader> m_sdkLoader;
+	std::shared_ptr<SdkLoader> m_sdkLoader;
 
 	std::unique_ptr<EffectManager> m_effectManager;
-	SDKList m_availableSDKs;
+	sdk_list m_availableSDKs;
 
-	RETCClientConfig* m_clientConfig;
+	std::shared_ptr<RETCClientConfig> m_clientConfig;
 
-	std::array<SDKList, ALL> m_selectedSDKs;
-	bool m_bIsInitialized;
+	std::array<sdk_list, ALL> m_selectedSDKs;
+	bool m_bIsInitialized{};
 };
