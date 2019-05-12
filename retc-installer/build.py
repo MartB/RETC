@@ -4,7 +4,7 @@ import os
 import distutils.dir_util
 import shutil
 
-CUE_SDK_DL_URL = "http://downloads.corsair.com/download?item=Files/CUE/CUESDK_3.0.171.zip"
+CUE_SDK_DL_URL = "http://downloads.corsair.com/Files/CUE/CUESDK_3.0.234.zip"
 CUE_SDK_DLL_NAME_32 = "CUESDK_2015.dll"
 CUE_SDK_DLL_NAME_64 = "CUESDK.x64_2015.dll"
 
