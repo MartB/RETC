@@ -149,9 +149,16 @@ RZRESULT SdkManager::playbackEffect(const RETCDeviceType& devType, const int eff
 }
 
 RZRESULT SdkManager::playEffect(const RETCDeviceType& devType, const int effectType, RZEFFECTID* pEffectId, const efsize_t size, const char effectData[]) {
-	// We need to store the effect
+	// Do we need to store the effect?
 	if (pEffectId != nullptr) {
-		return m_effectManager->storeEffect(devType, effectType, pEffectId, size, effectData) ? RZRESULT_SUCCESS : RZRESULT_FAILED;
+		const auto guid = *pEffectId;
+		// If the client supplied a 0-guid, we will give him a new one as effect reference.
+		if (guid == GUID_NULL) {
+			// dont play the new effect, as its pre-programmed and is going to be played by SetEffect
+			return m_effectManager->storeEffect(devType, effectType, pEffectId, size, effectData) ? RZRESULT_SUCCESS : RZRESULT_FAILED;
+		}
+
+		// <MartB> Fallthrough, due to razer api quirk => playback directly
 	}
 
 	return playbackEffect(devType, effectType, effectData);
